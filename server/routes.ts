@@ -130,18 +130,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.createReview(reviewData);
           }
           
-          // Store insights
-          for (const insightData of result.analysis.insights) {
-            await storage.createInsight(insightData);
-          }
-          
-          // Store word cloud data
-          for (const wordData of result.analysis.wordCloud.positive) {
-            await storage.createWordCloudData(wordData);
-          }
-          for (const wordData of result.analysis.wordCloud.negative) {
-            await storage.createWordCloudData(wordData);
-          }
+          // Don't store insights and word cloud data from scraper
+          // They will be generated dynamically from the collected reviews
           
           res.json({
             success: true,

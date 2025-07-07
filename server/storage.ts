@@ -41,69 +41,8 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
-    // Sample insights
-    const sampleInsights = [
-      {
-        title: "앱 안정성 개선",
-        description: "앱 튕김 및 크래시 문제가 가장 많이 언급됨 (73건)",
-        priority: "high",
-        mentionCount: 73,
-        trend: "increasing",
-        category: "stability"
-      },
-      {
-        title: "UI/UX 개선",
-        description: "복잡한 인터페이스 및 학습 곡선 관련 (45건)",
-        priority: "medium",
-        mentionCount: 45,
-        trend: "stable",
-        category: "ui_ux"
-      },
-      {
-        title: "기능 확장",
-        description: "추가 기능 요청 및 통합 개선 (28건)",
-        priority: "low",
-        mentionCount: 28,
-        trend: "stable",
-        category: "features"
-      }
-    ];
-
-    sampleInsights.forEach(insight => {
-      const id = this.currentInsightId++;
-      this.insights.set(id, { id, ...insight });
-    });
-
-    // Sample word cloud data
-    const positiveWords = [
-      { word: "편리", frequency: 45 },
-      { word: "좋음", frequency: 32 },
-      { word: "만족", frequency: 38 },
-      { word: "깔끔", frequency: 18 },
-      { word: "유용", frequency: 28 },
-      { word: "추천", frequency: 35 },
-      { word: "직관적", frequency: 22 },
-      { word: "효율적", frequency: 25 },
-      { word: "간편", frequency: 20 },
-      { word: "완벽", frequency: 15 }
-    ];
-
-    const negativeWords = [
-      { word: "버그", frequency: 42 },
-      { word: "느림", frequency: 28 },
-      { word: "튕김", frequency: 35 },
-      { word: "복잡", frequency: 18 },
-      { word: "불편", frequency: 30 },
-      { word: "오류", frequency: 25 },
-      { word: "어려움", frequency: 15 },
-      { word: "실망", frequency: 20 }
-    ];
-
-    [...positiveWords.map(w => ({ ...w, sentiment: "positive" })), 
-     ...negativeWords.map(w => ({ ...w, sentiment: "negative" }))].forEach(word => {
-      const id = this.currentWordCloudId++;
-      this.wordCloudData.set(id, { id, ...word });
-    });
+    // No sample data - all data will come from collected reviews
+    console.log("Storage initialized - data will be generated from collected reviews");
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -181,7 +120,88 @@ export class MemStorage implements IStorage {
   }
 
   async getInsights(): Promise<Insight[]> {
-    return Array.from(this.insights.values());
+    // Generate insights from actual reviews instead of static data
+    const allReviews = Array.from(this.reviews.values());
+    const negativeReviews = allReviews.filter(review => review.sentiment === "negative");
+    
+    if (negativeReviews.length === 0) {
+      return [];
+    }
+    
+    const insights: Insight[] = [];
+    
+    // Analyze common issues in negative reviews
+    const issuePatterns = {
+      stability: /튕김|오류|버그|꺼짐|멈춤|크래시|안정성|문제/g,
+      ui_ux: /불편|복잡|어려움|답답|화면|확대|인터페이스/g,
+      login: /로그인|인증|접속|연결/g,
+      features: /기능|사용|설정|등록/g
+    };
+    
+    const issueCounts = {
+      stability: 0,
+      ui_ux: 0,
+      login: 0,
+      features: 0
+    };
+    
+    negativeReviews.forEach(review => {
+      const content = review.content;
+      Object.entries(issuePatterns).forEach(([category, pattern]) => {
+        const matches = content.match(pattern);
+        if (matches) {
+          issueCounts[category as keyof typeof issueCounts] += matches.length;
+        }
+      });
+    });
+    
+    // Generate insights based on most common issues
+    let insightId = 1;
+    
+    Object.entries(issueCounts)
+      .filter(([, count]) => count > 0)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3) // Top 3 issues
+      .forEach(([category, count]) => {
+        let title = "";
+        let description = "";
+        let priority = "medium";
+        
+        switch (category) {
+          case "stability":
+            title = "앱 안정성 개선";
+            description = `앱 튕김 및 오류 관련 언급이 ${count}건 발견됨`;
+            priority = count > 10 ? "high" : "medium";
+            break;
+          case "ui_ux":
+            title = "UI/UX 개선";
+            description = `사용성 및 인터페이스 불편 관련 언급이 ${count}건 발견됨`;
+            priority = count > 8 ? "medium" : "low";
+            break;
+          case "login":
+            title = "로그인/인증 개선";
+            description = `로그인 및 인증 문제 관련 언급이 ${count}건 발견됨`;
+            priority = count > 5 ? "high" : "medium";
+            break;
+          case "features":
+            title = "기능 개선";
+            description = `기능 관련 개선 요청이 ${count}건 발견됨`;
+            priority = "low";
+            break;
+        }
+        
+        insights.push({
+          id: insightId++,
+          title,
+          description,
+          priority,
+          mentionCount: count,
+          trend: "stable",
+          category
+        });
+      });
+    
+    return insights;
   }
 
   async createInsight(insertInsight: InsertInsight): Promise<Insight> {
@@ -192,9 +212,43 @@ export class MemStorage implements IStorage {
   }
 
   async getWordCloudData(sentiment: string): Promise<WordCloudData[]> {
-    return Array.from(this.wordCloudData.values()).filter(
-      data => data.sentiment === sentiment
-    );
+    // Generate word cloud from actual reviews instead of static data
+    const allReviews = Array.from(this.reviews.values());
+    const filteredReviews = allReviews.filter(review => review.sentiment === sentiment);
+    
+    if (filteredReviews.length === 0) {
+      return [];
+    }
+    
+    // Extract Korean words from review content
+    const wordFrequency: { [key: string]: number } = {};
+    
+    filteredReviews.forEach(review => {
+      const content = review.content.toLowerCase();
+      // Extract Korean words (2-4 characters)
+      const koreanWords = content.match(/[가-힣]{2,4}/g) || [];
+      
+      koreanWords.forEach(word => {
+        // Filter out common words and focus on meaningful terms
+        if (!['것을', '이것', '그것', '때문', '에서', '으로', '에게', '한테', '처럼', '같이', '하고', '해서'].includes(word)) {
+          wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+        }
+      });
+    });
+    
+    // Convert to WordCloudData format and get top 20
+    const wordCloudData: WordCloudData[] = Object.entries(wordFrequency)
+      .filter(([word, freq]) => freq > 1) // Only words mentioned more than once
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 20)
+      .map(([word, frequency], index) => ({
+        id: index + 1,
+        word,
+        frequency,
+        sentiment
+      }));
+    
+    return wordCloudData;
   }
 
   async createWordCloudData(insertData: InsertWordCloudData): Promise<WordCloudData> {
