@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           res.json({
             success: true,
-            message: result.message,
+            message: `${result.reviews.length}개의 리뷰를 성공적으로 수집했습니다.`,
             reviewsCount: result.reviews.length,
             insightsCount: result.analysis.insights.length
           });
