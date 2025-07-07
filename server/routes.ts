@@ -15,6 +15,7 @@ const getReviewsSchema = z.object({
 
 const collectReviewsSchema = z.object({
   appId: z.string().optional().default('com.lguplus.sohoapp'),
+  appIdApple: z.string().optional().default('1571096278'),
   count: z.coerce.number().min(1).max(500).optional().default(100),
   sources: z.array(z.enum(['google_play', 'app_store'])).optional().default(['google_play']),
 });
@@ -76,19 +77,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Collect reviews endpoint with Python scraper
   app.post("/api/reviews/collect", async (req, res) => {
     try {
-      const { appId, count, sources } = collectReviewsSchema.parse(req.body);
+      const { appId, appIdApple, count, sources } = collectReviewsSchema.parse(req.body);
       
-      // Only Google Play is supported for now
-      if (!sources.includes('google_play')) {
+      if (sources.length === 0) {
         return res.status(400).json({ 
-          error: "Currently only Google Play Store is supported",
-          message: "현재 구글 플레이스토어만 지원됩니다."
+          error: "At least one source must be selected",
+          message: "최소 하나의 스토어를 선택해주세요."
         });
       }
 
-      // Run Python scraper
+      // Run Python scraper with multiple sources
       const scraperPath = path.join(__dirname, 'scraper.py');
-      const pythonProcess = spawn('python3', [scraperPath, appId, count.toString()]);
+      const sourcesStr = sources.join(',');
+      const pythonProcess = spawn('python3', [scraperPath, appId, appIdApple, count.toString(), sourcesStr]);
       
       let stdout = '';
       let stderr = '';

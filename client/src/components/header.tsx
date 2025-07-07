@@ -17,7 +17,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
               <Clock className="w-4 h-4" />
-              <span>마지막 업데이트: 2024-01-15 14:30</span>
+              <span>실시간 리뷰 수집 지원</span>
             </div>
             <button className="p-2 text-gray-400 hover:text-gray-500">
               <Settings className="w-5 h-5" />

@@ -25,6 +25,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
     mutationFn: async (): Promise<CollectResponse> => {
       const payload = {
         appId: 'com.lguplus.sohoapp',
+        appIdApple: '1571096278',
         count: 100,
         sources: localFilters.source
       };
@@ -32,9 +33,13 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       return response.json();
     },
     onSuccess: (data) => {
+      const sourcesText = localFilters.source.map(s => 
+        s === 'google_play' ? '구글 플레이' : '앱스토어'
+      ).join(', ');
+      
       toast({
         title: "수집 완료",
-        description: data.message,
+        description: `${sourcesText}에서 ${data.message}`,
       });
       // Invalidate and refetch all data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
@@ -85,7 +90,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <span>필터 설정</span>
           </div>
         </div>
-        <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요</CardDescription>
+        <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어 & 애플 앱스토어 지원)</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

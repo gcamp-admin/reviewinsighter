@@ -13,8 +13,9 @@ def test_api_endpoint():
     
     payload = {
         "appId": "com.lguplus.sohoapp",
+        "appIdApple": "1571096278",
         "count": 10,
-        "sources": ["google_play"]
+        "sources": ["google_play", "app_store"]
     }
     
     print("Testing review collection API...")

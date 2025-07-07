@@ -50,12 +50,14 @@ This is a full-stack review analytics dashboard application built for analyzing 
 
 ## Data Flow
 
-1. **Review Collection**: Backend processes reviews from app stores
-2. **Sentiment Analysis**: Reviews are analyzed and categorized as positive/negative
-3. **Insight Generation**: System generates UX insights based on review patterns
-4. **Word Cloud Processing**: Frequently mentioned words are extracted and categorized
-5. **Frontend Display**: React components consume API data with real-time updates
-6. **Filtering & Pagination**: Client-side filtering with server-side pagination
+1. **Review Collection**: Python scraper collects real reviews from Google Play Store and Apple App Store
+2. **Sentiment Analysis**: Reviews are analyzed and categorized as positive/negative based on ratings
+3. **Korean Text Processing**: Advanced Korean text analysis for meaningful word extraction
+4. **Insight Generation**: System generates UX insights based on review patterns and frequency
+5. **Word Cloud Processing**: Frequently mentioned Korean words are extracted and categorized by sentiment
+6. **Data Storage**: Reviews, insights, and word cloud data are stored in memory storage
+7. **Frontend Display**: React components consume API data with real-time updates
+8. **Filtering & Pagination**: Client-side filtering with server-side pagination
 
 ## External Dependencies
 
@@ -103,6 +105,8 @@ Changelog:
 - July 07, 2025. Added Google Play Store review scraping functionality using Python google-play-scraper library
 - July 07, 2025. Integrated real-time review collection with sentiment analysis and word cloud generation
 - July 07, 2025. Enhanced Korean text processing for better word frequency analysis
+- July 07, 2025. Added Apple App Store review scraping using RSS feeds for complete dual-platform support
+- July 07, 2025. Successfully tested live review collection from both Google Play Store and Apple App Store with Korean content
 
 ## User Preferences
 

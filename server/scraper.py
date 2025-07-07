@@ -9,8 +9,9 @@ import requests
 from datetime import datetime
 from google_play_scraper import Sort, reviews
 import pandas as pd
+import xml.etree.ElementTree as ET
 
-def scrape_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr'):
+def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr'):
     """
     Scrape reviews from Google Play Store
     
@@ -52,8 +53,102 @@ def scrape_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='
         return processed_reviews
         
     except Exception as e:
-        print(f"Error scraping reviews: {str(e)}", file=sys.stderr)
+        print(f"Error scraping Google Play reviews: {str(e)}", file=sys.stderr)
         return []
+
+def scrape_app_store_reviews(app_id='1571096278', count=100):
+    """
+    Scrape reviews from Apple App Store
+    
+    Args:
+        app_id: Apple App Store app ID
+        count: Number of reviews to fetch (limited by RSS feed)
+        
+    Returns:
+        List of review dictionaries
+    """
+    try:
+        # Construct RSS URL for App Store reviews
+        rss_url = f'https://itunes.apple.com/kr/rss/customerreviews/id={app_id}/sortBy=mostRecent/xml'
+        
+        response = requests.get(rss_url, timeout=10)
+        if response.status_code != 200:
+            print(f"Failed to fetch App Store reviews: HTTP {response.status_code}", file=sys.stderr)
+            return []
+        
+        root = ET.fromstring(response.content)
+        
+        # Process reviews (skip first entry which is just metadata)
+        processed_reviews = []
+        entries = root.findall('.//{http://www.w3.org/2005/Atom}entry')[1:]
+        
+        for entry in entries[:count]:  # Limit to requested count
+            try:
+                # Extract review data
+                author_elem = entry.find('{http://www.w3.org/2005/Atom}author')
+                author = author_elem[0].text if author_elem is not None and len(author_elem) > 0 else '익명'
+                
+                title_elem = entry.find('{http://www.w3.org/2005/Atom}title')
+                title = title_elem.text if title_elem is not None else ''
+                
+                content_elem = entry.find('{http://www.w3.org/2005/Atom}content')
+                content = content_elem.text if content_elem is not None else title  # Use title if no content
+                
+                rating_elem = entry.find('{http://itunes.apple.com/rss}rating')
+                rating = int(rating_elem.text) if rating_elem is not None else 3
+                
+                updated_elem = entry.find('{http://www.w3.org/2005/Atom}updated')
+                created_at = updated_elem.text if updated_elem is not None else datetime.now().isoformat()
+                
+                # Simple sentiment analysis based on rating
+                sentiment = "positive" if rating >= 4 else "negative"
+                
+                processed_review = {
+                    'userId': author,
+                    'source': 'app_store',
+                    'rating': rating,
+                    'content': content,
+                    'sentiment': sentiment,
+                    'createdAt': created_at
+                }
+                processed_reviews.append(processed_review)
+                
+            except Exception as entry_error:
+                print(f"Error processing App Store review entry: {entry_error}", file=sys.stderr)
+                continue
+        
+        return processed_reviews
+        
+    except Exception as e:
+        print(f"Error scraping App Store reviews: {str(e)}", file=sys.stderr)
+        return []
+
+def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278', count=100, sources=['google_play']):
+    """
+    Scrape reviews from multiple sources
+    
+    Args:
+        app_id_google: Google Play Store app ID
+        app_id_apple: Apple App Store app ID
+        count: Number of reviews to fetch per source
+        sources: List of sources to scrape from
+        
+    Returns:
+        List of review dictionaries
+    """
+    all_reviews = []
+    
+    if 'google_play' in sources:
+        google_reviews = scrape_google_play_reviews(app_id_google, count)
+        all_reviews.extend(google_reviews)
+        print(f"Collected {len(google_reviews)} reviews from Google Play", file=sys.stderr)
+    
+    if 'app_store' in sources:
+        apple_reviews = scrape_app_store_reviews(app_id_apple, count)
+        all_reviews.extend(apple_reviews)
+        print(f"Collected {len(apple_reviews)} reviews from App Store", file=sys.stderr)
+    
+    return all_reviews
 
 def analyze_sentiments(reviews):
     """
@@ -164,11 +259,21 @@ def main():
     """Main function to run the scraper"""
     try:
         # Parse command line arguments
-        app_id = sys.argv[1] if len(sys.argv) > 1 else 'com.lguplus.sohoapp'
-        count = int(sys.argv[2]) if len(sys.argv) > 2 else 100
+        if len(sys.argv) > 3:
+            # Format: python scraper.py google_app_id apple_app_id count sources
+            app_id_google = sys.argv[1]
+            app_id_apple = sys.argv[2]
+            count = int(sys.argv[3])
+            sources = sys.argv[4].split(',') if len(sys.argv) > 4 else ['google_play']
+        else:
+            # Legacy format: python scraper.py app_id count
+            app_id_google = sys.argv[1] if len(sys.argv) > 1 else 'com.lguplus.sohoapp'
+            app_id_apple = '1571096278'  # Default Apple App Store ID for 우리가게 패키지
+            count = int(sys.argv[2]) if len(sys.argv) > 2 else 100
+            sources = ['google_play']
         
         # Scrape reviews
-        reviews_data = scrape_reviews(app_id, count)
+        reviews_data = scrape_reviews(app_id_google, app_id_apple, count, sources)
         
         # Analyze sentiments and generate insights
         analysis = analyze_sentiments(reviews_data)
@@ -178,7 +283,12 @@ def main():
             'success': True,
             'reviews': reviews_data,
             'analysis': analysis,
-            'message': f'{len(reviews_data)}개의 리뷰를 성공적으로 수집했습니다.'
+            'message': f'{len(reviews_data)}개의 리뷰를 성공적으로 수집했습니다.',
+            'sources': sources,
+            'counts': {
+                'google_play': len([r for r in reviews_data if r['source'] == 'google_play']),
+                'app_store': len([r for r in reviews_data if r['source'] == 'app_store'])
+            }
         }
         
         print(json.dumps(result, ensure_ascii=False, indent=2))
