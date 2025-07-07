@@ -315,7 +315,7 @@ export class MemStorage implements IStorage {
         
         let title = "";
         let description = "";
-        let priority = "medium";
+        let priority = "major";
         
         switch (category) {
           case "happiness":
@@ -327,7 +327,7 @@ export class MemStorage implements IStorage {
             } else {
               description = `전반적 만족도 개선 필요 - ${analysis.count}건의 부정적 감정 표현`;
             }
-            priority = analysis.count > 8 ? "high" : "medium";
+            priority = analysis.count > 8 ? "critical" : "major";
             break;
             
           case "engagement":
@@ -339,7 +339,7 @@ export class MemStorage implements IStorage {
             } else {
               description = `참여도 향상 필요 - ${analysis.count}건의 사용 지속성 관련 문제`;
             }
-            priority = analysis.count > 6 ? "high" : "medium";
+            priority = analysis.count > 6 ? "critical" : "major";
             break;
             
           case "adoption":
@@ -351,7 +351,7 @@ export class MemStorage implements IStorage {
             } else {
               description = `신규 사용자 경험 개선 - ${analysis.count}건의 학습 관련 문제`;
             }
-            priority = analysis.count > 4 ? "medium" : "low";
+            priority = analysis.count > 4 ? "major" : "minor";
             break;
             
           case "retention":
@@ -363,7 +363,7 @@ export class MemStorage implements IStorage {
             } else {
               description = `사용자 유지 개선 - ${analysis.count}건의 이탈 관련 언급`;
             }
-            priority = analysis.count > 3 ? "high" : "medium";
+            priority = analysis.count > 3 ? "critical" : "major";
             break;
             
           case "task_success":
@@ -375,7 +375,7 @@ export class MemStorage implements IStorage {
             } else {
               description = `작업 완료율 향상 - ${analysis.count}건의 실행 실패 문제`;
             }
-            priority = "high"; // Task Success는 항상 높은 우선순위
+            priority = "critical"; // Task Success는 항상 Critical 우선순위
             break;
         }
         

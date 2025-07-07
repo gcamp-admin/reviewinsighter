@@ -61,12 +61,12 @@ export default function UxInsights({ filters }: UxInsightsProps) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high":
+      case "critical":
         return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800";
-      case "medium":
+      case "major":
+        return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800";
+      case "minor":
         return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800";
-      case "low":
-        return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800";
     }
@@ -117,11 +117,11 @@ export default function UxInsights({ filters }: UxInsightsProps) {
           <div className="bg-gray-50 p-3 rounded-lg">
             <h4 className="text-sm font-medium text-gray-700 mb-2">🎯 우선순위 결정 기준</h4>
             <div className="text-xs text-gray-600 space-y-1">
-              <div><strong>높음:</strong> 기능 실패(Task Success) - 앱이 작동하지 않는 치명적 문제</div>
-              <div><strong>보통:</strong> 사용자 이탈(Retention) - 해지/삭제 의도 표현</div>
-              <div><strong>낮음:</strong> 만족도(Happiness), 참여도(Engagement), 온보딩(Adoption) - 사용성 개선</div>
+              <div><strong className="text-red-600">Critical:</strong> 앱 크래시, 핵심 기능 완전 실패 - 앱 사용 불가 상황</div>
+              <div><strong className="text-orange-500">Major:</strong> 주요 기능 부분 실패, 성능 저하 - 사용자 경험 크게 저하</div>
+              <div><strong className="text-yellow-600">Minor:</strong> UI 버그, 사용성 개선사항 - 기능은 작동하나 개선 필요</div>
               <div className="mt-2 text-xs text-gray-500">
-                * 언급 횟수가 많을수록 우선순위가 높아집니다
+                * 언급 횟수와 심각도를 종합하여 우선순위를 결정합니다
               </div>
             </div>
           </div>
@@ -155,8 +155,8 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                       variant="outline"
                       className={`text-xs ${getPriorityColor(insight.priority)}`}
                     >
-                      {insight.priority === "high" ? "높음" : 
-                       insight.priority === "medium" ? "보통" : "낮음"}
+                      {insight.priority === "critical" ? "Critical" : 
+                       insight.priority === "major" ? "Major" : "Minor"}
                     </Badge>
                   </div>
                   
