@@ -23,7 +23,12 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
 
   const collectReviewsMutation = useMutation({
     mutationFn: async (): Promise<CollectResponse> => {
-      const response = await apiRequest("POST", "/api/reviews/collect");
+      const payload = {
+        appId: 'com.lguplus.sohoapp',
+        count: 100,
+        sources: localFilters.source
+      };
+      const response = await apiRequest("POST", "/api/reviews/collect", payload);
       return response.json();
     },
     onSuccess: (data) => {
@@ -31,9 +36,11 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         title: "수집 완료",
         description: data.message,
       });
-      // Invalidate and refetch review data
+      // Invalidate and refetch all data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
     },
     onError: () => {
       toast({
@@ -139,7 +146,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <Label className="text-sm font-medium opacity-0">액션</Label>
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending}
+              disabled={collectReviewsMutation.isPending || localFilters.source.length === 0}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {collectReviewsMutation.isPending ? (
@@ -154,6 +161,11 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 </>
               )}
             </Button>
+            {localFilters.source.length === 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                최소 하나의 스토어를 선택해주세요
+              </p>
+            )}
           </div>
         </div>
       </CardContent>

@@ -222,7 +222,7 @@ export class MemStorage implements IStorage {
 
   async createInsight(insertInsight: InsertInsight): Promise<Insight> {
     const id = this.currentInsightId++;
-    const insight: Insight = { ...insertInsight, id };
+    const insight: Insight = { ...insertInsight, id, trend: insertInsight.trend || null };
     this.insights.set(id, insight);
     return insight;
   }

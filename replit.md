@@ -100,6 +100,9 @@ This is a full-stack review analytics dashboard application built for analyzing 
 
 Changelog:
 - July 07, 2025. Initial setup
+- July 07, 2025. Added Google Play Store review scraping functionality using Python google-play-scraper library
+- July 07, 2025. Integrated real-time review collection with sentiment analysis and word cloud generation
+- July 07, 2025. Enhanced Korean text processing for better word frequency analysis
 
 ## User Preferences
 
