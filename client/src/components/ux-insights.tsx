@@ -3,11 +3,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Insight } from "@/types";
+import type { Insight, ReviewFilters } from "@/types";
 
-export default function UxInsights() {
+interface UxInsightsProps {
+  filters: ReviewFilters;
+}
+
+export default function UxInsights({ filters }: UxInsightsProps) {
   const { data: insights, isLoading } = useQuery<Insight[]>({
-    queryKey: ["/api/insights"],
+    queryKey: ["/api/insights", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      if (filters?.source && filters.source.length > 0) {
+        filters.source.forEach(source => params.append("source", source));
+      }
+      if (filters?.dateFrom) {
+        params.append("dateFrom", filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append("dateTo", filters.dateTo.toISOString());
+      }
+
+      const response = await fetch(`/api/insights?${params}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch insights");
+      }
+      return response.json();
+    },
   });
 
   if (isLoading) {

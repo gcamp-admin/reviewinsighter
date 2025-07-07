@@ -47,7 +47,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <UxInsights />
+        <UxInsights filters={filters} />
       </main>
     </div>
   );

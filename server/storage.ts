@@ -9,7 +9,7 @@ export interface IStorage {
   getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ total: number, positive: number, negative: number, averageRating: number }>;
   createReview(review: InsertReview): Promise<Review>;
   
-  getInsights(): Promise<Insight[]>;
+  getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]>;
   createInsight(insight: InsertInsight): Promise<Insight>;
   
   getWordCloudData(sentiment: string): Promise<WordCloudData[]>;
@@ -142,10 +142,29 @@ export class MemStorage implements IStorage {
     return review;
   }
 
-  async getInsights(): Promise<Insight[]> {
-    // Generate insights from actual reviews instead of static data
-    const allReviews = Array.from(this.reviews.values());
-    const negativeReviews = allReviews.filter(review => review.sentiment === "negative");
+  async getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]> {
+    // Generate insights from filtered reviews instead of all reviews
+    let filteredReviews = Array.from(this.reviews.values());
+
+    if (filters) {
+      if (filters.source && filters.source.length > 0) {
+        filteredReviews = filteredReviews.filter(review => 
+          filters.source!.includes(review.source)
+        );
+      }
+      if (filters.dateFrom) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.createdAt >= filters.dateFrom!
+        );
+      }
+      if (filters.dateTo) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.createdAt <= filters.dateTo!
+        );
+      }
+    }
+
+    const negativeReviews = filteredReviews.filter(review => review.sentiment === "negative");
     
     if (negativeReviews.length === 0) {
       return [];
@@ -181,10 +200,15 @@ export class MemStorage implements IStorage {
     negativeReviews.forEach(review => {
       const content = review.content;
       
+      // Track which categories this review has already been counted for
+      const countedCategories = new Set<string>();
+      
       Object.entries(issueAnalysis).forEach(([category, analysis]) => {
         const matches = content.match(analysis.patterns);
-        if (matches) {
-          analysis.count += matches.length;
+        if (matches && !countedCategories.has(category)) {
+          // Count each review only once per category
+          analysis.count += 1;
+          countedCategories.add(category);
           
           // Extract specific issues for actionable insights
           if (category === 'cctv_issues') {

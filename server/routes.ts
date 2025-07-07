@@ -93,10 +93,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get UX insights
+  // Get UX insights (with filtering support)
   app.get("/api/insights", async (req, res) => {
     try {
-      const insights = await storage.getInsights();
+      // Handle source parameter (can be string or array)
+      let source: string[] | undefined;
+      if (req.query.source) {
+        const sourceParam = req.query.source;
+        if (Array.isArray(sourceParam)) {
+          source = sourceParam.map(s => String(s));
+        } else {
+          source = [String(sourceParam)];
+        }
+      }
+      
+      // Handle date parameters
+      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
+      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+      
+      const filters = {
+        source: source && source.length > 0 ? source : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined
+      };
+
+      const insights = await storage.getInsights(filters);
       res.json(insights);
     } catch (error) {
       res.status(500).json({ error: "Failed to get insights" });
