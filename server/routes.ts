@@ -4,6 +4,10 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { spawn } from "child_process";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const getReviewsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
