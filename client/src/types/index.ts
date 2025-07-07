@@ -1,4 +1,12 @@
+export interface Service {
+  id: string;
+  name: string;
+  googlePlayId: string;
+  appleStoreId: string;
+}
+
 export interface ReviewFilters {
+  service?: Service;
   source: string[];
   dateFrom?: Date;
   dateTo?: Date;

@@ -10,7 +10,7 @@ export default function Header() {
               <Store className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">우리가게 패키지</h1>
+              <h1 className="text-xl font-bold text-gray-900">LG U+ 앱서비스</h1>
               <p className="text-sm text-gray-500">리뷰 분석 대시보드</p>
             </div>
           </div>

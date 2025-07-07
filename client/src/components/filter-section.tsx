@@ -9,12 +9,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { ReviewFilters, CollectResponse } from "@/types";
+import type { ReviewFilters, CollectResponse, Service } from "@/types";
 
 interface FilterSectionProps {
   filters: ReviewFilters;
   onFiltersChange: (filters: ReviewFilters) => void;
 }
+
+const SERVICES: Service[] = [
+  {
+    id: "ixio",
+    name: "익시오",
+    googlePlayId: "com.lguplus.aicallagent",
+    appleStoreId: "6503931858"
+  },
+  {
+    id: "ai-bizcall",
+    name: "AI비즈콜",
+    googlePlayId: "com.uplus.ubizai",
+    appleStoreId: "6503284354"
+  },
+  {
+    id: "soho-package",
+    name: "SOHO우리가게 패키지",
+    googlePlayId: "com.lguplus.sohoapp",
+    appleStoreId: "1571096278"
+  }
+];
 
 export default function FilterSection({ filters, onFiltersChange }: FilterSectionProps) {
   const { toast } = useToast();
@@ -24,9 +45,13 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
 
   const collectReviewsMutation = useMutation({
     mutationFn: async (): Promise<CollectResponse> => {
+      if (!localFilters.service) {
+        throw new Error('서비스를 선택해주세요');
+      }
+      
       const payload = {
-        appId: 'com.lguplus.sohoapp',
-        appIdApple: '1571096278',
+        appId: localFilters.service.googlePlayId,
+        appIdApple: localFilters.service.appleStoreId,
         count: 100,
         sources: localFilters.source
       };
@@ -40,7 +65,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       
       toast({
         title: "수집 완료",
-        description: `${sourcesText}에서 ${data.message}`,
+        description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
       });
       // Invalidate and refetch all data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
@@ -94,8 +119,38 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어 & 애플 앱스토어 지원)</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Store Selection */}
+        <div className="space-y-6">
+          {/* Service Selection */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">서비스 선택</Label>
+            <Select
+              value={localFilters.service?.id || ""}
+              onValueChange={(value) => {
+                const selectedService = SERVICES.find(s => s.id === value);
+                const newFilters = { 
+                  ...localFilters, 
+                  service: selectedService,
+                  source: selectedService ? ['google_play', 'app_store'] : []
+                };
+                setLocalFilters(newFilters);
+                onFiltersChange(newFilters);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="서비스명을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICES.map((service) => (
+                  <SelectItem key={service.id} value={service.id}>
+                    {service.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Store Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">스토어 선택</Label>
             <div className="space-y-2">
@@ -152,7 +207,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <Label className="text-sm font-medium">리뷰 수집</Label>
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || localFilters.source.length === 0}
+              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {collectReviewsMutation.isPending ? (
@@ -167,12 +222,18 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 </>
               )}
             </Button>
-            {localFilters.source.length === 0 && (
+            {!localFilters.service && (
+              <p className="text-xs text-gray-500 mt-1">
+                서비스를 먼저 선택해주세요
+              </p>
+            )}
+            {localFilters.service && localFilters.source.length === 0 && (
               <p className="text-xs text-gray-500 mt-1">
                 최소 하나의 스토어를 선택해주세요
               </p>
             )}
           </div>
+        </div>
         </div>
       </CardContent>
     </Card>
