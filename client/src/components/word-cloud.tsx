@@ -2,15 +2,57 @@ import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import type { WordCloudData } from "@/types";
+import type { WordCloudData, ReviewFilters } from "@/types";
 
-export default function WordCloud() {
+interface WordCloudProps {
+  filters: ReviewFilters;
+}
+
+export default function WordCloud({ filters }: WordCloudProps) {
   const { data: positiveWords, isLoading: positiveLoading } = useQuery<WordCloudData[]>({
-    queryKey: ["/api/wordcloud/positive"],
+    queryKey: ["/api/wordcloud/positive", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      if (filters?.source && filters.source.length > 0) {
+        filters.source.forEach(source => params.append("source", source));
+      }
+      if (filters?.dateFrom) {
+        params.append("dateFrom", filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append("dateTo", filters.dateTo.toISOString());
+      }
+
+      const response = await fetch(`/api/wordcloud/positive?${params}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch positive word cloud");
+      }
+      return response.json();
+    },
   });
 
   const { data: negativeWords, isLoading: negativeLoading } = useQuery<WordCloudData[]>({
-    queryKey: ["/api/wordcloud/negative"],
+    queryKey: ["/api/wordcloud/negative", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      if (filters?.source && filters.source.length > 0) {
+        filters.source.forEach(source => params.append("source", source));
+      }
+      if (filters?.dateFrom) {
+        params.append("dateFrom", filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append("dateTo", filters.dateTo.toISOString());
+      }
+
+      const response = await fetch(`/api/wordcloud/negative?${params}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch negative word cloud");
+      }
+      return response.json();
+    },
   });
 
   const getWordSize = (frequency: number, maxFreq: number) => {

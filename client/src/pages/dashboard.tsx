@@ -33,18 +33,14 @@ export default function Dashboard() {
         
         <StatsOverview filters={filters} />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <ReviewList 
-              filters={filters}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-8">
+          <ReviewList 
+            filters={filters}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
           
-          <div className="space-y-8">
-            <WordCloud />
-          </div>
+          <WordCloud filters={filters} />
         </div>
         
         <UxInsights filters={filters} />

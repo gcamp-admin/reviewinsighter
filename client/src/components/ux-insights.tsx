@@ -70,33 +70,33 @@ export default function UxInsights({ filters }: UxInsightsProps) {
   };
 
   const getActionableInsight = (insight: Insight) => {
-    // HEART 프레임워크 기반 솔루션 매핑
+    // HEART 프레임워크 기반 현실적 솔루션 매핑 (필터링된 데이터 기반)
     const heartSolutions: { [key: string]: { problem: string; solution: string } } = {
       "사용자 만족도 개선 (Happiness)": {
-        problem: "강한 부정적 감정과 사용성 불만으로 인한 전반적 만족도 저하",
-        solution: "사용자 피드백 수집 강화, 빠른 응답 시스템 구축, 감정적 경험 개선을 위한 마이크로인터랙션 도입"
+        problem: `현재 ${insight.mentionCount}명의 사용자가 강한 부정 감정을 표현하고 있으며, 이는 곧 평점 하락과 리뷰 악화로 이어질 위험이 높음`,
+        solution: "1주 내 사용자 피드백 대응팀 운영, 부정 리뷰 대상 개별 연락 및 문제 해결, 앱 내 실시간 도움말 채팅 기능 추가"
       },
       "사용자 참여도 개선 (Engagement)": {
-        problem: "연결 불안정성과 성능 이슈로 인한 지속적 사용 방해",
-        solution: "네트워크 최적화, 로딩 시간 단축, 오프라인 모드 지원, 백그라운드 동기화 개선"
+        problem: `${insight.mentionCount}건의 연결/성능 문제로 사용자들이 실제 업무(CCTV 모니터링, 가게 관리)에 차질을 겪고 있어 일상 사용 포기 위험`,
+        solution: "서버 인프라 즉시 점검, 네트워크 안정성 모니터링 대시보드 구축, 끊김 발생 시 자동 재연결 기능 개발"
       },
       "신규 사용자 적응 개선 (Adoption)": {
-        problem: "복잡한 학습 곡선과 어려운 초기 설정으로 신규 사용자 포기",
-        solution: "인터랙티브 튜토리얼 도입, 단계별 온보딩 플로우, 컨텍스트 기반 도움말 시스템"
+        problem: `${insight.mentionCount}명이 초기 설정에서 어려움을 겪어 앱 삭제 또는 사용 포기로 이어질 가능성이 높음`,
+        solution: "3단계 간편 설정 마법사 개발, 첫 실행 시 개인 맞춤형 가이드 제공, 고객센터 원클릭 연결 버튼 추가"
       },
       "사용자 재방문율 개선 (Retention)": {
-        problem: "이탈 의도 표시와 경쟁사 이동 고려로 인한 사용자 손실",
-        solution: "개인화된 알림 전략, 핵심 가치 강화, 이탈 방지 인센티브 프로그램, 피드백 루프 구축"
+        problem: `${insight.mentionCount}명이 이미 삭제/해지 의도를 표명했으며, 이는 실제 고객 이탈로 직결되어 매출 손실 발생`,
+        solution: "이탈 의도 고객 대상 할인 혜택 제공, 문제점 개선 완료 시 개별 안내, 경쟁사 대비 차별화 기능 홍보"
       },
       "작업 성공률 개선 (Task Success)": {
-        problem: "핵심 기능 실패와 앱 불안정으로 인한 목표 달성 실패",
-        solution: "에러 핸들링 강화, 자동 복구 시스템, 진행상황 저장 기능, 대체 경로 제공"
+        problem: `${insight.mentionCount}건의 핵심 기능 실패로 사용자들이 실제 가게 운영, CCTV 모니터링 업무를 완료하지 못해 비즈니스 임팩트 발생`,
+        solution: "긴급 버그 수정 패치 배포, 기능별 성공률 모니터링 시스템 구축, 실패 시 대체 방법 안내 팝업 제공"
       }
     };
 
     return heartSolutions[insight.title] || {
       problem: insight.description,
-      solution: "HEART 프레임워크 기반 상세 분석을 통한 맞춤형 해결책 도출 필요"
+      solution: "현재 필터링된 데이터 기반 상세 분석을 통한 맞춤형 해결책 도출 필요"
     };
   };
 

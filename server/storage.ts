@@ -12,7 +12,7 @@ export interface IStorage {
   getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]>;
   createInsight(insight: InsertInsight): Promise<Insight>;
   
-  getWordCloudData(sentiment: string): Promise<WordCloudData[]>;
+  getWordCloudData(sentiment: string, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]>;
   createWordCloudData(data: InsertWordCloudData): Promise<WordCloudData>;
 }
 
@@ -369,19 +369,38 @@ export class MemStorage implements IStorage {
     return insight;
   }
 
-  async getWordCloudData(sentiment: string): Promise<WordCloudData[]> {
-    // Generate word cloud from actual reviews instead of static data
-    const allReviews = Array.from(this.reviews.values());
-    const filteredReviews = allReviews.filter(review => review.sentiment === sentiment);
+  async getWordCloudData(sentiment: string, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]> {
+    // Generate word cloud from filtered reviews instead of all reviews
+    let filteredReviews = Array.from(this.reviews.values());
+
+    if (filters) {
+      if (filters.source && filters.source.length > 0) {
+        filteredReviews = filteredReviews.filter(review => 
+          filters.source!.includes(review.source)
+        );
+      }
+      if (filters.dateFrom) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.createdAt >= filters.dateFrom!
+        );
+      }
+      if (filters.dateTo) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.createdAt <= filters.dateTo!
+        );
+      }
+    }
+
+    const sentimentFilteredReviews = filteredReviews.filter(review => review.sentiment === sentiment);
     
-    if (filteredReviews.length === 0) {
+    if (sentimentFilteredReviews.length === 0) {
       return [];
     }
     
     // Extract Korean words from review content
     const wordFrequency: { [key: string]: number } = {};
     
-    filteredReviews.forEach(review => {
+    sentimentFilteredReviews.forEach(review => {
       const content = review.content.toLowerCase();
       // Extract Korean words (2-4 characters)
       const koreanWords = content.match(/[가-힣]{2,4}/g) || [];

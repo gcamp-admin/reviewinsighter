@@ -124,7 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get word cloud data
+  // Get word cloud data (with filtering support)
   app.get("/api/wordcloud/:sentiment", async (req, res) => {
     try {
       const { sentiment } = req.params;
@@ -132,7 +132,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid sentiment. Must be 'positive' or 'negative'" });
       }
       
-      const wordCloudData = await storage.getWordCloudData(sentiment);
+      // Handle source parameter (can be string or array)
+      let source: string[] | undefined;
+      if (req.query.source) {
+        const sourceParam = req.query.source;
+        if (Array.isArray(sourceParam)) {
+          source = sourceParam.map(s => String(s));
+        } else {
+          source = [String(sourceParam)];
+        }
+      }
+      
+      // Handle date parameters
+      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
+      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+      
+      const filters = {
+        source: source && source.length > 0 ? source : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined
+      };
+      
+      const wordCloudData = await storage.getWordCloudData(sentiment, filters);
       res.json(wordCloudData);
     } catch (error) {
       res.status(500).json({ error: "Failed to get word cloud data" });
