@@ -119,7 +119,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
       const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
+      const serviceId = req.query.serviceId as string | undefined;
+      
       const filters = {
+        serviceId: serviceId || undefined,
         source: source && source.length > 0 ? source : undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined
@@ -155,7 +158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
       const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
+      const serviceId = req.query.serviceId as string | undefined;
+      
       const filters = {
+        serviceId: serviceId || undefined,
         source: source && source.length > 0 ? source : undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined
