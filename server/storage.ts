@@ -41,43 +41,6 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
-    // Sample reviews
-    const sampleReviews = [
-      {
-        userId: "김*호",
-        source: "google_play",
-        rating: 4,
-        content: "우리가게 패키지 정말 좋아요! 매장 관리가 훨씬 편해졌고, 고객 관리도 체계적으로 할 수 있어서 만족스럽습니다. 다만 초기 설정이 조금 복잡했지만 익숙해지니 괜찮네요.",
-        sentiment: "positive",
-        createdAt: new Date("2024-01-15")
-      },
-      {
-        userId: "이*진",
-        source: "app_store",
-        rating: 2,
-        content: "앱이 자주 튕겨서 정말 불편해요. 주문 관리하다가 갑자기 꺼지면 처음부터 다시 해야 하는데 너무 스트레스 받습니다. 빨리 안정성 문제 해결해주세요.",
-        sentiment: "negative",
-        createdAt: new Date("2024-01-14")
-      },
-      {
-        userId: "박*수",
-        source: "google_play",
-        rating: 5,
-        content: "카페 사장입니다. 메뉴 관리부터 주문 접수까지 모든 기능이 직관적이고 사용하기 편해요. 특히 매출 통계 기능이 정말 유용합니다. 강력 추천!",
-        sentiment: "positive",
-        createdAt: new Date("2024-01-13")
-      }
-    ];
-
-    sampleReviews.forEach(review => {
-      const id = this.currentReviewId++;
-      this.reviews.set(id, {
-        id,
-        ...review,
-        createdAt: review.createdAt
-      });
-    });
-
     // Sample insights
     const sampleInsights = [
       {
@@ -210,9 +173,10 @@ export class MemStorage implements IStorage {
     const review: Review = { 
       ...insertReview, 
       id,
-      createdAt: new Date()
+      createdAt: typeof insertReview.createdAt === 'string' ? new Date(insertReview.createdAt) : new Date()
     };
     this.reviews.set(id, review);
+    console.log(`Created review ${id}: ${review.userId} - ${review.content.substring(0, 50)}...`);
     return review;
   }
 

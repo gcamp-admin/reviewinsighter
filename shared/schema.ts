@@ -46,6 +46,8 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
   rating: true,
   content: true,
   sentiment: true,
+}).extend({
+  createdAt: z.string().optional(),
 });
 
 export const insertInsightSchema = createInsertSchema(insights).pick({
