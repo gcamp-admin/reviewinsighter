@@ -1,142 +1,148 @@
-import { TrendingUp, Users, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AlertTriangle, Lightbulb, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Insight } from "@/types";
 
 export default function UxInsights() {
-  const { data: insights, isLoading, error } = useQuery<Insight[]>({
+  const { data: insights, isLoading } = useQuery<Insight[]>({
     queryKey: ["/api/insights"],
   });
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">매우 시급</Badge>;
-      case "medium":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">중간 우선</Badge>;
-      case "low":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">낮은 우선</Badge>;
-      default:
-        return <Badge variant="secondary">{priority}</Badge>;
-    }
-  };
-
-  const getPriorityBorder = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "border-l-4 border-red-500";
-      case "medium":
-        return "border-l-4 border-yellow-500";
-      case "low":
-        return "border-l-4 border-green-500";
-      default:
-        return "border-l-4 border-gray-300";
-    }
-  };
-
-  const getTrendIcon = (trend?: string) => {
-    switch (trend) {
-      case "increasing":
-        return <TrendingUp className="w-3 h-3 inline mr-1" />;
-      case "stable":
-        return <Users className="w-3 h-3 inline mr-1" />;
-      default:
-        return <PlusCircle className="w-3 h-3 inline mr-1" />;
-    }
-  };
-
-  const getTrendText = (trend?: string, category?: string) => {
-    switch (trend) {
-      case "increasing":
-        return "최근 2주간 35% 증가";
-      case "stable":
-        return category === "ui_ux" ? "신규 사용자 대부분 언급" : "안정적 수준 유지";
-      default:
-        return "기존 기능 안정화 후 고려";
-    }
-  };
-
   if (isLoading) {
     return (
-      <Card>
+      <Card className="mt-8">
         <CardHeader>
-          <CardTitle>UX 개선 인사이트</CardTitle>
-          <CardDescription>부정 리뷰 분석 기반 개선 제안</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Lightbulb className="h-5 w-5 text-[#ff0066]" />
+            UX 개선 제안
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="border-l-4 border-gray-200 pl-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-6 w-16 rounded-full" />
-                </div>
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>UX 개선 인사이트</CardTitle>
-          <CardDescription>부정 리뷰 분석 기반 개선 제안</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-red-500">
-            인사이트 데이터를 불러오는 중 오류가 발생했습니다.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!insights || insights.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>UX 개선 인사이트</CardTitle>
-          <CardDescription>부정 리뷰 분석 기반 개선 제안</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-gray-500 py-4">
-            개선 인사이트가 없습니다.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>UX 개선 인사이트</CardTitle>
-        <CardDescription>부정 리뷰 분석 기반 개선 제안</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {insights.map((insight) => (
-            <div key={insight.id} className={`${getPriorityBorder(insight.priority)} pl-4`}>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900">{insight.title}</h4>
-                {getPriorityBadge(insight.priority)}
-              </div>
-              <p className="text-sm text-gray-600">{insight.description}</p>
-              <div className="mt-2 text-xs text-gray-500">
-                {getTrendIcon(insight.trend)}
-                {getTrendText(insight.trend, insight.category)}
-              </div>
+        <CardContent className="space-y-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-6 w-16" />
             </div>
           ))}
-        </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800";
+      case "low":
+        return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800";
+    }
+  };
+
+  const getActionableInsight = (insight: Insight) => {
+    const solutions: { [key: string]: { problem: string; solution: string } } = {
+      "CCTV 기능 개선": {
+        problem: "사용자들이 CCTV 화면 확대/축소, 녹화 영상 재생에서 어려움을 겪고 있음",
+        solution: "터치 제스처 개선, 녹화 영상 플레이어 UI 재설계, 화면 확대 버튼 크기 증대"
+      },
+      "앱 안정성 개선": {
+        problem: "앱 튕김과 실행 오류로 인한 사용자 이탈과 불만 증가",
+        solution: "메모리 최적화, 크래시 리포팅 강화, 앱 실행 시 안정성 체크 로직 추가"
+      },
+      "로그인/인증 개선": {
+        problem: "자동로그인 미작동과 매번 인증 요구로 인한 사용성 저하",
+        solution: "생체인증 도입, 자동로그인 알고리즘 개선, 다중 사용자 세션 관리 시스템"
+      },
+      "사용성 개선": {
+        problem: "가게 등록 과정의 복잡성과 반복적인 설정으로 인한 사용자 부담",
+        solution: "원클릭 가게 등록, 설정 마법사 도입, 사용법 가이드 팝업 제공"
+      }
+    };
+
+    return solutions[insight.title] || {
+      problem: insight.description,
+      solution: "상세 분석을 통한 맞춤형 해결책 도출 필요"
+    };
+  };
+
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Lightbulb className="h-5 w-5 text-[#ff0066]" />
+          UX 개선 제안
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          실제 사용자 리뷰를 분석하여 도출한 개선 제안사항입니다
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {insights?.length === 0 ? (
+          <div className="text-center py-8">
+            <AlertTriangle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">
+              수집된 리뷰 데이터에서 인사이트를 분석 중입니다...
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {insights?.map((insight) => {
+              const actionable = getActionableInsight(insight);
+              return (
+                <div
+                  key={insight.id}
+                  className="space-y-4 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-base">{insight.title}</h3>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getPriorityColor(insight.priority)}`}
+                    >
+                      {insight.priority === "high" ? "높음" : 
+                       insight.priority === "medium" ? "보통" : "낮음"}
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">
+                        📋 예측되는 문제
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {actionable.problem}
+                      </p>
+                    </div>
+                    
+                    <ArrowRight className="h-4 w-4 text-[#ff0066] mx-auto" />
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                        💡 해결 방법
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {actionable.solution}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground">
+                      언급 횟수: <span className="font-medium">{insight.mentionCount}회</span>
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

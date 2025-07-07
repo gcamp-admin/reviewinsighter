@@ -153,63 +153,137 @@ export class MemStorage implements IStorage {
     
     const insights: Insight[] = [];
     
-    // Analyze common issues in negative reviews
-    const issuePatterns = {
-      stability: /튕김|오류|버그|꺼짐|멈춤|크래시|안정성|문제/g,
-      ui_ux: /불편|복잡|어려움|답답|화면|확대|인터페이스/g,
-      login: /로그인|인증|접속|연결/g,
-      features: /기능|사용|설정|등록/g
+    // Analyze specific issues and generate actionable insights
+    const issueAnalysis = {
+      cctv_issues: {
+        patterns: /화면|확대|축소|cctv|씨씨티비|녹화|영상|카메라/gi,
+        count: 0,
+        specificIssues: [] as string[]
+      },
+      app_crashes: {
+        patterns: /튕김|꺼짐|크래시|멈춤|실행|안됨|오류|버그/gi,
+        count: 0,
+        specificIssues: [] as string[]
+      },
+      login_auth: {
+        patterns: /로그인|인증|접속|연결|끊김|자동로그인|매번/gi,
+        count: 0,
+        specificIssues: [] as string[]
+      },
+      ui_usability: {
+        patterns: /불편|복잡|어려움|답답|사용|설정|등록/gi,
+        count: 0,
+        specificIssues: [] as string[]
+      }
     };
     
-    const issueCounts = {
-      stability: 0,
-      ui_ux: 0,
-      login: 0,
-      features: 0
-    };
-    
+    // Analyze each negative review for specific issues
     negativeReviews.forEach(review => {
       const content = review.content;
-      Object.entries(issuePatterns).forEach(([category, pattern]) => {
-        const matches = content.match(pattern);
+      
+      Object.entries(issueAnalysis).forEach(([category, analysis]) => {
+        const matches = content.match(analysis.patterns);
         if (matches) {
-          issueCounts[category as keyof typeof issueCounts] += matches.length;
+          analysis.count += matches.length;
+          
+          // Extract specific issues for actionable insights
+          if (category === 'cctv_issues') {
+            if (content.includes('화면') && content.includes('확대')) {
+              analysis.specificIssues.push('화면 확대/축소 기능');
+            }
+            if (content.includes('녹화') || content.includes('영상')) {
+              analysis.specificIssues.push('녹화 영상 재생');
+            }
+            if (content.includes('감지') || content.includes('알림')) {
+              analysis.specificIssues.push('침입감지 알림');
+            }
+          } else if (category === 'app_crashes') {
+            if (content.includes('튕김') || content.includes('꺼짐')) {
+              analysis.specificIssues.push('앱 강제 종료');
+            }
+            if (content.includes('실행') && content.includes('안됨')) {
+              analysis.specificIssues.push('앱 실행 실패');
+            }
+          } else if (category === 'login_auth') {
+            if (content.includes('자동로그인') || content.includes('매번')) {
+              analysis.specificIssues.push('자동로그인 미작동');
+            }
+            if (content.includes('동시') || content.includes('가족')) {
+              analysis.specificIssues.push('다중 사용자 접속');
+            }
+          } else if (category === 'ui_usability') {
+            if (content.includes('가게') && content.includes('등록')) {
+              analysis.specificIssues.push('가게 등록 과정');
+            }
+            if (content.includes('복잡') || content.includes('어려움')) {
+              analysis.specificIssues.push('사용법 복잡성');
+            }
+          }
         }
       });
     });
     
-    // Generate insights based on most common issues
+    // Generate specific, actionable insights
     let insightId = 1;
     
-    Object.entries(issueCounts)
-      .filter(([, count]) => count > 0)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3) // Top 3 issues
-      .forEach(([category, count]) => {
+    Object.entries(issueAnalysis)
+      .filter(([, analysis]) => analysis.count > 0)
+      .sort(([,a], [,b]) => b.count - a.count)
+      .slice(0, 4) // Top 4 most critical issues
+      .forEach(([category, analysis]) => {
+        const uniqueIssues = Array.from(new Set(analysis.specificIssues));
+        
         let title = "";
         let description = "";
         let priority = "medium";
         
         switch (category) {
-          case "stability":
+          case "cctv_issues":
+            title = "CCTV 기능 개선";
+            if (uniqueIssues.includes('화면 확대/축소 기능')) {
+              description = "화면 확대/축소 기능 개선 - 사용자들이 CCTV 화면을 제대로 확대하지 못하는 문제";
+            } else if (uniqueIssues.includes('침입감지 알림')) {
+              description = "침입감지 알림 기능 개선 - 감지 알림이 제대로 전달되지 않는 문제";
+            } else {
+              description = `CCTV 관련 기능 개선 필요 - ${analysis.count}건의 문제 보고`;
+            }
+            priority = analysis.count > 15 ? "high" : "medium";
+            break;
+            
+          case "app_crashes":
             title = "앱 안정성 개선";
-            description = `앱 튕김 및 오류 관련 언급이 ${count}건 발견됨`;
-            priority = count > 10 ? "high" : "medium";
+            if (uniqueIssues.includes('앱 강제 종료')) {
+              description = "앱 튕김 현상 해결 - 사용 중 앱이 강제 종료되는 문제 수정";
+            } else if (uniqueIssues.includes('앱 실행 실패')) {
+              description = "앱 실행 오류 해결 - 앱이 시작되지 않는 문제 수정";
+            } else {
+              description = `앱 안정성 개선 필요 - ${analysis.count}건의 크래시 관련 문제`;
+            }
+            priority = "high";
             break;
-          case "ui_ux":
-            title = "UI/UX 개선";
-            description = `사용성 및 인터페이스 불편 관련 언급이 ${count}건 발견됨`;
-            priority = count > 8 ? "medium" : "low";
-            break;
-          case "login":
+            
+          case "login_auth":
             title = "로그인/인증 개선";
-            description = `로그인 및 인증 문제 관련 언급이 ${count}건 발견됨`;
-            priority = count > 5 ? "high" : "medium";
+            if (uniqueIssues.includes('자동로그인 미작동')) {
+              description = "자동로그인 기능 개선 - 매번 로그인해야 하는 불편함 해결";
+            } else if (uniqueIssues.includes('다중 사용자 접속')) {
+              description = "다중 사용자 접속 지원 - 가족 구성원이 함께 사용할 수 있도록 개선";
+            } else {
+              description = `인증 시스템 개선 필요 - ${analysis.count}건의 로그인 관련 문제`;
+            }
+            priority = analysis.count > 10 ? "high" : "medium";
             break;
-          case "features":
-            title = "기능 개선";
-            description = `기능 관련 개선 요청이 ${count}건 발견됨`;
-            priority = "low";
+            
+          case "ui_usability":
+            title = "사용성 개선";
+            if (uniqueIssues.includes('가게 등록 과정')) {
+              description = "가게 등록 과정 간소화 - 매번 가게를 다시 등록해야 하는 문제 해결";
+            } else if (uniqueIssues.includes('사용법 복잡성')) {
+              description = "사용법 단순화 - 복잡한 인터페이스와 어려운 사용법 개선";
+            } else {
+              description = `사용성 개선 필요 - ${analysis.count}건의 UI/UX 관련 문제`;
+            }
+            priority = "medium";
             break;
         }
         
@@ -218,7 +292,7 @@ export class MemStorage implements IStorage {
           title,
           description,
           priority,
-          mentionCount: count,
+          mentionCount: analysis.count,
           trend: "stable",
           category
         });

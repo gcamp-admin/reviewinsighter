@@ -44,9 +44,10 @@ export default function Dashboard() {
           
           <div className="space-y-8">
             <WordCloud />
-            <UxInsights />
           </div>
         </div>
+        
+        <UxInsights />
       </main>
     </div>
   );
