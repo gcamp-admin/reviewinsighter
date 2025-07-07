@@ -1,4 +1,4 @@
-import { AlertTriangle, Lightbulb, ArrowRight } from "lucide-react";
+import { AlertTriangle, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -107,9 +107,22 @@ export default function UxInsights({ filters }: UxInsightsProps) {
           <Lightbulb className="h-5 w-5 text-[#ff0066]" />
           HEART 프레임워크 UX 개선 제안
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          HEART 프레임워크 기반으로 실제 사용자 리뷰를 분석한 UX 개선 제안입니다
-        </p>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            HEART 프레임워크 기반으로 실제 사용자 리뷰를 분석한 UX 개선 제안입니다
+          </p>
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">🎯 우선순위 결정 기준</h4>
+            <div className="text-xs text-gray-600 space-y-1">
+              <div><strong>높음:</strong> 기능 실패(Task Success) - 앱이 작동하지 않는 치명적 문제</div>
+              <div><strong>보통:</strong> 사용자 이탈(Retention) - 해지/삭제 의도 표현</div>
+              <div><strong>낮음:</strong> 만족도(Happiness), 참여도(Engagement), 온보딩(Adoption) - 사용성 개선</div>
+              <div className="mt-2 text-xs text-gray-500">
+                * 언급 횟수가 많을수록 우선순위가 높아집니다
+              </div>
+            </div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {insights?.length === 0 ? (
@@ -147,14 +160,12 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                   <div className="space-y-4">
                     <div>
                       <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
-                        📢 실제 VOC
+                        📢 예측되는 문제점
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {actionable.voc}
                       </p>
                     </div>
-                    
-                    <ArrowRight className="h-4 w-4 text-[#ff0066] mx-auto" />
                     
                     <div>
                       <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">

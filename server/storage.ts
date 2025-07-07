@@ -270,6 +270,10 @@ export class MemStorage implements IStorage {
     let insightId = 1;
     
     // HEART 프레임워크 우선순위 (UX 영향도 기준)
+    // 우선순위 결정 로직:
+    // 1. 언급 횟수 (많을수록 높은 우선순위)
+    // 2. 비즈니스 임계성 (기능 실패 > 사용자 이탈 > 만족도 > 참여도 > 온보딩)
+    // 3. 최종 우선순위 = 언급 횟수 × 비즈니스 중요도 점수
     const heartPriority = {
       task_success: 5,   // 최우선: 기본 기능이 작동하지 않으면 의미 없음
       retention: 4,      // 2순위: 사용자 이탈 방지가 비즈니스에 직접 영향
