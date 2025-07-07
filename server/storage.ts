@@ -418,26 +418,27 @@ export class MemStorage implements IStorage {
     }
     
     // Extract Korean words from review content
-    const wordFrequency: { [key: string]: number } = {};
+    const wordFrequency = new Map<string, number>();
     
     sentimentFilteredReviews.forEach(review => {
-      const content = review.content.toLowerCase();
-      // Extract Korean words (2-4 characters)
-      const koreanWords = content.match(/[가-힣]{2,4}/g) || [];
+      const content = review.content;
+      
+      // Extract meaningful Korean words (2+ characters, remove common stopwords)
+      const koreanWords = content
+        .replace(/[^\uAC00-\uD7AF\u3131-\u3163\u1100-\u11FF\s]/g, ' ') // Keep only Korean characters
+        .split(/\s+/)
+        .filter(word => word.length >= 2)
+        .filter(word => !['그냥', '정말', '너무', '아주', '매우', '좀', '진짜', '완전', '조금', '많이', '잘', '안', '못', '되', '하', '이', '가', '을', '를', '의', '에', '와', '과', '도', '만', '까지', '부터', '로', '으로', '에서', '한테', '께', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열'].includes(word));
       
       koreanWords.forEach(word => {
-        // Filter out common words and focus on meaningful terms
-        if (!['것을', '이것', '그것', '때문', '에서', '으로', '에게', '한테', '처럼', '같이', '하고', '해서'].includes(word)) {
-          wordFrequency[word] = (wordFrequency[word] || 0) + 1;
-        }
+        wordFrequency.set(word, (wordFrequency.get(word) || 0) + 1);
       });
     });
     
-    // Convert to WordCloudData format and get top 20
-    const wordCloudData: WordCloudData[] = Object.entries(wordFrequency)
-      .filter(([word, freq]) => freq > 1) // Only words mentioned more than once
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 20)
+    // Convert to WordCloudData format, sorted by frequency
+    const wordCloudData: WordCloudData[] = Array.from(wordFrequency.entries())
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 20) // Top 20 words
       .map(([word, frequency], index) => ({
         id: index + 1,
         word,

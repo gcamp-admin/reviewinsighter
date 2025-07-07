@@ -99,15 +99,15 @@ export default function WordCloud({ filters }: WordCloudProps) {
         <CardTitle>감정 워드클라우드</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-6">
           {/* Positive Word Cloud */}
           <div>
             <h4 className="text-sm font-medium text-green-600 mb-3 flex items-center">
               <ThumbsUp className="w-4 h-4 mr-2" />
-              긍정 리뷰 키워드
+              긍정 리뷰 키워드 ({positiveWords?.length || 0}개)
             </h4>
             {positiveLoading ? (
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="bg-green-50 p-4 rounded-lg min-h-[200px]">
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[...Array(8)].map((_, i) => (
                     <Skeleton key={i} className="h-6 w-16" />
@@ -117,7 +117,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
             ) : positiveWords && positiveWords.length > 0 ? (
               renderWordCloud(positiveWords, "positive")
             ) : (
-              <div className="bg-green-50 p-4 rounded-lg text-center">
+              <div className="bg-green-50 p-4 rounded-lg text-center min-h-[200px] flex items-center justify-center">
                 <p className="text-sm text-muted-foreground">긍정 키워드가 없습니다</p>
               </div>
             )}
@@ -127,10 +127,10 @@ export default function WordCloud({ filters }: WordCloudProps) {
           <div>
             <h4 className="text-sm font-medium text-red-600 mb-3 flex items-center">
               <ThumbsDown className="w-4 h-4 mr-2" />
-              부정 리뷰 키워드
+              부정 리뷰 키워드 ({negativeWords?.length || 0}개)
             </h4>
             {negativeLoading ? (
-              <div className="bg-red-50 p-4 rounded-lg">
+              <div className="bg-red-50 p-4 rounded-lg min-h-[200px]">
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[...Array(8)].map((_, i) => (
                     <Skeleton key={i} className="h-6 w-16" />
@@ -140,7 +140,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
             ) : negativeWords && negativeWords.length > 0 ? (
               renderWordCloud(negativeWords, "negative")
             ) : (
-              <div className="bg-red-50 p-4 rounded-lg text-center">
+              <div className="bg-red-50 p-4 rounded-lg text-center min-h-[200px] flex items-center justify-center">
                 <p className="text-sm text-muted-foreground">부정 키워드가 없습니다</p>
               </div>
             )}
