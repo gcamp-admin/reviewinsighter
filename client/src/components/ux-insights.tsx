@@ -80,7 +80,7 @@ export default function UxInsights() {
           UX 개선 제안
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          실제 사용자 리뷰를 분석하여 도출한 개선 제안사항입니다
+          실제 사용자 리뷰를 분석하여 도출한 개선 제안사항입니다 (비즈니스 영향도 순으로 정렬)
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -101,7 +101,12 @@ export default function UxInsights() {
                   className="space-y-4 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-base">{insight.title}</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-[#ff0066]">
+                        #{insights?.indexOf(insight) + 1}
+                      </span>
+                      <h3 className="font-semibold text-base">{insight.title}</h3>
+                    </div>
                     <Badge
                       variant="outline"
                       className={`text-xs ${getPriorityColor(insight.priority)}`}

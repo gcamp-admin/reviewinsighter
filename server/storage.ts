@@ -223,12 +223,27 @@ export class MemStorage implements IStorage {
       });
     });
     
-    // Generate specific, actionable insights
+    // Generate specific, actionable insights with business priority order
     let insightId = 1;
+    
+    // Define business priority order (higher number = higher priority)
+    const businessPriority = {
+      app_crashes: 4,    // 최우선: 앱이 작동하지 않으면 모든 것이 무의미
+      login_auth: 3,     // 2순위: 로그인할 수 없으면 앱을 사용할 수 없음
+      cctv_issues: 2,    // 3순위: 핵심 기능이지만 일부 기능은 사용 가능
+      ui_usability: 1    // 4순위: 불편하지만 사용은 가능
+    };
     
     Object.entries(issueAnalysis)
       .filter(([, analysis]) => analysis.count > 0)
-      .sort(([,a], [,b]) => b.count - a.count)
+      .sort(([categoryA, analysisA], [categoryB, analysisB]) => {
+        // 먼저 비즈니스 우선순위로 정렬
+        const priorityDiff = businessPriority[categoryB as keyof typeof businessPriority] - 
+                           businessPriority[categoryA as keyof typeof businessPriority];
+        if (priorityDiff !== 0) return priorityDiff;
+        // 같은 우선순위면 언급 횟수로 정렬
+        return analysisB.count - analysisA.count;
+      })
       .slice(0, 4) // Top 4 most critical issues
       .forEach(([category, analysis]) => {
         const uniqueIssues = Array.from(new Set(analysis.specificIssues));
@@ -247,7 +262,8 @@ export class MemStorage implements IStorage {
             } else {
               description = `CCTV 관련 기능 개선 필요 - ${analysis.count}건의 문제 보고`;
             }
-            priority = analysis.count > 15 ? "high" : "medium";
+            // CCTV는 핵심 기능이므로 언급 횟수와 관계없이 중요도가 높음
+            priority = analysis.count > 8 ? "high" : "medium";
             break;
             
           case "app_crashes":
@@ -259,6 +275,7 @@ export class MemStorage implements IStorage {
             } else {
               description = `앱 안정성 개선 필요 - ${analysis.count}건의 크래시 관련 문제`;
             }
+            // 앱 크래시는 사용자 이탈에 직접적 영향을 미치므로 항상 최우선
             priority = "high";
             break;
             
@@ -271,7 +288,8 @@ export class MemStorage implements IStorage {
             } else {
               description = `인증 시스템 개선 필요 - ${analysis.count}건의 로그인 관련 문제`;
             }
-            priority = analysis.count > 10 ? "high" : "medium";
+            // 로그인 문제는 앱 사용 자체를 막으므로 높은 우선순위
+            priority = analysis.count > 5 ? "high" : "medium";
             break;
             
           case "ui_usability":
@@ -283,7 +301,8 @@ export class MemStorage implements IStorage {
             } else {
               description = `사용성 개선 필요 - ${analysis.count}건의 UI/UX 관련 문제`;
             }
-            priority = "medium";
+            // 사용성은 중요하지만 앱 사용을 완전히 막지는 않으므로 중간 우선순위
+            priority = analysis.count > 15 ? "medium" : "low";
             break;
         }
         
