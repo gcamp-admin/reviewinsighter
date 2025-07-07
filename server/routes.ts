@@ -32,8 +32,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const filters = {
         source: source && source.length > 0 ? source : undefined,
-        dateFrom,
-        dateTo
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined
       };
 
       const result = await storage.getReviews(page, limit, filters);

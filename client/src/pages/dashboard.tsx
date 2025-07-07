@@ -10,8 +10,8 @@ import type { ReviewFilters } from "@/types";
 export default function Dashboard() {
   const [filters, setFilters] = useState<ReviewFilters>({
     source: ["google_play", "app_store"],
-    dateFrom: new Date("2024-01-01"),
-    dateTo: new Date("2024-01-15")
+    dateFrom: undefined,
+    dateTo: undefined
   });
 
   const [currentPage, setCurrentPage] = useState(1);
