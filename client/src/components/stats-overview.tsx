@@ -2,11 +2,34 @@ import { MessageSquare, ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { ReviewStats } from "@/types";
+import type { ReviewStats, ReviewFilters } from "@/types";
 
-export default function StatsOverview() {
+interface StatsOverviewProps {
+  filters: ReviewFilters;
+}
+
+export default function StatsOverview({ filters }: StatsOverviewProps) {
   const { data: stats, isLoading } = useQuery<ReviewStats>({
-    queryKey: ["/api/reviews/stats"],
+    queryKey: ["/api/reviews/stats", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      if (filters?.source && filters.source.length > 0) {
+        filters.source.forEach(source => params.append("source", source));
+      }
+      if (filters?.dateFrom) {
+        params.append("dateFrom", filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append("dateTo", filters.dateTo.toISOString());
+      }
+
+      const response = await fetch(`/api/reviews/stats?${params}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch stats");
+      }
+      return response.json();
+    },
   });
 
   if (isLoading) {

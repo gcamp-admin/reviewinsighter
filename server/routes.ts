@@ -12,7 +12,10 @@ const __dirname = path.dirname(__filename);
 const getReviewsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
-  source: z.array(z.string()).optional(),
+  source: z.union([z.string(), z.array(z.string())]).optional().transform(val => {
+    if (typeof val === 'string') return [val];
+    return val;
+  }),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
 });
@@ -28,7 +31,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get reviews with pagination and filtering
   app.get("/api/reviews", async (req, res) => {
     try {
-      const { page, limit, source, dateFrom, dateTo } = getReviewsSchema.parse(req.query);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      // Handle source parameter (can be string or array)
+      let source: string[] | undefined;
+      if (req.query.source) {
+        const sourceParam = req.query.source;
+        if (Array.isArray(sourceParam)) {
+          source = sourceParam.map(s => String(s));
+        } else {
+          source = [String(sourceParam)];
+        }
+      }
+      
+      // Handle date parameters
+      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
+      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
       const filters = {
         source: source && source.length > 0 ? source : undefined,
@@ -43,10 +62,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get review statistics
+  // Get review statistics (with filtering support)
   app.get("/api/reviews/stats", async (req, res) => {
     try {
-      const stats = await storage.getReviewStats();
+      // Handle source parameter (can be string or array)
+      let source: string[] | undefined;
+      if (req.query.source) {
+        const sourceParam = req.query.source;
+        if (Array.isArray(sourceParam)) {
+          source = sourceParam.map(s => String(s));
+        } else {
+          source = [String(sourceParam)];
+        }
+      }
+      
+      // Handle date parameters
+      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
+      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+      
+      const filters = {
+        source: source && source.length > 0 ? source : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined
+      };
+
+      const stats = await storage.getReviewStats(filters);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to get review statistics" });

@@ -6,7 +6,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ reviews: Review[], total: number }>;
-  getReviewStats(): Promise<{ total: number, positive: number, negative: number, averageRating: number }>;
+  getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ total: number, positive: number, negative: number, averageRating: number }>;
   createReview(review: InsertReview): Promise<Review>;
   
   getInsights(): Promise<Insight[]>;
@@ -97,12 +97,35 @@ export class MemStorage implements IStorage {
     };
   }
 
-  async getReviewStats(): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
-    const allReviews = Array.from(this.reviews.values());
-    const total = allReviews.length;
-    const positive = allReviews.filter(r => r.sentiment === "positive").length;
-    const negative = allReviews.filter(r => r.sentiment === "negative").length;
-    const averageRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / total;
+  async getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
+    let filteredReviews = Array.from(this.reviews.values());
+
+    if (filters) {
+      if (filters.source && filters.source.length > 0) {
+        filteredReviews = filteredReviews.filter(review => 
+          filters.source!.includes(review.source)
+        );
+      }
+      if (filters.dateFrom) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.createdAt >= filters.dateFrom!
+        );
+      }
+      if (filters.dateTo) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.createdAt <= filters.dateTo!
+        );
+      }
+    }
+
+    const total = filteredReviews.length;
+    if (total === 0) {
+      return { total: 0, positive: 0, negative: 0, averageRating: 0 };
+    }
+    
+    const positive = filteredReviews.filter(r => r.sentiment === "positive").length;
+    const negative = filteredReviews.filter(r => r.sentiment === "negative").length;
+    const averageRating = filteredReviews.reduce((sum, r) => sum + r.rating, 0) / total;
 
     return { total, positive, negative, averageRating: Math.round(averageRating * 10) / 10 };
   }
