@@ -1,0 +1,162 @@
+import { useState } from "react";
+import { Filter, Download, Loader2, Smartphone, Apple } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { ReviewFilters, CollectResponse } from "@/types";
+
+interface FilterSectionProps {
+  filters: ReviewFilters;
+  onFiltersChange: (filters: ReviewFilters) => void;
+}
+
+export default function FilterSection({ filters, onFiltersChange }: FilterSectionProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const [localFilters, setLocalFilters] = useState(filters);
+
+  const collectReviewsMutation = useMutation({
+    mutationFn: async (): Promise<CollectResponse> => {
+      const response = await apiRequest("POST", "/api/reviews/collect");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "수집 완료",
+        description: data.message,
+      });
+      // Invalidate and refetch review data
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
+    },
+    onError: () => {
+      toast({
+        title: "수집 실패",
+        description: "리뷰 수집 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSourceChange = (source: string, checked: boolean) => {
+    const newSource = checked 
+      ? [...localFilters.source, source]
+      : localFilters.source.filter(s => s !== source);
+    
+    const newFilters = { ...localFilters, source: newSource };
+    setLocalFilters(newFilters);
+    onFiltersChange(newFilters);
+  };
+
+  const handleDateChange = (field: 'dateFrom' | 'dateTo', value: string) => {
+    const newFilters = { 
+      ...localFilters, 
+      [field]: value ? new Date(value) : undefined 
+    };
+    setLocalFilters(newFilters);
+    onFiltersChange(newFilters);
+  };
+
+  const formatDateForInput = (date?: Date) => {
+    if (!date) return "";
+    return date.toISOString().split('T')[0];
+  };
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">리뷰 수집 필터</CardTitle>
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <Filter className="w-4 h-4" />
+            <span>필터 설정</span>
+          </div>
+        </div>
+        <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Store Selection */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">스토어 선택</Label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <Checkbox 
+                  id="google-play"
+                  checked={localFilters.source.includes("google_play")}
+                  onCheckedChange={(checked) => handleSourceChange("google_play", checked as boolean)}
+                />
+                <Label htmlFor="google-play" className="flex items-center space-x-2 cursor-pointer">
+                  <Smartphone className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">구글 플레이스토어</span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox 
+                  id="app-store"
+                  checked={localFilters.source.includes("app_store")}
+                  onCheckedChange={(checked) => handleSourceChange("app_store", checked as boolean)}
+                />
+                <Label htmlFor="app-store" className="flex items-center space-x-2 cursor-pointer">
+                  <Apple className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm">애플 앱스토어</span>
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          {/* Date Range */}
+          <div className="space-y-3">
+            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜</Label>
+            <Input
+              id="date-from"
+              type="date"
+              value={formatDateForInput(localFilters.dateFrom)}
+              onChange={(e) => handleDateChange('dateFrom', e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜</Label>
+            <Input
+              id="date-to"
+              type="date"
+              value={formatDateForInput(localFilters.dateTo)}
+              onChange={(e) => handleDateChange('dateTo', e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {/* Action Button */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium opacity-0">액션</Label>
+            <Button 
+              onClick={() => collectReviewsMutation.mutate()}
+              disabled={collectReviewsMutation.isPending}
+              className="w-full bg-primary hover:bg-primary/90"
+            >
+              {collectReviewsMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  수집 중...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  리뷰 수집
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
