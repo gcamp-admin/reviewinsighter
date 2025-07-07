@@ -144,20 +144,15 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                   key={insight.id}
                   className="space-y-3 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-[#ff0066]">
-                        #{insights?.indexOf(insight) + 1}
-                      </span>
-                      <h3 className="font-semibold text-base">{insight.title}</h3>
-                    </div>
+                  <div className="flex items-start gap-3">
                     <Badge
                       variant="outline"
-                      className={`text-xs ${getPriorityColor(insight.priority)}`}
+                      className={`text-xs font-medium ${getPriorityColor(insight.priority)}`}
                     >
                       {insight.priority === "critical" ? "Critical" : 
                        insight.priority === "major" ? "Major" : "Minor"}
                     </Badge>
+                    <h3 className="font-semibold text-base flex-1">{insight.title}</h3>
                   </div>
                   
                   <div className="space-y-4">
