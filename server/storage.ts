@@ -62,10 +62,15 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }> {
+  async getReviews(page: number, limit: number, filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
+      if (filters.serviceId) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.serviceId === filters.serviceId
+        );
+      }
       if (filters.source && filters.source.length > 0) {
         filteredReviews = filteredReviews.filter(review => 
           filters.source!.includes(review.source)
@@ -102,10 +107,15 @@ export class MemStorage implements IStorage {
     };
   }
 
-  async getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
+  async getReviewStats(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
+      if (filters.serviceId) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.serviceId === filters.serviceId
+        );
+      }
       if (filters.source && filters.source.length > 0) {
         filteredReviews = filteredReviews.filter(review => 
           filters.source!.includes(review.source)
@@ -145,6 +155,8 @@ export class MemStorage implements IStorage {
     const review: Review = { 
       ...insertReview, 
       id,
+      serviceId: insertReview.serviceId || null,
+      appId: insertReview.appId || null,
       createdAt: typeof insertReview.createdAt === 'string' ? new Date(insertReview.createdAt) : new Date()
     };
     this.reviews.set(id, review);
@@ -152,11 +164,16 @@ export class MemStorage implements IStorage {
     return review;
   }
 
-  async getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]> {
+  async getInsights(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]> {
     // Generate insights from filtered reviews instead of all reviews
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
+      if (filters.serviceId) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.serviceId === filters.serviceId
+        );
+      }
       if (filters.source && filters.source.length > 0) {
         filteredReviews = filteredReviews.filter(review => 
           filters.source!.includes(review.source)
@@ -389,11 +406,16 @@ export class MemStorage implements IStorage {
     return insight;
   }
 
-  async getWordCloudData(sentiment: string, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]> {
+  async getWordCloudData(sentiment: string, filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]> {
     // Generate word cloud from filtered reviews instead of all reviews
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
+      if (filters.serviceId) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.serviceId === filters.serviceId
+        );
+      }
       if (filters.source && filters.source.length > 0) {
         filteredReviews = filteredReviews.filter(review => 
           filters.source!.includes(review.source)

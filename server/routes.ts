@@ -172,6 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews/collect", async (req, res) => {
     try {
       const { appId, appIdApple, count, sources } = collectReviewsSchema.parse(req.body);
+      const { serviceId, serviceName } = req.body;
       
       if (sources.length === 0) {
         return res.status(400).json({ 
@@ -183,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Run Python scraper with multiple sources
       const scraperPath = path.join(__dirname, 'scraper.py');
       const sourcesStr = sources.join(',');
-      const pythonProcess = spawn('python3', [scraperPath, appId, appIdApple, count.toString(), sourcesStr]);
+      const pythonProcess = spawn('python3', [scraperPath, appId, appIdApple, count.toString(), sourcesStr, serviceId || '', serviceName || '']);
       
       let stdout = '';
       let stderr = '';
@@ -215,9 +216,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
-          // Store collected reviews
+          // Store collected reviews with serviceId
           for (const reviewData of result.reviews) {
-            await storage.createReview(reviewData);
+            await storage.createReview({
+              ...reviewData,
+              serviceId: serviceId || null,
+              appId: reviewData.source === 'google_play' ? appId : appIdApple
+            });
           }
           
           // Don't store insights and word cloud data from scraper

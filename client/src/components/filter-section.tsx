@@ -53,7 +53,9 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         appId: localFilters.service.googlePlayId,
         appIdApple: localFilters.service.appleStoreId,
         count: 100,
-        sources: localFilters.source
+        sources: localFilters.source,
+        serviceId: localFilters.service.id,
+        serviceName: localFilters.service.name,
       };
       const response = await apiRequest("POST", "/api/reviews/collect", payload);
       return response.json();

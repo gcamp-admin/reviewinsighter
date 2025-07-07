@@ -10,10 +10,13 @@ interface WordCloudProps {
 
 export default function WordCloud({ filters }: WordCloudProps) {
   const { data: positiveWords, isLoading: positiveLoading } = useQuery<WordCloudData[]>({
-    queryKey: ["/api/wordcloud/positive", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryKey: ["/api/wordcloud/positive", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
+      if (filters?.service?.id) {
+        params.append("serviceId", filters.service.id);
+      }
       if (filters?.source && filters.source.length > 0) {
         filters.source.forEach(source => params.append("source", source));
       }
@@ -33,10 +36,13 @@ export default function WordCloud({ filters }: WordCloudProps) {
   });
 
   const { data: negativeWords, isLoading: negativeLoading } = useQuery<WordCloudData[]>({
-    queryKey: ["/api/wordcloud/negative", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryKey: ["/api/wordcloud/negative", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
+      if (filters?.service?.id) {
+        params.append("serviceId", filters.service.id);
+      }
       if (filters?.source && filters.source.length > 0) {
         filters.source.forEach(source => params.append("source", source));
       }

@@ -12,6 +12,8 @@ export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
   source: text("source").notNull(), // "google_play" or "app_store"
+  serviceId: text("service_id"), // "ixio", "ai-bizcall", "soho-package"
+  appId: text("app_id"), // Store the app ID used for collection
   rating: integer("rating").notNull(),
   content: text("content").notNull(),
   sentiment: text("sentiment").notNull(), // "positive" or "negative"
@@ -43,6 +45,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertReviewSchema = createInsertSchema(reviews).pick({
   userId: true,
   source: true,
+  serviceId: true,
+  appId: true,
   rating: true,
   content: true,
   sentiment: true,

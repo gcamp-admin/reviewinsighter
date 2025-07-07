@@ -11,10 +11,13 @@ interface UxInsightsProps {
 
 export default function UxInsights({ filters }: UxInsightsProps) {
   const { data: insights, isLoading } = useQuery<Insight[]>({
-    queryKey: ["/api/insights", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryKey: ["/api/insights", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
+      if (filters?.service?.id) {
+        params.append("serviceId", filters.service.id);
+      }
       if (filters?.source && filters.source.length > 0) {
         filters.source.forEach(source => params.append("source", source));
       }

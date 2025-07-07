@@ -20,13 +20,16 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const limit = 10;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
-    queryKey: ["/api/reviews", currentPage, limit, filters.source, filters.dateFrom, filters.dateTo],
+    queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: limit.toString(),
       });
       
+      if (filters?.service?.id) {
+        params.append("serviceId", filters.service.id);
+      }
       if (filters.source.length > 0) {
         filters.source.forEach(source => params.append("source", source));
       }

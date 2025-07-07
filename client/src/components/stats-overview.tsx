@@ -10,10 +10,13 @@ interface StatsOverviewProps {
 
 export default function StatsOverview({ filters }: StatsOverviewProps) {
   const { data: stats, isLoading } = useQuery<ReviewStats>({
-    queryKey: ["/api/reviews/stats", filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryKey: ["/api/reviews/stats", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
+      if (filters?.service?.id) {
+        params.append("serviceId", filters.service.id);
+      }
       if (filters?.source && filters.source.length > 0) {
         filters.source.forEach(source => params.append("source", source));
       }
