@@ -390,8 +390,8 @@ export class MemStorage implements IStorage {
         });
       });
     
-    // Sort by priority first (high > medium > low), then by mentionCount
-    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    // Sort by priority first (critical > major > minor), then by mentionCount
+    const priorityOrder = { critical: 3, major: 2, minor: 1 };
     return insights.sort((a, b) => {
       const priorityDiff = priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
       if (priorityDiff !== 0) return priorityDiff;
