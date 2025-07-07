@@ -19,7 +19,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const limit = 10;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
-    queryKey: ["/api/reviews", currentPage, limit, filters.source, filters.dateFrom, filters.dateTo],
+    queryKey: ["/api/reviews", currentPage, limit, filters.source, filters.dateFrom, filters.dateTo, filters.sentiment],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -34,6 +34,9 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
       if (filters.dateTo) {
         params.append("dateTo", filters.dateTo.toISOString());
+      }
+      if (filters.sentiment) {
+        params.append("sentiment", filters.sentiment);
       }
 
       const response = await fetch(`/api/reviews?${params}`);

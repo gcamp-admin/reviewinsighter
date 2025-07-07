@@ -5,8 +5,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
-  getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ reviews: Review[], total: number }>;
-  getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ total: number, positive: number, negative: number, averageRating: number }>;
+  getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }>;
+  getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number }>;
   createReview(review: InsertReview): Promise<Review>;
   
   getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]>;
@@ -62,7 +62,7 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ reviews: Review[], total: number }> {
+  async getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
@@ -79,6 +79,11 @@ export class MemStorage implements IStorage {
       if (filters.dateTo) {
         filteredReviews = filteredReviews.filter(review => 
           review.createdAt <= filters.dateTo!
+        );
+      }
+      if (filters.sentiment && filters.sentiment !== "all") {
+        filteredReviews = filteredReviews.filter(review => 
+          review.sentiment === filters.sentiment
         );
       }
     }
@@ -97,7 +102,7 @@ export class MemStorage implements IStorage {
     };
   }
 
-  async getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
+  async getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
@@ -114,6 +119,11 @@ export class MemStorage implements IStorage {
       if (filters.dateTo) {
         filteredReviews = filteredReviews.filter(review => 
           review.createdAt <= filters.dateTo!
+        );
+      }
+      if (filters.sentiment && filters.sentiment !== "all") {
+        filteredReviews = filteredReviews.filter(review => 
+          review.sentiment === filters.sentiment
         );
       }
     }
@@ -359,7 +369,13 @@ export class MemStorage implements IStorage {
         });
       });
     
-    return insights;
+    // Sort by priority first (high > medium > low), then by mentionCount
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    return insights.sort((a, b) => {
+      const priorityDiff = priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
+      if (priorityDiff !== 0) return priorityDiff;
+      return b.mentionCount - a.mentionCount;
+    });
   }
 
   async createInsight(insertInsight: InsertInsight): Promise<Insight> {

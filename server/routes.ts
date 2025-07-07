@@ -49,10 +49,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
       const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
+      // Handle sentiment parameter
+      const sentiment = req.query.sentiment as string;
+      
       const filters = {
         source: source && source.length > 0 ? source : undefined,
         dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined
+        dateTo: dateTo || undefined,
+        sentiment: sentiment && sentiment !== "all" ? sentiment : undefined
       };
 
       const result = await storage.getReviews(page, limit, filters);
@@ -80,10 +84,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
       const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
+      // Handle sentiment parameter
+      const sentiment = req.query.sentiment as string;
+      
       const filters = {
         source: source && source.length > 0 ? source : undefined,
         dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined
+        dateTo: dateTo || undefined,
+        sentiment: sentiment && sentiment !== "all" ? sentiment : undefined
       };
 
       const stats = await storage.getReviewStats(filters);

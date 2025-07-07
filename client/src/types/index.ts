@@ -2,6 +2,7 @@ export interface ReviewFilters {
   source: string[];
   dateFrom?: Date;
   dateTo?: Date;
+  sentiment?: string; // "all", "positive", "negative"
 }
 
 export interface ReviewStats {

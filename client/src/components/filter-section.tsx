@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Filter, Download, Loader2, Smartphone, Apple } from "lucide-react";
+import { Filter, Download, Loader2, Smartphone, Apple, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -93,7 +94,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어 & 애플 앱스토어 지원)</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           {/* Store Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">스토어 선택</Label>
@@ -171,6 +172,41 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 최소 하나의 스토어를 선택해주세요
               </p>
             )}
+          </div>
+
+          {/* Sentiment Filter */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">감정 필터</Label>
+            <Select
+              value={filters.sentiment || "all"}
+              onValueChange={(value) => {
+                onFiltersChange({ ...filters, sentiment: value });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="감정 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    <span>전체</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="positive">
+                  <div className="flex items-center gap-2">
+                    <ThumbsUp className="h-4 w-4 text-green-600" />
+                    <span>긍정</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="negative">
+                  <div className="flex items-center gap-2">
+                    <ThumbsDown className="h-4 w-4 text-red-600" />
+                    <span>부정</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardContent>

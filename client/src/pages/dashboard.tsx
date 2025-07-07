@@ -11,7 +11,8 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<ReviewFilters>({
     source: ["google_play", "app_store"],
     dateFrom: undefined,
-    dateTo: undefined
+    dateTo: undefined,
+    sentiment: "all"
   });
 
   const [currentPage, setCurrentPage] = useState(1);

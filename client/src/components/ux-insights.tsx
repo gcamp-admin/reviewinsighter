@@ -120,55 +120,55 @@ export default function UxInsights({ filters }: UxInsightsProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {insights?.map((insight) => {
               const actionable = getActionableInsight(insight);
               return (
                 <div
                   key={insight.id}
-                  className="space-y-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                  className="space-y-3 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-lg font-bold text-[#ff0066]">
                         #{insights?.indexOf(insight) + 1}
                       </span>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${getPriorityColor(insight.priority)}`}
-                      >
-                        {insight.priority === "high" ? "높음" : 
-                         insight.priority === "medium" ? "보통" : "낮음"}
-                      </Badge>
+                      <h3 className="font-semibold text-base">{insight.title}</h3>
                     </div>
-                    <h3 className="font-semibold text-sm leading-tight">{insight.title}</h3>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getPriorityColor(insight.priority)}`}
+                    >
+                      {insight.priority === "high" ? "높음" : 
+                       insight.priority === "medium" ? "보통" : "낮음"}
+                    </Badge>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <h4 className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                      <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
                         📢 실제 VOC
                       </h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
+                      <p className="text-sm text-muted-foreground">
                         {actionable.voc}
                       </p>
                     </div>
                     
-                    <ArrowRight className="h-3 w-3 text-[#ff0066] mx-auto" />
+                    <ArrowRight className="h-4 w-4 text-[#ff0066] mx-auto" />
                     
                     <div>
-                      <h4 className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                      <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
                         💡 해결 방법
                       </h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
+                      <p className="text-sm text-muted-foreground">
                         {actionable.solution}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium">{insight.mentionCount}건</span>
+                  <div className="pt-3 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      언급 횟수: <span className="font-medium">{insight.mentionCount}건</span>
                     </p>
                   </div>
                 </div>
