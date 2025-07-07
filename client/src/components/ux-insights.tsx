@@ -70,33 +70,33 @@ export default function UxInsights({ filters }: UxInsightsProps) {
   };
 
   const getActionableInsight = (insight: Insight) => {
-    // HEART 프레임워크 기반 현실적 솔루션 매핑 (필터링된 데이터 기반)
-    const heartSolutions: { [key: string]: { problem: string; solution: string } } = {
+    // 실제 VOC 기반 문제점과 해결방안 매핑
+    const vocSolutions: { [key: string]: { voc: string; solution: string } } = {
       "사용자 만족도 개선 (Happiness)": {
-        problem: `현재 ${insight.mentionCount}명의 사용자가 강한 부정 감정을 표현하고 있으며, 이는 곧 평점 하락과 리뷰 악화로 이어질 위험이 높음`,
-        solution: "1주 내 사용자 피드백 대응팀 운영, 부정 리뷰 대상 개별 연락 및 문제 해결, 앱 내 실시간 도움말 채팅 기능 추가"
+        voc: `실제 리뷰: "짜증나 죽겠음", "최악이네", "구림 완전 구림" 등 ${insight.mentionCount}건의 강한 부정 감정 표현이 수집됨`,
+        solution: "고객 감정 관리 우선 대응: 부정 리뷰 작성자 개별 연락, 문제 해결 후 재평가 요청, 앱 내 실시간 지원 채팅"
       },
       "사용자 참여도 개선 (Engagement)": {
-        problem: `${insight.mentionCount}건의 연결/성능 문제로 사용자들이 실제 업무(CCTV 모니터링, 가게 관리)에 차질을 겪고 있어 일상 사용 포기 위험`,
-        solution: "서버 인프라 즉시 점검, 네트워크 안정성 모니터링 대시보드 구축, 끊김 발생 시 자동 재연결 기능 개발"
+        voc: `실제 리뷰: "자꾸 끊김", "연결이 안됨", "느려서 못쓰겠음" 등 ${insight.mentionCount}건의 연결/성능 불만이 접수됨`,
+        solution: "인프라 안정성 강화: 서버 용량 증설, 네트워크 최적화, 끊김 발생 시 자동 재연결 기능 개발"
       },
       "신규 사용자 적응 개선 (Adoption)": {
-        problem: `${insight.mentionCount}명이 초기 설정에서 어려움을 겪어 앱 삭제 또는 사용 포기로 이어질 가능성이 높음`,
-        solution: "3단계 간편 설정 마법사 개발, 첫 실행 시 개인 맞춤형 가이드 제공, 고객센터 원클릭 연결 버튼 추가"
+        voc: `실제 리뷰: "설정이 복잡함", "어떻게 쓰는지 모르겠음", "등록이 어려움" 등 ${insight.mentionCount}건의 사용법 관련 문의`,
+        solution: "온보딩 프로세스 간소화: 3단계 설정 마법사, 동영상 가이드, 첫 사용자 전담 지원팀 운영"
       },
       "사용자 재방문율 개선 (Retention)": {
-        problem: `${insight.mentionCount}명이 이미 삭제/해지 의도를 표명했으며, 이는 실제 고객 이탈로 직결되어 매출 손실 발생`,
-        solution: "이탈 의도 고객 대상 할인 혜택 제공, 문제점 개선 완료 시 개별 안내, 경쟁사 대비 차별화 기능 홍보"
+        voc: `실제 리뷰: "삭제했어요", "해지하고 싶음", "다른 앱 쓸래요" 등 ${insight.mentionCount}건의 이탈 의도 표명`,
+        solution: "이탈 방지 전략: 해지 전 문제점 상담, 개선 완료 후 재사용 유도, 경쟁사 대비 차별화 포인트 강조"
       },
       "작업 성공률 개선 (Task Success)": {
-        problem: `${insight.mentionCount}건의 핵심 기능 실패로 사용자들이 실제 가게 운영, CCTV 모니터링 업무를 완료하지 못해 비즈니스 임팩트 발생`,
-        solution: "긴급 버그 수정 패치 배포, 기능별 성공률 모니터링 시스템 구축, 실패 시 대체 방법 안내 팝업 제공"
+        voc: `실제 리뷰: "앱이 튕김", "CCTV 안됨", "오류 발생" 등 ${insight.mentionCount}건의 핵심 기능 실패 신고`,
+        solution: "기능 안정성 확보: 긴급 패치 배포, 실시간 모니터링 시스템, 오류 발생 시 즉시 알림 및 복구 가이드"
       }
     };
 
-    return heartSolutions[insight.title] || {
-      problem: insight.description,
-      solution: "현재 필터링된 데이터 기반 상세 분석을 통한 맞춤형 해결책 도출 필요"
+    return vocSolutions[insight.title] || {
+      voc: insight.description,
+      solution: "실제 VOC 데이터 기반 맞춤형 해결책 도출 필요"
     };
   };
 
@@ -120,47 +120,47 @@ export default function UxInsights({ filters }: UxInsightsProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {insights?.map((insight) => {
               const actionable = getActionableInsight(insight);
               return (
                 <div
                   key={insight.id}
-                  className="space-y-4 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                  className="space-y-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-[#ff0066]">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-lg font-bold text-[#ff0066]">
                         #{insights?.indexOf(insight) + 1}
                       </span>
-                      <h3 className="font-semibold text-base">{insight.title}</h3>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${getPriorityColor(insight.priority)}`}
+                      >
+                        {insight.priority === "high" ? "높음" : 
+                         insight.priority === "medium" ? "보통" : "낮음"}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${getPriorityColor(insight.priority)}`}
-                    >
-                      {insight.priority === "high" ? "높음" : 
-                       insight.priority === "medium" ? "보통" : "낮음"}
-                    </Badge>
+                    <h3 className="font-semibold text-sm leading-tight">{insight.title}</h3>
                   </div>
                   
                   <div className="space-y-3">
                     <div>
-                      <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">
-                        📋 예측되는 문제
+                      <h4 className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                        📢 실제 VOC
                       </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {actionable.problem}
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {actionable.voc}
                       </p>
                     </div>
                     
-                    <ArrowRight className="h-4 w-4 text-[#ff0066] mx-auto" />
+                    <ArrowRight className="h-3 w-3 text-[#ff0066] mx-auto" />
                     
                     <div>
-                      <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                      <h4 className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
                         💡 해결 방법
                       </h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         {actionable.solution}
                       </p>
                     </div>
@@ -168,7 +168,7 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                   
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground">
-                      언급 횟수: <span className="font-medium">{insight.mentionCount}회</span>
+                      <span className="font-medium">{insight.mentionCount}건</span>
                     </p>
                   </div>
                 </div>

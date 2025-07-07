@@ -114,8 +114,12 @@ export default function WordCloud({ filters }: WordCloudProps) {
                   ))}
                 </div>
               </div>
+            ) : positiveWords && positiveWords.length > 0 ? (
+              renderWordCloud(positiveWords, "positive")
             ) : (
-              renderWordCloud(positiveWords || [], "positive")
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">긍정 키워드가 없습니다</p>
+              </div>
             )}
           </div>
 
@@ -133,8 +137,12 @@ export default function WordCloud({ filters }: WordCloudProps) {
                   ))}
                 </div>
               </div>
+            ) : negativeWords && negativeWords.length > 0 ? (
+              renderWordCloud(negativeWords, "negative")
             ) : (
-              renderWordCloud(negativeWords || [], "negative")
+              <div className="bg-red-50 p-4 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">부정 키워드가 없습니다</p>
+              </div>
             )}
           </div>
         </div>
