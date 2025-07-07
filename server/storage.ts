@@ -172,25 +172,30 @@ export class MemStorage implements IStorage {
     
     const insights: Insight[] = [];
     
-    // Analyze specific issues and generate actionable insights
-    const issueAnalysis = {
-      cctv_issues: {
-        patterns: /화면|확대|축소|cctv|씨씨티비|녹화|영상|카메라/gi,
+    // HEART 프레임워크 기반으로 분석
+    const heartAnalysis = {
+      happiness: {
+        patterns: /짜증|불만|실망|화남|최악|구림|답답|별로|안좋|싫어|나쁨/gi,
         count: 0,
         specificIssues: [] as string[]
       },
-      app_crashes: {
-        patterns: /튕김|꺼짐|크래시|멈춤|실행|안됨|오류|버그/gi,
+      engagement: {
+        patterns: /자주|매번|계속|끊김|연결|접속|시간|느림|속도/gi,
         count: 0,
         specificIssues: [] as string[]
       },
-      login_auth: {
-        patterns: /로그인|인증|접속|연결|끊김|자동로그인|매번/gi,
+      adoption: {
+        patterns: /처음|새로|어려움|복잡|모르겠|설치|설정|가입|등록/gi,
         count: 0,
         specificIssues: [] as string[]
       },
-      ui_usability: {
-        patterns: /불편|복잡|어려움|답답|사용|설정|등록/gi,
+      retention: {
+        patterns: /삭제|해지|그만|안쓸|바꿀|돌아가|이전|다른/gi,
+        count: 0,
+        specificIssues: [] as string[]
+      },
+      task_success: {
+        patterns: /오류|에러|실패|안됨|튕김|꺼짐|작동|기능|문제|불가능/gi,
         count: 0,
         specificIssues: [] as string[]
       }
@@ -203,44 +208,48 @@ export class MemStorage implements IStorage {
       // Track which categories this review has already been counted for
       const countedCategories = new Set<string>();
       
-      Object.entries(issueAnalysis).forEach(([category, analysis]) => {
+      Object.entries(heartAnalysis).forEach(([category, analysis]) => {
         const matches = content.match(analysis.patterns);
         if (matches && !countedCategories.has(category)) {
           // Count each review only once per category
           analysis.count += 1;
           countedCategories.add(category);
           
-          // Extract specific issues for actionable insights
-          if (category === 'cctv_issues') {
-            if (content.includes('화면') && content.includes('확대')) {
-              analysis.specificIssues.push('화면 확대/축소 기능');
+          // Extract specific issues for HEART framework
+          if (category === 'happiness') {
+            if (content.match(/짜증|화남|최악/gi)) {
+              analysis.specificIssues.push('강한 부정 감정');
             }
-            if (content.includes('녹화') || content.includes('영상')) {
-              analysis.specificIssues.push('녹화 영상 재생');
+            if (content.match(/답답|불편/gi)) {
+              analysis.specificIssues.push('사용성 불만');
             }
-            if (content.includes('감지') || content.includes('알림')) {
-              analysis.specificIssues.push('침입감지 알림');
+          } else if (category === 'engagement') {
+            if (content.match(/끊김|연결/gi)) {
+              analysis.specificIssues.push('연결 안정성');
             }
-          } else if (category === 'app_crashes') {
-            if (content.includes('튕김') || content.includes('꺼짐')) {
-              analysis.specificIssues.push('앱 강제 종료');
+            if (content.match(/느림|속도/gi)) {
+              analysis.specificIssues.push('성능 이슈');
             }
-            if (content.includes('실행') && content.includes('안됨')) {
-              analysis.specificIssues.push('앱 실행 실패');
+          } else if (category === 'adoption') {
+            if (content.match(/어려움|복잡/gi)) {
+              analysis.specificIssues.push('학습 곡선');
             }
-          } else if (category === 'login_auth') {
-            if (content.includes('자동로그인') || content.includes('매번')) {
-              analysis.specificIssues.push('자동로그인 미작동');
+            if (content.match(/설정|등록/gi)) {
+              analysis.specificIssues.push('초기 설정');
             }
-            if (content.includes('동시') || content.includes('가족')) {
-              analysis.specificIssues.push('다중 사용자 접속');
+          } else if (category === 'retention') {
+            if (content.match(/삭제|해지/gi)) {
+              analysis.specificIssues.push('이탈 의도');
             }
-          } else if (category === 'ui_usability') {
-            if (content.includes('가게') && content.includes('등록')) {
-              analysis.specificIssues.push('가게 등록 과정');
+            if (content.match(/다른|바꿀/gi)) {
+              analysis.specificIssues.push('경쟁사 이동');
             }
-            if (content.includes('복잡') || content.includes('어려움')) {
-              analysis.specificIssues.push('사용법 복잡성');
+          } else if (category === 'task_success') {
+            if (content.match(/오류|에러|실패/gi)) {
+              analysis.specificIssues.push('기능 실패');
+            }
+            if (content.match(/튕김|꺼짐/gi)) {
+              analysis.specificIssues.push('앱 안정성');
             }
           }
         }
@@ -250,25 +259,26 @@ export class MemStorage implements IStorage {
     // Generate specific, actionable insights with business priority order
     let insightId = 1;
     
-    // Define business priority order (higher number = higher priority)
-    const businessPriority = {
-      app_crashes: 4,    // 최우선: 앱이 작동하지 않으면 모든 것이 무의미
-      login_auth: 3,     // 2순위: 로그인할 수 없으면 앱을 사용할 수 없음
-      cctv_issues: 2,    // 3순위: 핵심 기능이지만 일부 기능은 사용 가능
-      ui_usability: 1    // 4순위: 불편하지만 사용은 가능
+    // HEART 프레임워크 우선순위 (UX 영향도 기준)
+    const heartPriority = {
+      task_success: 5,   // 최우선: 기본 기능이 작동하지 않으면 의미 없음
+      retention: 4,      // 2순위: 사용자 이탈 방지가 비즈니스에 직접 영향
+      happiness: 3,      // 3순위: 만족도는 장기적 성공의 핵심
+      engagement: 2,     // 4순위: 참여도 향상으로 가치 증대
+      adoption: 1        // 5순위: 새 사용자 온보딩 개선
     };
     
-    Object.entries(issueAnalysis)
+    Object.entries(heartAnalysis)
       .filter(([, analysis]) => analysis.count > 0)
       .sort(([categoryA, analysisA], [categoryB, analysisB]) => {
-        // 먼저 비즈니스 우선순위로 정렬
-        const priorityDiff = businessPriority[categoryB as keyof typeof businessPriority] - 
-                           businessPriority[categoryA as keyof typeof businessPriority];
+        // HEART 우선순위로 정렬
+        const priorityDiff = heartPriority[categoryB as keyof typeof heartPriority] - 
+                           heartPriority[categoryA as keyof typeof heartPriority];
         if (priorityDiff !== 0) return priorityDiff;
         // 같은 우선순위면 언급 횟수로 정렬
         return analysisB.count - analysisA.count;
       })
-      .slice(0, 4) // Top 4 most critical issues
+      .slice(0, 5) // Top 5 HEART elements
       .forEach(([category, analysis]) => {
         const uniqueIssues = Array.from(new Set(analysis.specificIssues));
         
@@ -277,56 +287,64 @@ export class MemStorage implements IStorage {
         let priority = "medium";
         
         switch (category) {
-          case "cctv_issues":
-            title = "CCTV 기능 개선";
-            if (uniqueIssues.includes('화면 확대/축소 기능')) {
-              description = "화면 확대/축소 기능 개선 - 사용자들이 CCTV 화면을 제대로 확대하지 못하는 문제";
-            } else if (uniqueIssues.includes('침입감지 알림')) {
-              description = "침입감지 알림 기능 개선 - 감지 알림이 제대로 전달되지 않는 문제";
+          case "happiness":
+            title = "사용자 만족도 개선 (Happiness)";
+            if (uniqueIssues.includes('강한 부정 감정')) {
+              description = "사용자 불만 해소 - 강한 부정적 감정 표현을 보이는 사용자 대상 개선";
+            } else if (uniqueIssues.includes('사용성 불만')) {
+              description = "사용 편의성 개선 - 답답함과 불편함을 해소하는 UX 개선";
             } else {
-              description = `CCTV 관련 기능 개선 필요 - ${analysis.count}건의 문제 보고`;
+              description = `전반적 만족도 개선 필요 - ${analysis.count}건의 부정적 감정 표현`;
             }
-            // CCTV는 핵심 기능이므로 언급 횟수와 관계없이 중요도가 높음
             priority = analysis.count > 8 ? "high" : "medium";
             break;
             
-          case "app_crashes":
-            title = "앱 안정성 개선";
-            if (uniqueIssues.includes('앱 강제 종료')) {
-              description = "앱 튕김 현상 해결 - 사용 중 앱이 강제 종료되는 문제 수정";
-            } else if (uniqueIssues.includes('앱 실행 실패')) {
-              description = "앱 실행 오류 해결 - 앱이 시작되지 않는 문제 수정";
+          case "engagement":
+            title = "사용자 참여도 개선 (Engagement)";
+            if (uniqueIssues.includes('연결 안정성')) {
+              description = "연결 안정성 강화 - 끊김 현상으로 인한 사용 중단 방지";
+            } else if (uniqueIssues.includes('성능 이슈')) {
+              description = "성능 최적화 - 느린 속도로 인한 사용자 이탈 방지";
             } else {
-              description = `앱 안정성 개선 필요 - ${analysis.count}건의 크래시 관련 문제`;
+              description = `참여도 향상 필요 - ${analysis.count}건의 사용 지속성 관련 문제`;
             }
-            // 앱 크래시는 사용자 이탈에 직접적 영향을 미치므로 항상 최우선
-            priority = "high";
+            priority = analysis.count > 6 ? "high" : "medium";
             break;
             
-          case "login_auth":
-            title = "로그인/인증 개선";
-            if (uniqueIssues.includes('자동로그인 미작동')) {
-              description = "자동로그인 기능 개선 - 매번 로그인해야 하는 불편함 해결";
-            } else if (uniqueIssues.includes('다중 사용자 접속')) {
-              description = "다중 사용자 접속 지원 - 가족 구성원이 함께 사용할 수 있도록 개선";
+          case "adoption":
+            title = "신규 사용자 적응 개선 (Adoption)";
+            if (uniqueIssues.includes('학습 곡선')) {
+              description = "사용법 단순화 - 복잡함으로 인한 신규 사용자 포기 방지";
+            } else if (uniqueIssues.includes('초기 설정')) {
+              description = "온보딩 개선 - 초기 설정 과정의 복잡성 해소";
             } else {
-              description = `인증 시스템 개선 필요 - ${analysis.count}건의 로그인 관련 문제`;
+              description = `신규 사용자 경험 개선 - ${analysis.count}건의 학습 관련 문제`;
             }
-            // 로그인 문제는 앱 사용 자체를 막으므로 높은 우선순위
-            priority = analysis.count > 5 ? "high" : "medium";
+            priority = analysis.count > 4 ? "medium" : "low";
             break;
             
-          case "ui_usability":
-            title = "사용성 개선";
-            if (uniqueIssues.includes('가게 등록 과정')) {
-              description = "가게 등록 과정 간소화 - 매번 가게를 다시 등록해야 하는 문제 해결";
-            } else if (uniqueIssues.includes('사용법 복잡성')) {
-              description = "사용법 단순화 - 복잡한 인터페이스와 어려운 사용법 개선";
+          case "retention":
+            title = "사용자 재방문율 개선 (Retention)";
+            if (uniqueIssues.includes('이탈 의도')) {
+              description = "이탈 방지 대책 - 삭제/해지 의도를 보이는 사용자 유지";
+            } else if (uniqueIssues.includes('경쟁사 이동')) {
+              description = "경쟁력 강화 - 타 서비스 이동 방지를 위한 차별화";
             } else {
-              description = `사용성 개선 필요 - ${analysis.count}건의 UI/UX 관련 문제`;
+              description = `사용자 유지 개선 - ${analysis.count}건의 이탈 관련 언급`;
             }
-            // 사용성은 중요하지만 앱 사용을 완전히 막지는 않으므로 중간 우선순위
-            priority = analysis.count > 15 ? "medium" : "low";
+            priority = analysis.count > 3 ? "high" : "medium";
+            break;
+            
+          case "task_success":
+            title = "작업 성공률 개선 (Task Success)";
+            if (uniqueIssues.includes('기능 실패')) {
+              description = "핵심 기능 안정화 - 오류로 인한 작업 실패 방지";
+            } else if (uniqueIssues.includes('앱 안정성')) {
+              description = "앱 안정성 강화 - 튕김/종료로 인한 작업 중단 방지";
+            } else {
+              description = `작업 완료율 향상 - ${analysis.count}건의 실행 실패 문제`;
+            }
+            priority = "high"; // Task Success는 항상 높은 우선순위
             break;
         }
         

@@ -70,28 +70,33 @@ export default function UxInsights({ filters }: UxInsightsProps) {
   };
 
   const getActionableInsight = (insight: Insight) => {
-    const solutions: { [key: string]: { problem: string; solution: string } } = {
-      "CCTV 기능 개선": {
-        problem: "사용자들이 CCTV 화면 확대/축소, 녹화 영상 재생에서 어려움을 겪고 있음",
-        solution: "터치 제스처 개선, 녹화 영상 플레이어 UI 재설계, 화면 확대 버튼 크기 증대"
+    // HEART 프레임워크 기반 솔루션 매핑
+    const heartSolutions: { [key: string]: { problem: string; solution: string } } = {
+      "사용자 만족도 개선 (Happiness)": {
+        problem: "강한 부정적 감정과 사용성 불만으로 인한 전반적 만족도 저하",
+        solution: "사용자 피드백 수집 강화, 빠른 응답 시스템 구축, 감정적 경험 개선을 위한 마이크로인터랙션 도입"
       },
-      "앱 안정성 개선": {
-        problem: "앱 튕김과 실행 오류로 인한 사용자 이탈과 불만 증가",
-        solution: "메모리 최적화, 크래시 리포팅 강화, 앱 실행 시 안정성 체크 로직 추가"
+      "사용자 참여도 개선 (Engagement)": {
+        problem: "연결 불안정성과 성능 이슈로 인한 지속적 사용 방해",
+        solution: "네트워크 최적화, 로딩 시간 단축, 오프라인 모드 지원, 백그라운드 동기화 개선"
       },
-      "로그인/인증 개선": {
-        problem: "자동로그인 미작동과 매번 인증 요구로 인한 사용성 저하",
-        solution: "생체인증 도입, 자동로그인 알고리즘 개선, 다중 사용자 세션 관리 시스템"
+      "신규 사용자 적응 개선 (Adoption)": {
+        problem: "복잡한 학습 곡선과 어려운 초기 설정으로 신규 사용자 포기",
+        solution: "인터랙티브 튜토리얼 도입, 단계별 온보딩 플로우, 컨텍스트 기반 도움말 시스템"
       },
-      "사용성 개선": {
-        problem: "가게 등록 과정의 복잡성과 반복적인 설정으로 인한 사용자 부담",
-        solution: "원클릭 가게 등록, 설정 마법사 도입, 사용법 가이드 팝업 제공"
+      "사용자 재방문율 개선 (Retention)": {
+        problem: "이탈 의도 표시와 경쟁사 이동 고려로 인한 사용자 손실",
+        solution: "개인화된 알림 전략, 핵심 가치 강화, 이탈 방지 인센티브 프로그램, 피드백 루프 구축"
+      },
+      "작업 성공률 개선 (Task Success)": {
+        problem: "핵심 기능 실패와 앱 불안정으로 인한 목표 달성 실패",
+        solution: "에러 핸들링 강화, 자동 복구 시스템, 진행상황 저장 기능, 대체 경로 제공"
       }
     };
 
-    return solutions[insight.title] || {
+    return heartSolutions[insight.title] || {
       problem: insight.description,
-      solution: "상세 분석을 통한 맞춤형 해결책 도출 필요"
+      solution: "HEART 프레임워크 기반 상세 분석을 통한 맞춤형 해결책 도출 필요"
     };
   };
 
@@ -100,10 +105,10 @@ export default function UxInsights({ filters }: UxInsightsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-[#ff0066]" />
-          UX 개선 제안
+          HEART 프레임워크 UX 개선 제안
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          실제 사용자 리뷰를 분석하여 도출한 개선 제안사항입니다 (비즈니스 영향도 순으로 정렬)
+          HEART 프레임워크 기반으로 실제 사용자 리뷰를 분석한 UX 개선 제안입니다
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
