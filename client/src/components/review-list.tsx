@@ -245,26 +245,21 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {filteredReviews.map((review) => (
-            <div key={review.id} className="p-4 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+            <div key={review.id} className="p-3 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3 text-sm">
+                  <span className="font-medium text-gray-900">{review.userId}</span>
+                  <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center">
                     {getSourceIcon(review.source)}
                   </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-900">{review.userId}</span>
-                      <span className="text-xs text-gray-500">{getSourceName(review.source)}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <div className="flex items-center">
-                        {renderStars(review.rating)}
-                      </div>
-                      <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>
-                    </div>
+                  <span className="text-xs text-gray-500">{getSourceName(review.source)}</span>
+                  <div className="flex items-center">
+                    {renderStars(review.rating)}
+                    <span className="text-xs text-gray-500 ml-1">{review.rating}</span>
                   </div>
+                  <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>
                 </div>
                 {getSentimentBadge(review.sentiment)}
               </div>
