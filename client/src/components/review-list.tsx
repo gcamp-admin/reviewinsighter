@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Smartphone, Apple, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Smartphone, Apple, Star, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Eye, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,10 +16,11 @@ interface ReviewListProps {
 
 export default function ReviewList({ filters, currentPage, onPageChange }: ReviewListProps) {
   const [sortOrder, setSortOrder] = useState("newest");
+  const [sentimentFilter, setSentimentFilter] = useState("all");
   const limit = 10;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
-    queryKey: ["/api/reviews", currentPage, limit, filters.source, filters.dateFrom, filters.dateTo, filters.sentiment],
+    queryKey: ["/api/reviews", currentPage, limit, filters.source, filters.dateFrom, filters.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -35,9 +36,6 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       if (filters.dateTo) {
         params.append("dateTo", filters.dateTo.toISOString());
       }
-      if (filters.sentiment) {
-        params.append("sentiment", filters.sentiment);
-      }
 
       const response = await fetch(`/api/reviews?${params}`);
       if (!response.ok) {
@@ -46,6 +44,12 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       return response.json();
     },
   });
+
+  // Filter reviews locally based on sentiment
+  const filteredReviews = data?.reviews?.filter(review => {
+    if (sentimentFilter === "all") return true;
+    return review.sentiment === sentimentFilter;
+  }) || [];
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -134,7 +138,42 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     return (
       <Card>
         <CardHeader>
-          <CardTitle>리뷰 목록</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <span>리뷰 목록</span>
+              <span className="text-sm text-muted-foreground">
+                {data?.total ? `총 ${data.total}개` : ""}
+              </span>
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      <span>전체</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="positive">
+                    <div className="flex items-center gap-2">
+                      <ThumbsUp className="h-4 w-4 text-green-600" />
+                      <span>긍정</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="negative">
+                    <div className="flex items-center gap-2">
+                      <ThumbsDown className="h-4 w-4 text-red-600" />
+                      <span>부정</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="text-center text-gray-500 py-8">
@@ -153,23 +192,58 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>리뷰 목록</CardTitle>
-          <Select value={sortOrder} onValueChange={setSortOrder}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
+          <CardTitle className="flex items-center gap-2">
+            <span>리뷰 목록</span>
+            <span className="text-sm text-muted-foreground">
+              {data?.total ? `총 ${data.total}개` : ""}
+            </span>
+          </CardTitle>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      <span>전체</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="positive">
+                    <div className="flex items-center gap-2">
+                      <ThumbsUp className="h-4 w-4 text-green-600" />
+                      <span>긍정</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="negative">
+                    <div className="flex items-center gap-2">
+                      <ThumbsDown className="h-4 w-4 text-red-600" />
+                      <span>부정</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
               <SelectItem value="newest">최신순</SelectItem>
               <SelectItem value="oldest">오래된순</SelectItem>
               <SelectItem value="rating-high">평점높은순</SelectItem>
               <SelectItem value="rating-low">평점낮은순</SelectItem>
             </SelectContent>
-          </Select>
+            </Select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {data.reviews.map((review) => (
+          {filteredReviews.map((review) => (
             <div key={review.id} className="p-4 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
