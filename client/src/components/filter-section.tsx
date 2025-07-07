@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Download, Loader2, Smartphone, Apple, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -147,33 +147,6 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             />
           </div>
 
-          {/* Action Button */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium opacity-0">액션</Label>
-            <Button 
-              onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || localFilters.source.length === 0}
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              {collectReviewsMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  수집 중...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  리뷰 수집
-                </>
-              )}
-            </Button>
-            {localFilters.source.length === 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                최소 하나의 스토어를 선택해주세요
-              </p>
-            )}
-          </div>
-
           {/* Sentiment Filter */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">감정 필터</Label>
@@ -207,6 +180,33 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Review Collection Button - Moved to rightmost position */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">리뷰 수집</Label>
+            <Button 
+              onClick={() => collectReviewsMutation.mutate()}
+              disabled={collectReviewsMutation.isPending || localFilters.source.length === 0}
+              className="w-full bg-primary hover:bg-primary/90"
+            >
+              {collectReviewsMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  수집 중...
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4 mr-2" />
+                  리뷰 수집
+                </>
+              )}
+            </Button>
+            {localFilters.source.length === 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                최소 하나의 스토어를 선택해주세요
+              </p>
+            )}
           </div>
         </div>
       </CardContent>
