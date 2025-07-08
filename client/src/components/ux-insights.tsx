@@ -55,10 +55,15 @@ export default function UxInsights({ filters }: UxInsightsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#ff0066] mb-4"></div>
-            <p className="text-sm text-[#ff0066] font-medium">HEART 프레임워크 분석 중...</p>
-            <p className="text-xs text-gray-500 mt-1">리뷰 데이터를 기반으로 UX 인사이트를 생성하고 있습니다</p>
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="animate-spin rounded-full h-14 w-14 border-b-4 border-[#ff0066]"></div>
+            <p className="text-lg text-[#ff0066] font-semibold">HEART 프레임워크 분석 중...</p>
+            <p className="text-sm text-gray-500">리뷰를 기반으로 UX 개선 인사이트를 생성하고 있습니다</p>
+            <div className="flex space-x-1 mt-4">
+              <div className="animate-pulse w-2 h-2 bg-[#ff0066] rounded-full"></div>
+              <div className="animate-pulse w-2 h-2 bg-[#ff0066] rounded-full animation-delay-200"></div>
+              <div className="animate-pulse w-2 h-2 bg-[#ff0066] rounded-full animation-delay-400"></div>
+            </div>
           </div>
         </CardContent>
       </Card>

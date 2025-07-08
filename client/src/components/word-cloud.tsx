@@ -135,10 +135,10 @@ export default function WordCloud({ filters }: WordCloudProps) {
               긍정 리뷰 키워드 ({positiveWords?.length || 0}개)
             </h4>
             {positiveLoading ? (
-              <div className="bg-green-50 p-4 rounded-lg min-h-[200px] flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-3"></div>
-                <p className="text-sm text-green-600 font-medium">긍정 키워드 분석 중...</p>
-                <p className="text-xs text-green-500 mt-1">리뷰 텍스트를 분석하고 있습니다</p>
+              <div className="bg-green-50 p-6 rounded-lg min-h-[200px] flex flex-col items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-green-600 mb-4"></div>
+                <p className="text-base text-green-600 font-semibold">긍정 키워드 분석 중...</p>
+                <p className="text-sm text-green-500 mt-2">리뷰에서 긍정적 표현을 추출하고 있습니다</p>
               </div>
             ) : positiveWords && positiveWords.length > 0 ? (
               renderWordCloud(positiveWords, "positive")
@@ -156,10 +156,10 @@ export default function WordCloud({ filters }: WordCloudProps) {
               부정 리뷰 키워드 ({negativeWords?.length || 0}개)
             </h4>
             {negativeLoading ? (
-              <div className="bg-red-50 p-4 rounded-lg min-h-[200px] flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mb-3"></div>
-                <p className="text-sm text-red-600 font-medium">부정 키워드 분석 중...</p>
-                <p className="text-xs text-red-500 mt-1">리뷰 텍스트를 분석하고 있습니다</p>
+              <div className="bg-red-50 p-6 rounded-lg min-h-[200px] flex flex-col items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-red-600 mb-4"></div>
+                <p className="text-base text-red-600 font-semibold">부정 키워드 분석 중...</p>
+                <p className="text-sm text-red-500 mt-2">리뷰에서 개선점을 추출하고 있습니다</p>
               </div>
             ) : negativeWords && negativeWords.length > 0 ? (
               renderWordCloud(negativeWords, "negative")
