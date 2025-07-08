@@ -46,6 +46,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
       return response.json();
     },
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   // Filter reviews locally based on sentiment

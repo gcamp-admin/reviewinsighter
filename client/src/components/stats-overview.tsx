@@ -33,6 +33,10 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
       }
       return response.json();
     },
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   if (isLoading) {
