@@ -28,14 +28,21 @@ export default function UxInsights({ filters }: UxInsightsProps) {
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/insights?${params}`);
+      const url = `/api/insights?${params}`;
+      console.log("Fetching insights from:", url);
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch insights");
       }
-      return response.json();
+      const data = await response.json();
+      console.log("Insights data received:", data);
+      return data;
     },
     staleTime: 0, // Always fetch fresh data
     cacheTime: 0, // Don't cache results
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   if (isLoading) {

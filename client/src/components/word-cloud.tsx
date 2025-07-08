@@ -27,15 +27,22 @@ export default function WordCloud({ filters }: WordCloudProps) {
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/wordcloud/positive?${params}`);
+      const url = `/api/wordcloud/positive?${params}`;
+      console.log("Fetching positive word cloud from:", url);
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch positive word cloud");
       }
-      return response.json();
+      const data = await response.json();
+      console.log("Positive word cloud data received:", data);
+      return data;
     },
     enabled: true,
     staleTime: 0, // Always fetch fresh data
     cacheTime: 0, // Don't cache results
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const { data: negativeWords, isLoading: negativeLoading, error: negativeError } = useQuery<WordCloudData[]>({
@@ -56,15 +63,22 @@ export default function WordCloud({ filters }: WordCloudProps) {
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/wordcloud/negative?${params}`);
+      const url = `/api/wordcloud/negative?${params}`;
+      console.log("Fetching negative word cloud from:", url);
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch negative word cloud");
       }
-      return response.json();
+      const data = await response.json();
+      console.log("Negative word cloud data received:", data);
+      return data;
     },
     enabled: true,
     staleTime: 0, // Always fetch fresh data
     cacheTime: 0, // Don't cache results
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const getWordSize = (frequency: number, maxFreq: number) => {
