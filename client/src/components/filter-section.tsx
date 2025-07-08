@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -79,16 +79,48 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         title: "수집 완료",
         description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
       });
-      // Invalidate and refetch all data
+      // Only invalidate reviews and stats, not analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
     },
     onError: (error: any) => {
       toast({
         title: "수집 실패",
         description: error?.message || "리뷰 수집 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const analyzeReviewsMutation = useMutation({
+    mutationFn: async (): Promise<{ message: string; success: boolean }> => {
+      if (!localFilters.service) {
+        throw new Error('서비스를 선택해주세요');
+      }
+      
+      const payload = {
+        serviceId: localFilters.service.id,
+        serviceName: localFilters.service.name,
+        source: localFilters.source,
+        dateFrom: localFilters.dateFrom,
+        dateTo: localFilters.dateTo
+      };
+      const response = await apiRequest("POST", "/api/analyze", payload);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "분석 완료",
+        description: `AI 감정 워드클라우드 및 UX 개선 분석이 완료되었습니다.`,
+      });
+      // Invalidate analysis data
+      queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "분석 실패",
+        description: error?.message || "AI 분석 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -251,6 +283,35 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             )}
           </div>
         </div>
+        
+        {/* AI Analysis Button - Only show after successful review collection */}
+        {collectReviewsMutation.isSuccess && (
+          <div className="mt-6 pt-6 border-t">
+            <div className="flex items-center justify-center">
+              <Button 
+                onClick={() => analyzeReviewsMutation.mutate()}
+                disabled={analyzeReviewsMutation.isPending}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold"
+                size="lg"
+              >
+                {analyzeReviewsMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                    <span className="animate-pulse">AI 분석 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-5 h-5 mr-3" />
+                    AI 감정 워드클라우드, UX 개선 분석
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-center text-sm text-gray-600 mt-2">
+              수집된 리뷰를 바탕으로 AI가 감정 분석 및 HEART 프레임워크 UX 개선 제안을 생성합니다
+            </p>
+          </div>
+        )}
         </div>
       </CardContent>
     </Card>

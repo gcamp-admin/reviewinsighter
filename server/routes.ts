@@ -259,6 +259,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Analysis endpoint - separate from collection
+  app.post("/api/analyze", async (req, res) => {
+    try {
+      const { serviceId, serviceName, source, dateFrom, dateTo } = req.body;
+      
+      // Get existing reviews for analysis
+      const existingReviews = await storage.getReviews(1, 1000, { 
+        serviceId: serviceId,
+        source: source,
+        dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+        dateTo: dateTo ? new Date(dateTo) : undefined
+      });
+      
+      if (existingReviews.reviews.length === 0) {
+        return res.status(400).json({ success: false, message: "분석할 리뷰가 없습니다. 먼저 리뷰를 수집해주세요." });
+      }
+      
+      // Convert reviews to format expected by scraper
+      const reviewsForAnalysis = existingReviews.reviews.map(review => ({
+        userId: review.userId,
+        source: review.source,
+        rating: review.rating,
+        content: review.content,
+        sentiment: review.sentiment,
+        createdAt: review.createdAt.toISOString(),
+      }));
+      
+      // Run analysis on existing reviews
+      const pythonProcess = spawn("python", ["-c", `
+import sys
+import json
+sys.path.append('server')
+from scraper import analyze_sentiments
+
+# Read reviews from input
+reviews_data = json.loads(sys.argv[1])
+result = analyze_sentiments(reviews_data)
+print(json.dumps(result, ensure_ascii=False))
+      `, JSON.stringify(reviewsForAnalysis)]);
+      
+      let output = "";
+      let error = "";
+      
+      pythonProcess.stdout.on("data", (data) => {
+        output += data.toString();
+      });
+      
+      pythonProcess.stderr.on("data", (data) => {
+        error += data.toString();
+      });
+      
+      pythonProcess.on("close", async (code) => {
+        if (code !== 0) {
+          console.error("Python analysis error:", error);
+          return res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+        }
+        
+        try {
+          const result = JSON.parse(output);
+          
+          let insightsStored = 0;
+          let wordCloudStored = 0;
+          
+          // Store insights
+          if (result.insights && result.insights.length > 0) {
+            for (const insight of result.insights) {
+              try {
+                await storage.createInsight({
+                  title: insight.title,
+                  description: insight.description,
+                  priority: insight.priority,
+                  mentionCount: insight.mentionCount,
+                  trend: insight.trend,
+                  category: insight.category,
+                  serviceId: serviceId,
+                });
+                insightsStored++;
+              } catch (err) {
+                console.error("Error storing insight:", err);
+              }
+            }
+          }
+          
+          // Store word cloud data
+          if (result.wordcloud && result.wordcloud.length > 0) {
+            for (const wordData of result.wordcloud) {
+              try {
+                await storage.createWordCloudData({
+                  word: wordData.word,
+                  frequency: wordData.frequency,
+                  sentiment: wordData.sentiment,
+                  serviceId: serviceId,
+                });
+                wordCloudStored++;
+              } catch (err) {
+                console.error("Error storing word cloud data:", err);
+              }
+            }
+          }
+          
+          res.json({
+            success: true,
+            message: `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`,
+            insightsCount: insightsStored,
+            wordCloudCount: wordCloudStored
+          });
+        } catch (parseError) {
+          console.error("Error parsing Python analysis output:", parseError);
+          res.status(500).json({ success: false, message: "AI 분석 결과 처리 중 오류가 발생했습니다." });
+        }
+      });
+    } catch (error) {
+      console.error("Error in analyze endpoint:", error);
+      res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
