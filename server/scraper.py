@@ -163,7 +163,7 @@ def analyze_sentiments(reviews):
     if not reviews:
         return {'insights': [], 'wordCloud': {'positive': [], 'negative': []}}
     
-    print(f"Starting enhanced HEART analysis on {len(reviews)} reviews...")
+    print(f"Starting enhanced HEART analysis on {len(reviews)} reviews...", file=sys.stderr)
     
     # HEART framework analysis with detailed issue tracking
     heart_analysis = {
@@ -339,7 +339,7 @@ def analyze_sentiments(reviews):
     negative_cloud = [{'word': word, 'frequency': freq, 'sentiment': 'negative'} 
                       for word, freq in sorted(negative_words.items(), key=lambda x: x[1], reverse=True)[:10]]
     
-    print(f"Generated {len(insights)} HEART insights, {len(positive_cloud)} positive words, {len(negative_cloud)} negative words")
+    print(f"Generated {len(insights)} HEART insights, {len(positive_cloud)} positive words, {len(negative_cloud)} negative words", file=sys.stderr)
     
     return {
         'insights': insights,

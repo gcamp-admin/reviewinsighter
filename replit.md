@@ -112,6 +112,11 @@ Changelog:
 - July 08, 2025. Updated insights generation to be based on authentic Korean review content with proper priority classification (Critical/Major/Minor)
 - July 08, 2025. Added improved debugging capabilities and loading indicators for better user experience
 - July 08, 2025. Confirmed backend APIs working perfectly with real-time data collection and accurate analytics display
+- July 08, 2025. Enhanced HEART framework analysis with dynamic insights based on actual review content
+- July 08, 2025. Implemented structured output format with problem summary, solutions, and priority classification  
+- July 08, 2025. Fixed word cloud to display maximum 10 words as requested
+- July 08, 2025. Completely separated UI display - analysis blocks only show after AI analysis button is clicked
+- July 08, 2025. Improved Korean text processing and sentiment analysis for more accurate insights generation
 
 ## User Preferences
 
