@@ -107,7 +107,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
     return (
       <div className={`${bgClass} p-4 rounded-lg`}>
         <div className="flex flex-wrap gap-2 justify-center">
-          {words.map((word) => (
+          {words.slice(0, 10).map((word) => (
             <span
               key={word.id}
               className={`${getWordSize(word.frequency, maxFreq)} ${colorClass} hover:opacity-80 transition-opacity cursor-pointer`}

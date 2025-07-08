@@ -353,37 +353,66 @@ def main():
     """Main function to run the scraper"""
     try:
         # Parse command line arguments
-        if len(sys.argv) > 3:
-            # Format: python scraper.py google_app_id apple_app_id count sources
-            app_id_google = sys.argv[1]
-            app_id_apple = sys.argv[2]
-            count = int(sys.argv[3])
-            sources = sys.argv[4].split(',') if len(sys.argv) > 4 else ['google_play']
-        else:
-            # Legacy format: python scraper.py app_id count
-            app_id_google = sys.argv[1] if len(sys.argv) > 1 else 'com.lguplus.sohoapp'
-            app_id_apple = '1571096278'  # Default Apple App Store ID for 우리가게 패키지
-            count = int(sys.argv[2]) if len(sys.argv) > 2 else 100
-            sources = ['google_play']
+        analyze_mode = '--analyze' in sys.argv
         
-        # Scrape reviews
+        if analyze_mode:
+            # Remove --analyze flag from arguments
+            args = [arg for arg in sys.argv[1:] if arg != '--analyze']
+            
+            if len(args) >= 3:
+                # Format: python scraper.py --analyze google_app_id apple_app_id count sources
+                app_id_google = args[0]
+                app_id_apple = args[1]
+                count = int(args[2])
+                sources = args[3].split(',') if len(args) > 3 else ['google_play']
+            else:
+                # Legacy format: python scraper.py --analyze app_id count
+                app_id_google = args[0] if len(args) > 0 else 'com.lguplus.sohoapp'
+                app_id_apple = '1571096278'
+                count = int(args[1]) if len(args) > 1 else 100
+                sources = ['google_play']
+        else:
+            if len(sys.argv) > 3:
+                # Format: python scraper.py google_app_id apple_app_id count sources
+                app_id_google = sys.argv[1]
+                app_id_apple = sys.argv[2]
+                count = int(sys.argv[3])
+                sources = sys.argv[4].split(',') if len(sys.argv) > 4 else ['google_play']
+            else:
+                # Legacy format: python scraper.py app_id count
+                app_id_google = sys.argv[1] if len(sys.argv) > 1 else 'com.lguplus.sohoapp'
+                app_id_apple = '1571096278'
+                count = int(sys.argv[2]) if len(sys.argv) > 2 else 100
+                sources = ['google_play']
+        
+        # Get reviews from specified sources
         reviews_data = scrape_reviews(app_id_google, app_id_apple, count, sources)
         
-        # Analyze sentiments and generate insights
-        analysis = analyze_sentiments(reviews_data)
-        
-        # Output results as JSON
-        result = {
-            'success': True,
-            'reviews': reviews_data,
-            'analysis': analysis,
-            'message': f'{len(reviews_data)}개의 리뷰를 성공적으로 수집했습니다.',
-            'sources': sources,
-            'counts': {
-                'google_play': len([r for r in reviews_data if r['source'] == 'google_play']),
-                'app_store': len([r for r in reviews_data if r['source'] == 'app_store'])
+        if analyze_mode:
+            # Perform analysis
+            analysis_result = analyze_sentiments(reviews_data)
+            result = {
+                'success': True,
+                'message': f'{len(reviews_data)}개의 리뷰를 분석했습니다.',
+                'reviewCount': len(reviews_data),
+                'insights': analysis_result['insights'],
+                'wordCloud': analysis_result['wordCloud']
             }
-        }
+        else:
+            # Always include analysis for collection
+            analysis_result = analyze_sentiments(reviews_data)
+            result = {
+                'success': True,
+                'reviews': reviews_data,
+                'reviewCount': len(reviews_data),
+                'message': f'{len(reviews_data)}개의 리뷰를 성공적으로 수집했습니다.',
+                'analysis': analysis_result,
+                'sources': sources,
+                'counts': {
+                    'google_play': len([r for r in reviews_data if r['source'] == 'google_play']),
+                    'app_store': len([r for r in reviews_data if r['source'] == 'app_store'])
+                }
+            }
         
         print(json.dumps(result, ensure_ascii=False, indent=2))
         

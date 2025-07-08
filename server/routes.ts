@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             success: true,
             message: `${result.reviews.length}개의 리뷰를 성공적으로 수집했습니다.`,
             reviewsCount: result.reviews.length,
-            insightsCount: result.analysis.insights.length
+            insightsCount: result.analysis?.insights?.length || 0
           });
           
         } catch (parseError) {
@@ -348,8 +348,14 @@ print(json.dumps(result, ensure_ascii=False))
           }
           
           // Store word cloud data
-          if (result.wordcloud && result.wordcloud.length > 0) {
-            for (const wordData of result.wordcloud) {
+          if (result.wordCloud) {
+            // Handle both positive and negative word clouds
+            const allWordCloudData = [
+              ...(result.wordCloud.positive || []),
+              ...(result.wordCloud.negative || [])
+            ];
+            
+            for (const wordData of allWordCloudData) {
               try {
                 await storage.createWordCloudData({
                   word: wordData.word,
