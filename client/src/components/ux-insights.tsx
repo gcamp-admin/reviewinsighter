@@ -10,7 +10,7 @@ interface UxInsightsProps {
 }
 
 export default function UxInsights({ filters }: UxInsightsProps) {
-  const { data: insights, isLoading } = useQuery<Insight[]>({
+  const { data: insights, isLoading, error } = useQuery<Insight[]>({
     queryKey: ["/api/insights", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -34,6 +34,8 @@ export default function UxInsights({ filters }: UxInsightsProps) {
       }
       return response.json();
     },
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
   if (isLoading) {

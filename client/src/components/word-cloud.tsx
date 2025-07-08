@@ -9,7 +9,7 @@ interface WordCloudProps {
 }
 
 export default function WordCloud({ filters }: WordCloudProps) {
-  const { data: positiveWords, isLoading: positiveLoading } = useQuery<WordCloudData[]>({
+  const { data: positiveWords, isLoading: positiveLoading, error: positiveError } = useQuery<WordCloudData[]>({
     queryKey: ["/api/wordcloud/positive", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -33,10 +33,12 @@ export default function WordCloud({ filters }: WordCloudProps) {
       }
       return response.json();
     },
-    enabled: true, // Always enabled to show word cloud data
+    enabled: true,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
-  const { data: negativeWords, isLoading: negativeLoading } = useQuery<WordCloudData[]>({
+  const { data: negativeWords, isLoading: negativeLoading, error: negativeError } = useQuery<WordCloudData[]>({
     queryKey: ["/api/wordcloud/negative", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -60,7 +62,9 @@ export default function WordCloud({ filters }: WordCloudProps) {
       }
       return response.json();
     },
-    enabled: true, // Always enabled to show word cloud data
+    enabled: true,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
   const getWordSize = (frequency: number, maxFreq: number) => {
@@ -72,6 +76,8 @@ export default function WordCloud({ filters }: WordCloudProps) {
   };
 
   const renderWordCloud = (words: WordCloudData[], sentiment: "positive" | "negative") => {
+    console.log(`Rendering ${sentiment} word cloud with ${words?.length || 0} words:`, words);
+    
     if (!words || words.length === 0) {
       return (
         <div className="text-center text-gray-500 py-4">
