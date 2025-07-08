@@ -283,35 +283,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             )}
           </div>
         </div>
-        
-        {/* AI Analysis Button - Only show after successful review collection */}
-        {collectReviewsMutation.isSuccess && (
-          <div className="mt-6 pt-6 border-t">
-            <div className="flex items-center justify-center">
-              <Button 
-                onClick={() => analyzeReviewsMutation.mutate()}
-                disabled={analyzeReviewsMutation.isPending}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold"
-                size="lg"
-              >
-                {analyzeReviewsMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                    <span className="animate-pulse">AI 분석 중...</span>
-                  </>
-                ) : (
-                  <>
-                    <Brain className="w-5 h-5 mr-3" />
-                    AI 감정 워드클라우드, UX 개선 분석
-                  </>
-                )}
-              </Button>
-            </div>
-            <p className="text-center text-sm text-gray-600 mt-2">
-              수집된 리뷰를 바탕으로 AI가 감정 분석 및 HEART 프레임워크 UX 개선 제안을 생성합니다
-            </p>
-          </div>
-        )}
+
         </div>
       </CardContent>
     </Card>

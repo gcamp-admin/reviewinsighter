@@ -14,6 +14,9 @@ export interface IStorage {
   
   getWordCloudData(sentiment: string, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]>;
   createWordCloudData(data: InsertWordCloudData): Promise<WordCloudData>;
+  
+  // Clear analysis data when new reviews are collected
+  clearAnalysisData(serviceId: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -488,6 +491,23 @@ export class MemStorage implements IStorage {
     const data: WordCloudData = { ...insertData, id };
     this.wordCloudData.set(id, data);
     return data;
+  }
+
+  // Clear analysis data when new reviews are collected
+  async clearAnalysisData(serviceId: string): Promise<void> {
+    // Remove insights for this service
+    for (const [id, insight] of this.insights) {
+      if (insight.serviceId === serviceId) {
+        this.insights.delete(id);
+      }
+    }
+    
+    // Remove word cloud data for this service
+    for (const [id, wordData] of this.wordCloudData) {
+      if (wordData.serviceId === serviceId) {
+        this.wordCloudData.delete(id);
+      }
+    }
   }
 }
 

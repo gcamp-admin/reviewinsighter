@@ -180,6 +180,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { appId, appIdApple, count, sources } = collectReviewsSchema.parse(req.body);
       const { serviceId, serviceName } = req.body;
       
+      // Clear existing analysis data for this service when collecting new reviews
+      if (serviceId) {
+        await storage.clearAnalysisData(serviceId);
+      }
+      
       if (sources.length === 0) {
         return res.status(400).json({ 
           error: "At least one source must be selected",

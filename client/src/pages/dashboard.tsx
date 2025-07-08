@@ -5,6 +5,7 @@ import StatsOverview from "@/components/stats-overview";
 import ReviewList from "@/components/review-list";
 import WordCloud from "@/components/word-cloud";
 import UxInsights from "@/components/ux-insights";
+import AIAnalysisSection from "@/components/ai-analysis-section";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
@@ -34,17 +35,18 @@ export default function Dashboard() {
         
         <StatsOverview filters={filters} />
         
-        <div className="grid grid-cols-1 gap-8">
-          <ReviewList 
-            filters={filters}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-          />
-          
-          <WordCloud filters={filters} />
-        </div>
+        <ReviewList 
+          filters={filters}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
         
-        <UxInsights filters={filters} />
+        <AIAnalysisSection filters={filters} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <WordCloud filters={filters} />
+          <UxInsights filters={filters} />
+        </div>
       </main>
     </div>
   );
