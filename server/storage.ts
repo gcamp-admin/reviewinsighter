@@ -202,17 +202,17 @@ export class MemStorage implements IStorage {
     // HEART 프레임워크 기반으로 분석
     const heartAnalysis = {
       happiness: {
-        patterns: /짜증|불만|실망|화남|최악|구림|답답|별로|안좋|싫어|나쁨/gi,
+        patterns: /블루투스|음질|통화품질|떨어집니다|음성|들리지|목소리|소리|네비게이션|짜증|불만|실망|답답/gi,
         count: 0,
         specificIssues: [] as string[]
       },
       engagement: {
-        patterns: /자주|매번|계속|끊김|연결|접속|시간|느림|속도/gi,
+        patterns: /통화중대기|업데이트|언제|기능|요청|개선|추가|만들어주세요|끊김|연결/gi,
         count: 0,
         specificIssues: [] as string[]
       },
       adoption: {
-        patterns: /처음|새로|어려움|복잡|모르겠|설치|설정|가입|등록/gi,
+        patterns: /아이폰|설정|이용제한|법인폰|자급제폰|등록|설치|개통폰|법인사업자|처음|어려움|복잡/gi,
         count: 0,
         specificIssues: [] as string[]
       },
@@ -222,7 +222,7 @@ export class MemStorage implements IStorage {
         specificIssues: [] as string[]
       },
       task_success: {
-        patterns: /오류|에러|실패|안됨|튕김|꺼짐|작동|기능|문제|불가능/gi,
+        patterns: /전화받자마자|꺼지는|즉시끊어|수신전화|받는순간|전화가|안받아져|끊어짐|받아지지|안됨|오류|실패/gi,
         count: 0,
         specificIssues: [] as string[]
       }
@@ -242,41 +242,41 @@ export class MemStorage implements IStorage {
           analysis.count += 1;
           countedCategories.add(category);
           
-          // Extract specific issues for HEART framework
+          // Extract specific issues for HEART framework based on actual review content
           if (category === 'happiness') {
-            if (content.match(/짜증|화남|최악/gi)) {
-              analysis.specificIssues.push('강한 부정 감정');
+            if (content.match(/블루투스|음질|통화품질|네비게이션/gi)) {
+              analysis.specificIssues.push('통화 품질 문제');
             }
-            if (content.match(/답답|불편/gi)) {
+            if (content.match(/답답|불편|짜증/gi)) {
               analysis.specificIssues.push('사용성 불만');
             }
           } else if (category === 'engagement') {
+            if (content.match(/통화중대기|업데이트|언제/gi)) {
+              analysis.specificIssues.push('기능 완성도');
+            }
             if (content.match(/끊김|연결/gi)) {
               analysis.specificIssues.push('연결 안정성');
             }
-            if (content.match(/느림|속도/gi)) {
-              analysis.specificIssues.push('성능 이슈');
-            }
           } else if (category === 'adoption') {
-            if (content.match(/어려움|복잡/gi)) {
-              analysis.specificIssues.push('학습 곡선');
+            if (content.match(/아이폰|법인폰|자급제폰/gi)) {
+              analysis.specificIssues.push('디바이스 호환성');
             }
-            if (content.match(/설정|등록/gi)) {
-              analysis.specificIssues.push('초기 설정');
+            if (content.match(/설정|등록|이용제한/gi)) {
+              analysis.specificIssues.push('접근성 제한');
             }
           } else if (category === 'retention') {
-            if (content.match(/삭제|해지/gi)) {
-              analysis.specificIssues.push('이탈 의도');
+            if (content.match(/삭제|해지|실망/gi)) {
+              analysis.specificIssues.push('사용자 이탈');
             }
             if (content.match(/다른|바꿀/gi)) {
               analysis.specificIssues.push('경쟁사 이동');
             }
           } else if (category === 'task_success') {
-            if (content.match(/오류|에러|실패/gi)) {
-              analysis.specificIssues.push('기능 실패');
+            if (content.match(/전화받자마자|꺼지는|즉시끊어|받는순간/gi)) {
+              analysis.specificIssues.push('통화 연결 실패');
             }
-            if (content.match(/튕김|꺼짐/gi)) {
-              analysis.specificIssues.push('앱 안정성');
+            if (content.match(/안받아져|끊어짐|받아지지/gi)) {
+              analysis.specificIssues.push('수신 기능 오류');
             }
           }
         }
@@ -320,36 +320,36 @@ export class MemStorage implements IStorage {
         switch (category) {
           case "happiness":
             title = "사용자 만족도 개선 (Happiness)";
-            if (uniqueIssues.includes('강한 부정 감정')) {
-              description = "사용자 불만 해소 - 강한 부정적 감정 표현을 보이는 사용자 대상 개선";
+            if (uniqueIssues.includes('통화 품질 문제')) {
+              description = "통화 품질 개선 - 블루투스 연결 및 음성 품질 관련 불만 해소";
             } else if (uniqueIssues.includes('사용성 불만')) {
               description = "사용 편의성 개선 - 답답함과 불편함을 해소하는 UX 개선";
             } else {
-              description = `전반적 만족도 개선 필요 - ${analysis.count}건의 부정적 감정 표현`;
+              description = `전반적 만족도 개선 필요 - ${analysis.count}건의 품질 관련 문제`;
             }
             priority = analysis.count > 8 ? "critical" : "major";
             break;
             
           case "engagement":
             title = "사용자 참여도 개선 (Engagement)";
-            if (uniqueIssues.includes('연결 안정성')) {
+            if (uniqueIssues.includes('기능 완성도')) {
+              description = "기능 완성도 향상 - 통화중대기 등 요청 기능 업데이트 필요";
+            } else if (uniqueIssues.includes('연결 안정성')) {
               description = "연결 안정성 강화 - 끊김 현상으로 인한 사용 중단 방지";
-            } else if (uniqueIssues.includes('성능 이슈')) {
-              description = "성능 최적화 - 느린 속도로 인한 사용자 이탈 방지";
             } else {
-              description = `참여도 향상 필요 - ${analysis.count}건의 사용 지속성 관련 문제`;
+              description = `사용자 참여도 향상 - ${analysis.count}건의 기능 개선 요청`;
             }
             priority = analysis.count > 6 ? "critical" : "major";
             break;
             
           case "adoption":
             title = "신규 사용자 적응 개선 (Adoption)";
-            if (uniqueIssues.includes('학습 곡선')) {
-              description = "사용법 단순화 - 복잡함으로 인한 신규 사용자 포기 방지";
-            } else if (uniqueIssues.includes('초기 설정')) {
-              description = "온보딩 개선 - 초기 설정 과정의 복잡성 해소";
+            if (uniqueIssues.includes('디바이스 호환성')) {
+              description = "사용 접근성 확대 - 아이폰 및 법인폰 사용자 지원 강화";
+            } else if (uniqueIssues.includes('접근성 제한')) {
+              description = "이용 제한 해소 - 다양한 환경에서의 접근성 개선";
             } else {
-              description = `신규 사용자 경험 개선 - ${analysis.count}건의 학습 관련 문제`;
+              description = `신규 사용자 접근성 개선 - ${analysis.count}건의 호환성 관련 문제`;
             }
             priority = analysis.count > 4 ? "major" : "minor";
             break;
@@ -368,12 +368,12 @@ export class MemStorage implements IStorage {
             
           case "task_success":
             title = "작업 성공률 개선 (Task Success)";
-            if (uniqueIssues.includes('기능 실패')) {
-              description = "핵심 기능 안정화 - 오류로 인한 작업 실패 방지";
-            } else if (uniqueIssues.includes('앱 안정성')) {
-              description = "앱 안정성 강화 - 튕김/종료로 인한 작업 중단 방지";
+            if (uniqueIssues.includes('통화 연결 실패')) {
+              description = "전화 수신/발신 안정성 향상 - 통화 연결 실패 및 즉시 끊김 현상 해결";
+            } else if (uniqueIssues.includes('수신 기능 오류')) {
+              description = "통화 기능 신뢰성 강화 - 전화 받기 실패 문제 해결";
             } else {
-              description = `작업 완료율 향상 - ${analysis.count}건의 실행 실패 문제`;
+              description = `핵심 통화 기능 안정화 - ${analysis.count}건의 통화 관련 문제`;
             }
             priority = "critical"; // Task Success는 항상 Critical 우선순위
             break;

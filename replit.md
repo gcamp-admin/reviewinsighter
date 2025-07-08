@@ -107,6 +107,11 @@ Changelog:
 - July 07, 2025. Enhanced Korean text processing for better word frequency analysis
 - July 07, 2025. Added Apple App Store review scraping using RSS feeds for complete dual-platform support
 - July 07, 2025. Successfully tested live review collection from both Google Play Store and Apple App Store with Korean content
+- July 08, 2025. Completely rewrote HEART framework to analyze actual review content instead of generic patterns
+- July 08, 2025. Enhanced pattern matching to detect real user issues like call dropping, Bluetooth problems, and specific app complaints
+- July 08, 2025. Updated insights generation to be based on authentic Korean review content with proper priority classification (Critical/Major/Minor)
+- July 08, 2025. Added improved debugging capabilities and loading indicators for better user experience
+- July 08, 2025. Confirmed backend APIs working perfectly with real-time data collection and accurate analytics display
 
 ## User Preferences
 
