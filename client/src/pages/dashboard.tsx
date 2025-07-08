@@ -9,8 +9,13 @@ import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
   const [filters, setFilters] = useState<ReviewFilters>({
-    service: undefined,
-    source: [],
+    service: {
+      id: "ixio",
+      name: "익시오",
+      googlePlayId: "com.lguplus.aicallagent",
+      appleStoreId: "6503931858"
+    },
+    source: ["google_play", "apple_store"],
     dateFrom: undefined,
     dateTo: undefined
   });

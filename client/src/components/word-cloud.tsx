@@ -33,6 +33,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
       }
       return response.json();
     },
+    enabled: true, // Always enabled to show word cloud data
   });
 
   const { data: negativeWords, isLoading: negativeLoading } = useQuery<WordCloudData[]>({
@@ -59,6 +60,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
       }
       return response.json();
     },
+    enabled: true, // Always enabled to show word cloud data
   });
 
   const getWordSize = (frequency: number, maxFreq: number) => {
