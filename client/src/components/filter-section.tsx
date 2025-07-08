@@ -45,8 +45,18 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
 
   const collectReviewsMutation = useMutation({
     mutationFn: async (): Promise<CollectResponse> => {
+      // Validate required fields
       if (!localFilters.service) {
         throw new Error('서비스를 선택해주세요');
+      }
+      if (!localFilters.source || localFilters.source.length === 0) {
+        throw new Error('스토어를 선택해주세요');
+      }
+      if (!localFilters.dateFrom) {
+        throw new Error('시작 날짜를 선택해주세요');
+      }
+      if (!localFilters.dateTo) {
+        throw new Error('종료 날짜를 선택해주세요');
       }
       
       const payload = {
@@ -75,10 +85,10 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "수집 실패",
-        description: "리뷰 수집 중 오류가 발생했습니다.",
+        description: error?.message || "리뷰 수집 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -124,7 +134,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         <div className="space-y-6">
           {/* Service Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">서비스 선택</Label>
+            <Label className="text-sm font-medium">서비스 선택 <span className="text-red-500">*</span></Label>
             <Select
               value={localFilters.service?.id || ""}
               onValueChange={(value) => {
@@ -154,7 +164,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Store Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">스토어 선택</Label>
+            <Label className="text-sm font-medium">스토어 선택 <span className="text-red-500">*</span></Label>
             <div className="space-y-2">
               <div className="flex items-center space-x-3">
                 <Checkbox 
@@ -183,7 +193,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
 
           {/* Date Range */}
           <div className="space-y-3">
-            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜</Label>
+            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜 <span className="text-red-500">*</span></Label>
             <Input
               id="date-from"
               type="date"
@@ -194,7 +204,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜</Label>
+            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜 <span className="text-red-500">*</span></Label>
             <Input
               id="date-to"
               type="date"
@@ -209,7 +219,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <Label className="text-sm font-medium">리뷰 수집</Label>
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0}
+              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {collectReviewsMutation.isPending ? (
@@ -225,13 +235,18 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
               )}
             </Button>
             {!localFilters.service && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-red-500 mt-1">
                 서비스를 먼저 선택해주세요
               </p>
             )}
             {localFilters.service && localFilters.source.length === 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-red-500 mt-1">
                 최소 하나의 스토어를 선택해주세요
+              </p>
+            )}
+            {localFilters.service && localFilters.source.length > 0 && (!localFilters.dateFrom || !localFilters.dateTo) && (
+              <p className="text-xs text-red-500 mt-1">
+                시작 날짜와 종료 날짜를 모두 선택해주세요
               </p>
             )}
           </div>

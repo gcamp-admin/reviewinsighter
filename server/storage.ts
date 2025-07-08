@@ -151,6 +151,18 @@ export class MemStorage implements IStorage {
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {
+    // Check for duplicate reviews based on userId, content, and source
+    const existingReview = Array.from(this.reviews.values()).find(review => 
+      review.userId === insertReview.userId &&
+      review.content === insertReview.content &&
+      review.source === insertReview.source
+    );
+    
+    if (existingReview) {
+      console.log(`Skipping duplicate review from ${insertReview.userId}: ${insertReview.content.substring(0, 50)}...`);
+      return existingReview;
+    }
+    
     const id = this.currentReviewId++;
     const review: Review = { 
       ...insertReview, 
