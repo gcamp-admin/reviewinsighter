@@ -206,212 +206,18 @@ export class MemStorage implements IStorage {
       }
     }
 
-    const negativeReviews = filteredReviews.filter(review => review.sentiment === "negative");
-    
-    if (negativeReviews.length === 0) {
-      return [];
-    }
-    
-    const insights: Insight[] = [];
-    
-    // HEART 프레임워크 기반으로 분석
-    const heartAnalysis = {
-      happiness: {
-        patterns: /블루투스|음질|통화품질|떨어집니다|음성|들리지|목소리|소리|네비게이션|짜증|불만|실망|답답/gi,
-        count: 0,
-        specificIssues: [] as string[]
-      },
-      engagement: {
-        patterns: /통화중대기|업데이트|언제|기능|요청|개선|추가|만들어주세요|끊김|연결/gi,
-        count: 0,
-        specificIssues: [] as string[]
-      },
-      adoption: {
-        patterns: /아이폰|설정|이용제한|법인폰|자급제폰|등록|설치|개통폰|법인사업자|처음|어려움|복잡/gi,
-        count: 0,
-        specificIssues: [] as string[]
-      },
-      retention: {
-        patterns: /삭제|해지|그만|안쓸|바꿀|돌아가|이전|다른/gi,
-        count: 0,
-        specificIssues: [] as string[]
-      },
-      task_success: {
-        patterns: /전화받자마자|꺼지는|즉시끊어|수신전화|받는순간|전화가|안받아져|끊어짐|받아지지|안됨|오류|실패/gi,
-        count: 0,
-        specificIssues: [] as string[]
+    // Return only insights stored from Python analysis - no hardcoded generation
+    let filteredInsights = Array.from(this.insights.values());
+
+    if (filters) {
+      if (filters.serviceId) {
+        filteredInsights = filteredInsights.filter(insight => 
+          insight.serviceId === filters.serviceId
+        );
       }
-    };
-    
-    // Analyze each negative review for specific issues
-    negativeReviews.forEach(review => {
-      const content = review.content;
-      
-      // Track which categories this review has already been counted for
-      const countedCategories = new Set<string>();
-      
-      Object.entries(heartAnalysis).forEach(([category, analysis]) => {
-        const matches = content.match(analysis.patterns);
-        if (matches && !countedCategories.has(category)) {
-          // Count each review only once per category
-          analysis.count += 1;
-          countedCategories.add(category);
-          
-          // Extract specific issues for HEART framework based on actual review content
-          if (category === 'happiness') {
-            if (content.match(/블루투스|음질|통화품질|네비게이션/gi)) {
-              analysis.specificIssues.push('통화 품질 문제');
-            }
-            if (content.match(/답답|불편|짜증/gi)) {
-              analysis.specificIssues.push('사용성 불만');
-            }
-          } else if (category === 'engagement') {
-            if (content.match(/통화중대기|업데이트|언제/gi)) {
-              analysis.specificIssues.push('기능 완성도');
-            }
-            if (content.match(/끊김|연결/gi)) {
-              analysis.specificIssues.push('연결 안정성');
-            }
-          } else if (category === 'adoption') {
-            if (content.match(/아이폰|법인폰|자급제폰/gi)) {
-              analysis.specificIssues.push('디바이스 호환성');
-            }
-            if (content.match(/설정|등록|이용제한/gi)) {
-              analysis.specificIssues.push('접근성 제한');
-            }
-          } else if (category === 'retention') {
-            if (content.match(/삭제|해지|실망/gi)) {
-              analysis.specificIssues.push('사용자 이탈');
-            }
-            if (content.match(/다른|바꿀/gi)) {
-              analysis.specificIssues.push('경쟁사 이동');
-            }
-          } else if (category === 'task_success') {
-            if (content.match(/전화받자마자|꺼지는|즉시끊어|받는순간/gi)) {
-              analysis.specificIssues.push('통화 연결 실패');
-            }
-            if (content.match(/안받아져|끊어짐|받아지지/gi)) {
-              analysis.specificIssues.push('수신 기능 오류');
-            }
-          }
-        }
-      });
-    });
-    
-    // Generate specific, actionable insights with business priority order
-    let insightId = 1;
-    
-    // HEART 프레임워크 우선순위 (UX 영향도 기준)
-    // 우선순위 결정 로직:
-    // 1. 언급 횟수 (많을수록 높은 우선순위)
-    // 2. 비즈니스 임계성 (기능 실패 > 사용자 이탈 > 만족도 > 참여도 > 온보딩)
-    // 3. 최종 우선순위 = 언급 횟수 × 비즈니스 중요도 점수
-    const heartPriority = {
-      task_success: 5,   // 최우선: 기본 기능이 작동하지 않으면 의미 없음
-      retention: 4,      // 2순위: 사용자 이탈 방지가 비즈니스에 직접 영향
-      happiness: 3,      // 3순위: 만족도는 장기적 성공의 핵심
-      engagement: 2,     // 4순위: 참여도 향상으로 가치 증대
-      adoption: 1        // 5순위: 새 사용자 온보딩 개선
-    };
-    
-    Object.entries(heartAnalysis)
-      .filter(([, analysis]) => analysis.count > 0)
-      .sort(([categoryA, analysisA], [categoryB, analysisB]) => {
-        // HEART 우선순위로 정렬
-        const priorityDiff = heartPriority[categoryB as keyof typeof heartPriority] - 
-                           heartPriority[categoryA as keyof typeof heartPriority];
-        if (priorityDiff !== 0) return priorityDiff;
-        // 같은 우선순위면 언급 횟수로 정렬
-        return analysisB.count - analysisA.count;
-      })
-      .slice(0, 5) // Top 5 HEART elements
-      .forEach(([category, analysis]) => {
-        const uniqueIssues = Array.from(new Set(analysis.specificIssues));
-        
-        let title = "";
-        let description = "";
-        let priority = "major";
-        
-        switch (category) {
-          case "happiness":
-            title = "사용자 만족도 개선 (Happiness)";
-            if (uniqueIssues.includes('통화 품질 문제')) {
-              description = "통화 품질 개선 - 블루투스 연결 및 음성 품질 관련 불만 해소";
-            } else if (uniqueIssues.includes('사용성 불만')) {
-              description = "사용 편의성 개선 - 답답함과 불편함을 해소하는 UX 개선";
-            } else {
-              description = `전반적 만족도 개선 필요 - ${analysis.count}건의 품질 관련 문제`;
-            }
-            priority = analysis.count > 8 ? "critical" : "major";
-            break;
-            
-          case "engagement":
-            title = "사용자 참여도 개선 (Engagement)";
-            if (uniqueIssues.includes('기능 완성도')) {
-              description = "기능 완성도 향상 - 통화중대기 등 요청 기능 업데이트 필요";
-            } else if (uniqueIssues.includes('연결 안정성')) {
-              description = "연결 안정성 강화 - 끊김 현상으로 인한 사용 중단 방지";
-            } else {
-              description = `사용자 참여도 향상 - ${analysis.count}건의 기능 개선 요청`;
-            }
-            priority = analysis.count > 6 ? "critical" : "major";
-            break;
-            
-          case "adoption":
-            title = "신규 사용자 적응 개선 (Adoption)";
-            if (uniqueIssues.includes('디바이스 호환성')) {
-              description = "사용 접근성 확대 - 아이폰 및 법인폰 사용자 지원 강화";
-            } else if (uniqueIssues.includes('접근성 제한')) {
-              description = "이용 제한 해소 - 다양한 환경에서의 접근성 개선";
-            } else {
-              description = `신규 사용자 접근성 개선 - ${analysis.count}건의 호환성 관련 문제`;
-            }
-            priority = analysis.count > 4 ? "major" : "minor";
-            break;
-            
-          case "retention":
-            title = "사용자 재방문율 개선 (Retention)";
-            if (uniqueIssues.includes('이탈 의도')) {
-              description = "이탈 방지 대책 - 삭제/해지 의도를 보이는 사용자 유지";
-            } else if (uniqueIssues.includes('경쟁사 이동')) {
-              description = "경쟁력 강화 - 타 서비스 이동 방지를 위한 차별화";
-            } else {
-              description = `사용자 유지 개선 - ${analysis.count}건의 이탈 관련 언급`;
-            }
-            priority = analysis.count > 3 ? "critical" : "major";
-            break;
-            
-          case "task_success":
-            title = "작업 성공률 개선 (Task Success)";
-            if (uniqueIssues.includes('통화 연결 실패')) {
-              description = "전화 수신/발신 안정성 향상 - 통화 연결 실패 및 즉시 끊김 현상 해결";
-            } else if (uniqueIssues.includes('수신 기능 오류')) {
-              description = "통화 기능 신뢰성 강화 - 전화 받기 실패 문제 해결";
-            } else {
-              description = `핵심 통화 기능 안정화 - ${analysis.count}건의 통화 관련 문제`;
-            }
-            priority = "critical"; // Task Success는 항상 Critical 우선순위
-            break;
-        }
-        
-        insights.push({
-          id: insightId++,
-          title,
-          description,
-          priority,
-          mentionCount: analysis.count,
-          trend: "stable",
-          category
-        });
-      });
-    
-    // Sort by priority first (critical > major > minor), then by mentionCount
-    const priorityOrder = { critical: 3, major: 2, minor: 1 };
-    return insights.sort((a, b) => {
-      const priorityDiff = priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
-      if (priorityDiff !== 0) return priorityDiff;
-      return b.mentionCount - a.mentionCount;
-    });
+    }
+
+    return filteredInsights;
   }
 
   async createInsight(insertInsight: InsertInsight): Promise<Insight> {
@@ -495,19 +301,16 @@ export class MemStorage implements IStorage {
 
   // Clear analysis data when new reviews are collected
   async clearAnalysisData(serviceId: string): Promise<void> {
-    // Remove insights for this service
-    for (const [id, insight] of this.insights) {
-      if (insight.serviceId === serviceId) {
-        this.insights.delete(id);
-      }
-    }
+    console.log(`Clearing analysis data for service: ${serviceId}`);
     
-    // Remove word cloud data for this service
-    for (const [id, wordData] of this.wordCloudData) {
-      if (wordData.serviceId === serviceId) {
-        this.wordCloudData.delete(id);
-      }
-    }
+    // Clear ALL insights and word cloud data for now (since old data doesn't have serviceId)
+    const beforeInsights = this.insights.size;
+    const beforeWordCloud = this.wordCloudData.size;
+    
+    this.insights.clear();
+    this.wordCloudData.clear();
+    
+    console.log(`Cleared ${beforeInsights} insights and ${beforeWordCloud} word cloud items`);
   }
 }
 

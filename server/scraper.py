@@ -183,9 +183,9 @@ def analyze_sentiments(reviews):
         # Only analyze negative sentiment reviews for problems
         if rating < 4:
             # Task Success - Core functionality problems
-            if any(keyword in content for keyword in ['오류', '에러', '버그', '튕김', '꺼짐', '작동안함', '실행안됨', '끊김', '연결안됨', '안들림', '소리안남']):
+            if any(keyword in content for keyword in ['오류', '에러', '버그', '튕', '꺼짐', '작동안함', '실행안됨', '끊김', '연결안됨', '안들림', '소리안남', '안됨', '안되', '크래시', '종료', '재시작']):
                 heart_analysis['task_success']['issues'].append(content)
-                if '튕김' in content or '꺼짐' in content:
+                if '튕' in content or '꺼짐' in content or '크래시' in content:
                     heart_analysis['task_success']['details'].append('앱 크래시')
                 elif '연결' in content and ('안됨' in content or '끊김' in content):
                     heart_analysis['task_success']['details'].append('네트워크 연결')
