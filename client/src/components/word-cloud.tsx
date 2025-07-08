@@ -121,26 +121,9 @@ export default function WordCloud({ filters }: WordCloudProps) {
     );
   };
 
-  // Show empty state if no data exists
+  // Don't show component at all if no data exists
   if ((!positiveWords || positiveWords.length === 0) && (!negativeWords || negativeWords.length === 0)) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Cloud className="w-5 h-5 mr-2 text-gray-400" />
-            감정 워드클라우드
-          </CardTitle>
-          <CardDescription>AI 분석 후 워드클라우드가 표시됩니다</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <Cloud className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-2">위의 'AI 분석' 버튼을 클릭하여</p>
-            <p className="text-gray-500">감정 워드클라우드를 생성하세요</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (

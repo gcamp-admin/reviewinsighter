@@ -114,26 +114,9 @@ export default function UxInsights({ filters }: UxInsightsProps) {
     };
   };
 
-  // Show empty state if no insights data exists
+  // Don't show component at all if no insights data exists
   if (!insights || insights.length === 0) {
-    return (
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-gray-400" />
-            HEART 프레임워크 UX 개선 제안
-          </CardTitle>
-          <CardDescription>AI 분석 후 HEART 프레임워크 기반 개선 제안이 표시됩니다</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <Lightbulb className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-2">위의 'AI 분석' 버튼을 클릭하여</p>
-            <p className="text-gray-500">HEART 프레임워크 UX 개선 제안을 생성하세요</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (
