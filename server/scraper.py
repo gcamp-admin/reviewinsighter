@@ -152,7 +152,7 @@ def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278
 
 def analyze_sentiments(reviews):
     """
-    Analyze sentiment trends and generate insights
+    Enhanced HEART framework analysis with dynamic insights generation
     
     Args:
         reviews: List of review dictionaries
@@ -163,89 +163,183 @@ def analyze_sentiments(reviews):
     if not reviews:
         return {'insights': [], 'wordCloud': {'positive': [], 'negative': []}}
     
-    # Count sentiments
-    positive_count = sum(1 for r in reviews if r['sentiment'] == 'positive')
-    negative_count = sum(1 for r in reviews if r['sentiment'] == 'negative')
+    print(f"Starting enhanced HEART analysis on {len(reviews)} reviews...")
     
-    # Generate insights based on review content
-    insights = []
+    # HEART framework analysis with detailed issue tracking
+    heart_analysis = {
+        'task_success': {'issues': [], 'details': []},
+        'happiness': {'issues': [], 'details': []},
+        'engagement': {'issues': [], 'details': []},
+        'adoption': {'issues': [], 'details': []},
+        'retention': {'issues': [], 'details': []}
+    }
     
-    # Common negative patterns
-    negative_reviews = [r for r in reviews if r['sentiment'] == 'negative']
-    if negative_reviews:
-        common_issues = []
-        for review in negative_reviews:
-            content = review['content'].lower()
-            if '오류' in content or '버그' in content or '튕김' in content:
-                common_issues.append('stability')
-            elif '어려움' in content or '복잡' in content or '불편' in content:
-                common_issues.append('ui_ux')
-            elif '기능' in content or '개선' in content:
-                common_issues.append('features')
+    # Pattern matching for specific issues
+    for review in reviews:
+        content = review['content'].lower()
+        rating = review.get('rating', 3)
+        user_id = review.get('userId', 'Unknown')
         
-        if common_issues:
-            most_common = max(set(common_issues), key=common_issues.count)
-            if most_common == 'stability':
-                insights.append({
-                    'title': '앱 안정성 개선',
-                    'description': f'앱 튕김 및 오류 관련 언급이 {common_issues.count("stability")}건 발견됨',
-                    'priority': 'high',
-                    'mentionCount': common_issues.count("stability"),
-                    'trend': 'increasing',
-                    'category': 'stability'
-                })
-            elif most_common == 'ui_ux':
-                insights.append({
-                    'title': 'UI/UX 개선',
-                    'description': f'인터페이스 복잡성 관련 언급이 {common_issues.count("ui_ux")}건 발견됨',
-                    'priority': 'medium',
-                    'mentionCount': common_issues.count("ui_ux"),
-                    'trend': 'stable',
-                    'category': 'ui_ux'
-                })
+        # Only analyze negative sentiment reviews for problems
+        if rating < 4:
+            # Task Success - Core functionality problems
+            if any(keyword in content for keyword in ['오류', '에러', '버그', '튕김', '꺼짐', '작동안함', '실행안됨', '끊김', '연결안됨', '안들림', '소리안남']):
+                heart_analysis['task_success']['issues'].append(content)
+                if '튕김' in content or '꺼짐' in content:
+                    heart_analysis['task_success']['details'].append('앱 크래시')
+                elif '연결' in content and ('안됨' in content or '끊김' in content):
+                    heart_analysis['task_success']['details'].append('네트워크 연결')
+                elif '소리' in content and '안남' in content:
+                    heart_analysis['task_success']['details'].append('음성 기능')
+                else:
+                    heart_analysis['task_success']['details'].append('기능 오류')
+            
+            # Happiness - User satisfaction issues
+            elif any(keyword in content for keyword in ['짜증', '최악', '실망', '화남', '불만', '별로', '구림', '싫어', '답답', '스트레스']):
+                heart_analysis['happiness']['issues'].append(content)
+                if '최악' in content or '화남' in content:
+                    heart_analysis['happiness']['details'].append('강한 불만')
+                else:
+                    heart_analysis['happiness']['details'].append('만족도 저하')
+            
+            # Engagement - Usage patterns
+            elif any(keyword in content for keyword in ['안써', '사용안함', '재미없', '지루', '흥미없', '별로안쓴', '가끔만']):
+                heart_analysis['engagement']['issues'].append(content)
+                heart_analysis['engagement']['details'].append('사용 빈도 저하')
+            
+            # Retention - Churn indicators
+            elif any(keyword in content for keyword in ['삭제', '해지', '그만', '안쓸', '다른거', '바꿀', '탈퇴', '포기', '중단']):
+                heart_analysis['retention']['issues'].append(content)
+                heart_analysis['retention']['details'].append('이탈 위험')
+            
+            # Adoption - Onboarding difficulties
+            elif any(keyword in content for keyword in ['어려움', '복잡', '모르겠', '헷갈', '어떻게', '설명부족', '사용법', '가이드', '도움말']):
+                heart_analysis['adoption']['issues'].append(content)
+                heart_analysis['adoption']['details'].append('사용성 문제')
     
-    # Word frequency analysis with better Korean text processing
+    # Generate insights based on analysis
+    insights = []
+    insight_id = 1
+    
+    # Business impact weights
+    impact_weights = {
+        'task_success': 5,  # Critical - core functionality
+        'retention': 4,     # High - user churn
+        'happiness': 3,     # Medium - satisfaction
+        'engagement': 2,    # Low-Medium - usage
+        'adoption': 1       # Low - onboarding
+    }
+    
+    for category, data in heart_analysis.items():
+        if data['issues']:
+            count = len(data['issues'])
+            impact_score = count * impact_weights[category]
+            
+            # Priority calculation
+            if impact_score >= 15 or (category == 'task_success' and count >= 3):
+                priority = "critical"
+                priority_emoji = "🔴"
+            elif impact_score >= 8 or count >= 3:
+                priority = "major"
+                priority_emoji = "🟠"
+            else:
+                priority = "minor"
+                priority_emoji = "🟢"
+            
+            # Generate specific insights with solutions
+            if category == 'task_success':
+                most_common_issue = max(set(data['details']), key=data['details'].count) if data['details'] else '기능 오류'
+                title = "Task Success: 핵심 기능 안정성"
+                problem = f"{most_common_issue} {data['details'].count(most_common_issue)}건 발생"
+                if most_common_issue == '앱 크래시':
+                    solution = "즉시 크래시 로그 분석 및 메모리 관리 개선"
+                elif most_common_issue == '네트워크 연결':
+                    solution = "네트워크 연결 안정성 개선 및 재시도 로직 추가"
+                elif most_common_issue == '음성 기능':
+                    solution = "오디오 권한 및 코덱 호환성 점검"
+                else:
+                    solution = "핵심 기능 QA 테스트 강화 및 버그 수정"
+                    
+            elif category == 'happiness':
+                title = "Happiness: 사용자 만족도 개선"
+                strong_complaints = data['details'].count('강한 불만')
+                problem = f"사용자 불만 {count}건 (강한 불만 {strong_complaints}건)"
+                solution = "불만 사용자 직접 소통, 주요 개선사항 우선 적용"
+                
+            elif category == 'engagement':
+                title = "Engagement: 사용자 참여도 증대"
+                problem = f"사용 빈도 저하 {count}건 확인"
+                solution = "핵심 기능 접근성 개선, 사용자 맞춤 콘텐츠 제공"
+                
+            elif category == 'retention':
+                title = "Retention: 사용자 유지율 개선"
+                problem = f"이탈 위험 사용자 {count}건 감지"
+                solution = "이탈 예방 프로그램 운영, 핵심 가치 재강조"
+                
+            elif category == 'adoption':
+                title = "Adoption: 신규 사용자 적응 지원"
+                problem = f"사용성 문제 {count}건 접수"
+                solution = "온보딩 프로세스 간소화, 가이드 개선"
+            
+            insights.append({
+                'id': insight_id,
+                'title': title,
+                'description': f"----------------------------------------\nHEART 요소: {category.title().replace('_', ' ')}\n문제 요약: {problem}\n해결 방법: {solution}\n우선순위: {priority_emoji} {priority.title()}\n----------------------------------------",
+                'priority': priority,
+                'mentionCount': count,
+                'trend': 'stable',
+                'category': category
+            })
+            insight_id += 1
+    
+    # Sort by priority and impact
+    priority_order = {'critical': 3, 'major': 2, 'minor': 1}
+    insights.sort(key=lambda x: (priority_order[x['priority']], x['mentionCount']), reverse=True)
+    
+    # Limit to top 5 insights
+    insights = insights[:5]
+    
+    # Enhanced Korean word frequency analysis (limit to top 10 each)
     positive_words = {}
     negative_words = {}
     
-    # Common Korean keywords for filtering
-    common_keywords = {
-        'positive': ['좋다', '좋아', '좋음', '만족', '편리', '쉬움', '빠름', '깔끔', '완벽', '추천', '유용', '효과적', '간편'],
-        'negative': ['나쁘다', '나빠', '나쁨', '불편', '어려움', '복잡', '느림', '버그', '오류', '문제', '튕김', '실망', '짜증']
-    }
+    # Stop words to exclude
+    stop_words = ['이것', '그것', '저것', '있는', '없는', '같은', '다른', '이런', '그런', '저런', '에서', '으로', '에게', '한테', '에서는', '그리고', '하지만', '그래서', '그런데']
+    
+    import re
     
     for review in reviews:
-        content = review['content'].lower()
+        content = review['content']
+        rating = review.get('rating', 3)
         
-        # Check for specific sentiment keywords
-        if review['sentiment'] == 'positive':
-            for keyword in common_keywords['positive']:
-                if keyword in content:
-                    positive_words[keyword] = positive_words.get(keyword, 0) + 1
-        else:
-            for keyword in common_keywords['negative']:
-                if keyword in content:
-                    negative_words[keyword] = negative_words.get(keyword, 0) + 1
+        # Clean Korean text
+        cleaned = re.sub(r'[^\w\s가-힣]', ' ', content)
+        words = cleaned.split()
         
-        # Also extract meaningful 2-3 character Korean words
-        words = content.split()
-        korean_words = [word for word in words if any(ord(char) >= 0xAC00 and ord(char) <= 0xD7A3 for char in word)]
+        # Filter meaningful Korean words
+        korean_words = []
+        for word in words:
+            word = word.strip()
+            if len(word) >= 2 and not word.isdigit() and word not in stop_words:
+                # Check if word contains Korean characters
+                if any(ord(char) >= 0xAC00 and ord(char) <= 0xD7A3 for char in word):
+                    korean_words.append(word)
         
-        for word in korean_words:
-            if len(word) >= 2 and len(word) <= 4:  # Focus on 2-4 character words
-                # Remove punctuation
-                clean_word = ''.join(char for char in word if ord(char) >= 0xAC00 and ord(char) <= 0xD7A3)
-                if len(clean_word) >= 2:
-                    if review['sentiment'] == 'positive':
-                        positive_words[clean_word] = positive_words.get(clean_word, 0) + 1
-                    else:
-                        negative_words[clean_word] = negative_words.get(clean_word, 0) + 1
+        # Classify by sentiment
+        if rating >= 4:  # Positive
+            for word in korean_words:
+                positive_words[word] = positive_words.get(word, 0) + 1
+        else:  # Negative
+            for word in korean_words:
+                negative_words[word] = negative_words.get(word, 0) + 1
     
-    # Convert to word cloud format
+    # Convert to word cloud format (top 10 each as requested)
     positive_cloud = [{'word': word, 'frequency': freq, 'sentiment': 'positive'} 
-                      for word, freq in sorted(positive_words.items(), key=lambda x: x[1], reverse=True)[:20]]
+                      for word, freq in sorted(positive_words.items(), key=lambda x: x[1], reverse=True)[:10]]
     negative_cloud = [{'word': word, 'frequency': freq, 'sentiment': 'negative'} 
-                      for word, freq in sorted(negative_words.items(), key=lambda x: x[1], reverse=True)[:20]]
+                      for word, freq in sorted(negative_words.items(), key=lambda x: x[1], reverse=True)[:10]]
+    
+    print(f"Generated {len(insights)} HEART insights, {len(positive_cloud)} positive words, {len(negative_cloud)} negative words")
     
     return {
         'insights': insights,
