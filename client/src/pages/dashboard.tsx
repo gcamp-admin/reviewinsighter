@@ -15,7 +15,7 @@ export default function Dashboard() {
       googlePlayId: "com.lguplus.aicallagent",
       appleStoreId: "6503931858"
     },
-    source: ["google_play", "apple_store"],
+    source: ["google_play", "app_store"],
     dateFrom: undefined,
     dateTo: undefined
   });

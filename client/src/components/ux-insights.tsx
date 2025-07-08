@@ -48,14 +48,11 @@ export default function UxInsights({ filters }: UxInsightsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-6 w-16" />
-            </div>
-          ))}
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#ff0066] mb-4"></div>
+            <p className="text-sm text-[#ff0066] font-medium">HEART 프레임워크 분석 중...</p>
+            <p className="text-xs text-gray-500 mt-1">리뷰 데이터를 기반으로 UX 인사이트를 생성하고 있습니다</p>
+          </div>
         </CardContent>
       </Card>
     );
