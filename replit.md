@@ -121,6 +121,9 @@ Changelog:
 - July 08, 2025. Fixed word cloud frontend limiting to 10 words maximum as requested
 - July 08, 2025. Enhanced Python analysis system now correctly generates insights and word clouds
 - July 08, 2025. System collecting reviews properly and generating analysis data with word cloud word count working correctly
+- July 08, 2025. Enhanced Python analysis to generate specific problems and solutions based on actual review content instead of generic patterns
+- July 08, 2025. Improved pattern matching to detect real issues like "통화 기능 오류", "로그인/인증 문제", "연락처/단축번호 기능 오류"
+- July 08, 2025. Analysis now provides specific technical solutions based on actual user complaints from reviews
 
 ## User Preferences
 

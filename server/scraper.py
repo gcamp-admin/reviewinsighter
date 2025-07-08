@@ -217,7 +217,7 @@ def analyze_sentiments(reviews):
                 heart_analysis['adoption']['issues'].append(content)
                 heart_analysis['adoption']['details'].append('사용성 문제')
     
-    # Generate insights based on analysis
+    # Generate insights based on actual review content analysis
     insights = []
     insight_id = 1
     
@@ -246,40 +246,118 @@ def analyze_sentiments(reviews):
                 priority = "minor"
                 priority_emoji = "🟢"
             
-            # Generate specific insights with solutions
-            if category == 'task_success':
-                most_common_issue = max(set(data['details']), key=data['details'].count) if data['details'] else '기능 오류'
-                title = "Task Success: 핵심 기능 안정성"
-                problem = f"{most_common_issue} {data['details'].count(most_common_issue)}건 발생"
-                if most_common_issue == '앱 크래시':
-                    solution = "즉시 크래시 로그 분석 및 메모리 관리 개선"
-                elif most_common_issue == '네트워크 연결':
-                    solution = "네트워크 연결 안정성 개선 및 재시도 로직 추가"
-                elif most_common_issue == '음성 기능':
-                    solution = "오디오 권한 및 코덱 호환성 점검"
+            # Analyze actual review content to identify specific problems and solutions
+            actual_issues = []
+            for issue_text in data['issues']:
+                # Extract key phrases and issues from actual reviews
+                if '크래시' in issue_text or '꺼져' in issue_text or '꺼지' in issue_text or '튕겨' in issue_text or '튕김' in issue_text or '나가버림' in issue_text:
+                    actual_issues.append('앱 크래시/강제 종료')
+                elif ('전화' in issue_text or '통화' in issue_text) and ('끊어' in issue_text or '받' in issue_text or '안됨' in issue_text or '끊김' in issue_text):
+                    actual_issues.append('통화 기능 오류')
+                elif '단축번호' in issue_text or '연락처' in issue_text or '조회' in issue_text:
+                    actual_issues.append('연락처/단축번호 기능 오류')
+                elif '로그인' in issue_text or '인증' in issue_text or '로그' in issue_text:
+                    actual_issues.append('로그인/인증 문제')
+                elif '느림' in issue_text or '버벅' in issue_text or '지연' in issue_text:
+                    actual_issues.append('성능 저하')
+                elif '연결' in issue_text or '네트워크' in issue_text or '접속' in issue_text:
+                    actual_issues.append('네트워크 연결 문제')
+                elif '블루투스' in issue_text or '음질' in issue_text or '소리' in issue_text:
+                    actual_issues.append('오디오 품질 문제')
+                elif '업데이트' in issue_text or '개선' in issue_text:
+                    actual_issues.append('업데이트 관련 문제')
+                elif '아이폰' in issue_text or '갤럭시' in issue_text or '기기' in issue_text or '폰' in issue_text:
+                    actual_issues.append('기기 호환성 문제')
+                elif '불편' in issue_text or '복잡' in issue_text or '어려움' in issue_text:
+                    actual_issues.append('사용성 문제')
+                elif '삭제' in issue_text or '해지' in issue_text or '그만' in issue_text:
+                    actual_issues.append('서비스 중단 의도')
+                elif '법인' in issue_text or '이용제한' in issue_text or '제한' in issue_text:
+                    actual_issues.append('이용 제한 문제')
+                elif '검색' in issue_text or '조회' in issue_text or '찾기' in issue_text:
+                    actual_issues.append('검색/조회 기능 오류')
                 else:
-                    solution = "핵심 기능 QA 테스트 강화 및 버그 수정"
+                    actual_issues.append('기타 문제')
+            
+            # Find most common actual issue
+            if actual_issues:
+                most_common_issue = max(set(actual_issues), key=actual_issues.count)
+                issue_count = actual_issues.count(most_common_issue)
+            else:
+                most_common_issue = '기타 문제'
+                issue_count = count
+            
+            # Generate specific problems and solutions based on actual review content
+            if category == 'task_success':
+                title = "Task Success: 핵심 기능 안정성"
+                problem = f"{most_common_issue} {issue_count}건 발생"
+                
+                if most_common_issue == '앱 크래시/강제 종료':
+                    solution = "크래시 로그 분석 및 메모리 누수 수정, 안정성 테스트 강화"
+                elif most_common_issue == '통화 기능 오류':
+                    solution = "통화 연결 로직 개선, 권한 관리 최적화, 통화 품질 테스트"
+                elif most_common_issue == '연락처/단축번호 기능 오류':
+                    solution = "연락처 접근 권한 점검, 단축번호 API 로직 수정, 데이터베이스 동기화 개선"
+                elif most_common_issue == '로그인/인증 문제':
+                    solution = "인증 서버 안정성 개선, 토큰 관리 시스템 점검"
+                elif most_common_issue == '성능 저하':
+                    solution = "UI 렌더링 최적화, 백그라운드 처리 개선"
+                elif most_common_issue == '네트워크 연결 문제':
+                    solution = "네트워크 재시도 로직 추가, 오프라인 모드 지원"
+                elif most_common_issue == '오디오 품질 문제':
+                    solution = "오디오 코덱 최적화, 블루투스 호환성 개선"
+                elif most_common_issue == '검색/조회 기능 오류':
+                    solution = "검색 인덱스 최적화, 조회 쿼리 성능 개선, 데이터 캐싱 강화"
+                elif most_common_issue == '이용 제한 문제':
+                    solution = "법인 사용자 정책 검토, 이용 제한 조건 완화, 사용자 권한 관리 개선"
+                else:
+                    solution = "핵심 기능 QA 테스트 강화, 버그 수정 프로세스 개선"
                     
             elif category == 'happiness':
                 title = "Happiness: 사용자 만족도 개선"
-                strong_complaints = data['details'].count('강한 불만')
-                problem = f"사용자 불만 {count}건 (강한 불만 {strong_complaints}건)"
-                solution = "불만 사용자 직접 소통, 주요 개선사항 우선 적용"
+                problem = f"{most_common_issue} {issue_count}건으로 인한 사용자 불만"
+                
+                if most_common_issue == '사용성 문제':
+                    solution = "UI/UX 개선, 사용자 피드백 반영한 인터페이스 재설계"
+                elif most_common_issue == '성능 저하':
+                    solution = "앱 성능 최적화, 로딩 시간 단축, 반응성 개선"
+                elif most_common_issue == '기기 호환성 문제':
+                    solution = "다양한 기기 테스트 확대, 호환성 매트릭스 구축"
+                else:
+                    solution = "사용자 만족도 조사 실시, 주요 불만 사항 우선 해결"
                 
             elif category == 'engagement':
                 title = "Engagement: 사용자 참여도 증대"
-                problem = f"사용 빈도 저하 {count}건 확인"
-                solution = "핵심 기능 접근성 개선, 사용자 맞춤 콘텐츠 제공"
+                problem = f"{most_common_issue} {issue_count}건으로 인한 사용 빈도 저하"
+                
+                if most_common_issue == '업데이트 관련 문제':
+                    solution = "정기적인 기능 업데이트, 사용자 요청 기능 우선 개발"
+                elif most_common_issue == '사용성 문제':
+                    solution = "핵심 기능 접근성 개선, 직관적인 네비게이션 제공"
+                else:
+                    solution = "사용자 참여를 높이는 새로운 기능 추가, 개인화 서비스 강화"
                 
             elif category == 'retention':
                 title = "Retention: 사용자 유지율 개선"
-                problem = f"이탈 위험 사용자 {count}건 감지"
-                solution = "이탈 예방 프로그램 운영, 핵심 가치 재강조"
+                problem = f"{most_common_issue} {issue_count}건으로 인한 이탈 위험"
+                
+                if most_common_issue == '서비스 중단 의도':
+                    solution = "이탈 예방 프로그램 운영, 고객 서비스 강화, 핵심 가치 재강조"
+                elif most_common_issue == '사용성 문제':
+                    solution = "사용자 온보딩 개선, 지속적인 가치 제공 방안 마련"
+                else:
+                    solution = "사용자 유지율 분석, 맞춤형 리텐션 전략 수립"
                 
             elif category == 'adoption':
                 title = "Adoption: 신규 사용자 적응 지원"
-                problem = f"사용성 문제 {count}건 접수"
-                solution = "온보딩 프로세스 간소화, 가이드 개선"
+                problem = f"{most_common_issue} {issue_count}건으로 인한 신규 사용자 적응 어려움"
+                
+                if most_common_issue == '사용성 문제':
+                    solution = "온보딩 프로세스 간소화, 단계별 가이드 제공, 튜토리얼 개선"
+                elif most_common_issue == '기기 호환성 문제':
+                    solution = "다양한 기기 지원 확대, 설치 가이드 개선"
+                else:
+                    solution = "신규 사용자 경험 최적화, 초기 사용 장벽 제거"
             
             insights.append({
                 'id': insight_id,
