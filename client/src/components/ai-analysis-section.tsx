@@ -44,11 +44,6 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
     enabled: !!filters?.service?.id, // Only fetch when service is selected
   });
 
-  // Don't show anything if no service is selected
-  if (!filters?.service?.id) {
-    return null;
-  }
-
   const analyzeReviewsMutation = useMutation({
     mutationFn: async (): Promise<{ message: string; success: boolean }> => {
       if (!filters.service) {
@@ -84,8 +79,13 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
     },
   });
 
-  // Don't show if no reviews or no service selected
-  if (!stats || !filters.service || stats.total === 0) {
+  // Don't show if no service selected
+  if (!filters.service?.id) {
+    return null;
+  }
+
+  // Don't show if no reviews to analyze
+  if (!stats || stats.total === 0) {
     return null;
   }
 
