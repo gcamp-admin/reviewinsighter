@@ -40,11 +40,18 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/reviews?${params}`);
+      const url = `/api/reviews?${params}`;
+      console.log("Fetching reviews from:", url);
+      console.log("Service ID:", filters?.service?.id);
+      console.log("Source:", filters.source);
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch reviews");
       }
-      return response.json();
+      const result = await response.json();
+      console.log("Reviews response:", result);
+      return result;
     },
     enabled: !!filters?.service?.id, // Only fetch when service is selected
     staleTime: 0,
