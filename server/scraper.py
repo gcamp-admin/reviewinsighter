@@ -407,10 +407,66 @@ def analyze_sentiments(reviews):
                 else:
                     solution = "신규 사용자 경험 최적화, 초기 사용 장벽 제거"
             
+            # Generate realistic problem prediction and solution based on HEART category
+            predicted_problem = ""
+            realistic_solution = ""
+            
+            if category == 'task_success':
+                if most_common_issue == '통화 기능 오류':
+                    predicted_problem = "통화 연결 실패나 음성 끊김으로 인해 사용자가 핵심 기능을 제대로 수행할 수 없어 앱 이탈 가능성"
+                    realistic_solution = "통화 연결 로직 점검, VoIP 서버 안정성 강화, 네트워크 상태별 대응 로직 개발"
+                elif most_common_issue == '로그인/인증 문제':
+                    predicted_problem = "로그인 실패나 인증 오류로 인해 사용자가 앱에 접근조차 할 수 없어 서비스 이용 불가"
+                    realistic_solution = "인증 서버 모니터링 강화, 다중 인증 방식 제공, 로그인 실패 시 명확한 안내 메시지"
+                else:
+                    predicted_problem = "핵심 기능 수행 중 오류나 중단으로 인해 사용자가 원하는 작업을 완료할 수 없음"
+                    realistic_solution = "기능별 안정성 테스트 강화, 오류 발생 시 복구 메커니즘 구축"
+                    
+            elif category == 'happiness':
+                if most_common_issue == '사용성 문제':
+                    predicted_problem = "직관적이지 않은 UI/UX로 인해 사용자가 스트레스를 받고 앱 사용에 대한 만족도 저하"
+                    realistic_solution = "사용자 테스트 실시, 네비게이션 구조 단순화, 주요 기능 접근성 개선"
+                elif most_common_issue == '성능 저하':
+                    predicted_problem = "앱 로딩 지연이나 반응 속도 문제로 인해 사용자가 답답함을 느끼고 경쟁앱 이탈"
+                    realistic_solution = "코드 최적화, 이미지 압축, 캐싱 전략 개선, 로딩 인디케이터 추가"
+                else:
+                    predicted_problem = "사용자 기대와 실제 경험 간의 괴리로 인한 만족도 저하"
+                    realistic_solution = "사용자 피드백 정기 수집, 핵심 불만 사항 우선 해결, UX 개선 프로세스 구축"
+                    
+            elif category == 'engagement':
+                if most_common_issue == '사용성 문제':
+                    predicted_problem = "복잡한 기능 구조로 인해 사용자가 정기적으로 앱을 사용하지 않게 되어 참여도 감소"
+                    realistic_solution = "핵심 기능 접근성 개선, 개인화 알림 설정, 사용 패턴 분석 기반 기능 추천"
+                else:
+                    predicted_problem = "사용자가 앱에 재방문할 동기 부족으로 인한 사용 빈도 저하"
+                    realistic_solution = "푸시 알림 개인화, 사용자별 맞춤 콘텐츠 제공, 정기적 업데이트 및 이벤트 진행"
+                    
+            elif category == 'retention':
+                if most_common_issue == '앱 크래시/강제 종료':
+                    predicted_problem = "앱 안정성 문제로 인해 사용자가 재방문을 포기하고 다른 대안 서비스로 이탈"
+                    realistic_solution = "크래시 로그 분석 및 버그 수정, 안정성 테스트 강화, 긴급 패치 프로세스 구축"
+                elif most_common_issue == '로그인/인증 문제':
+                    predicted_problem = "반복적인 로그인 실패로 인해 사용자가 앱 사용을 포기하고 재방문율 급격히 감소"
+                    realistic_solution = "자동 로그인 기능 개선, 소셜 로그인 연동, 비밀번호 찾기 프로세스 간소화"
+                else:
+                    predicted_problem = "초기 좋은 경험 후 지속적인 가치 제공 실패로 인한 사용자 이탈"
+                    realistic_solution = "사용자 생명주기별 맞춤 서비스 제공, 재방문 유도 알림 최적화"
+                    
+            elif category == 'adoption':
+                if most_common_issue == '사용성 문제':
+                    predicted_problem = "신규 사용자가 첫 사용 시 복잡한 인터페이스로 인해 온보딩 과정에서 이탈"
+                    realistic_solution = "온보딩 플로우 단순화, 단계별 가이드 제공, 필수 기능 중심 튜토리얼 구성"
+                elif most_common_issue == '로그인/인증 문제':
+                    predicted_problem = "회원가입이나 초기 설정 과정에서 인증 오류로 인해 신규 사용자 유입 실패"
+                    realistic_solution = "간편 회원가입 옵션 제공, 인증 과정 최소화, 설정 자동화 기능 강화"
+                else:
+                    predicted_problem = "신규 사용자가 앱의 핵심 가치를 빠르게 이해하지 못해 초기 이탈률 증가"
+                    realistic_solution = "핵심 기능 우선 노출, 사용자 유형별 맞춤 온보딩, 첫 성공 경험 보장"
+            
             insights.append({
                 'id': insight_id,
                 'title': title,
-                'description': f"----------------------------------------\nHEART 요소: {category.title().replace('_', ' ')}\n문제 요약: {problem}\n해결 방법: {solution}\n우선순위: {priority_emoji} {priority.title()}\n----------------------------------------",
+                'description': f"📢 예측되는 문제점\n{predicted_problem}\n\n💡 해결 방법\n{realistic_solution}\n\n----------------------------------------\nHEART 요소: {category.title().replace('_', ' ')}\n문제 요약: {problem}\n해결 방법: {solution}\n우선순위: {priority_emoji} {priority.title()}\n----------------------------------------",
                 'priority': priority,
                 'mentionCount': count,
                 'trend': 'stable',

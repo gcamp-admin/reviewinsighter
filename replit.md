@@ -124,6 +124,8 @@ Changelog:
 - July 08, 2025. Enhanced Python analysis to generate specific problems and solutions based on actual review content instead of generic patterns
 - July 08, 2025. Improved pattern matching to detect real issues like "통화 기능 오류", "로그인/인증 문제", "연락처/단축번호 기능 오류"
 - July 08, 2025. Analysis now provides specific technical solutions based on actual user complaints from reviews
+- July 08, 2025. Implemented realistic problem predictions and solutions format - insights now include "예측되는 문제점" and "해결 방법" sections
+- July 08, 2025. Enhanced HEART framework analysis to provide context-specific solutions (Task Success: VoIP 서버 안정성 강화, Happiness: 사용자 테스트 실시, Retention: 사용자 생명주기별 맞춤 서비스)
 
 ## User Preferences
 
