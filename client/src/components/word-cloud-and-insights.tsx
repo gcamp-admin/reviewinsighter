@@ -33,7 +33,7 @@ export default function WordCloudAndInsights({ filters }: WordCloudAndInsightsPr
       }
       return response.json();
     },
-    enabled: true,
+    enabled: !!filters?.service?.id, // Only fetch when service is selected
   });
 
   const { data: negativeWords } = useQuery({
@@ -60,7 +60,7 @@ export default function WordCloudAndInsights({ filters }: WordCloudAndInsightsPr
       }
       return response.json();
     },
-    enabled: true,
+    enabled: !!filters?.service?.id, // Only fetch when service is selected
   });
 
   const { data: insights } = useQuery({
@@ -87,8 +87,13 @@ export default function WordCloudAndInsights({ filters }: WordCloudAndInsightsPr
       }
       return response.json();
     },
-    enabled: true,
+    enabled: !!filters?.service?.id, // Only fetch when service is selected
   });
+
+  // Don't show anything if no service is selected
+  if (!filters?.service?.id) {
+    return null;
+  }
 
   // Only show the grid if there's any analysis data
   const hasWordCloudData = (positiveWords && positiveWords.length > 0) || (negativeWords && negativeWords.length > 0);

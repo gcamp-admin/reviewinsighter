@@ -41,7 +41,13 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
       }
       return response.json();
     },
+    enabled: !!filters?.service?.id, // Only fetch when service is selected
   });
+
+  // Don't show anything if no service is selected
+  if (!filters?.service?.id) {
+    return null;
+  }
 
   const analyzeReviewsMutation = useMutation({
     mutationFn: async (): Promise<{ message: string; success: boolean }> => {
