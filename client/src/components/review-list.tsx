@@ -53,25 +53,9 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     refetchOnMount: true,
   });
 
-  // Show placeholder when no service is selected
+  // Don't show anything when no service is selected
   if (!filters?.service?.id) {
-    return (
-      <section className="mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              리뷰 목록
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center text-gray-500 py-8">
-              분석할 서비스를 선택해주세요
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-    );
+    return null;
   }
 
   // Filter reviews locally based on sentiment

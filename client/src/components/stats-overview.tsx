@@ -40,19 +40,9 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
     refetchOnMount: true,
   });
 
-  // Show placeholder when no service is selected
+  // Don't show anything when no service is selected
   if (!filters?.service?.id) {
-    return (
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-gray-500">
-              분석할 서비스를 선택해주세요
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-    );
+    return null;
   }
 
   if (isLoading) {
