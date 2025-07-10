@@ -608,8 +608,8 @@ def analyze_sentiments(reviews):
             # Generate specific UX improvement examples based on the category and issues
             ux_improvement_examples = generate_ux_improvement_points(category, most_common_issue, data['issues'])
             
-            # Generate UX-focused improvement suggestions based on actual user issues
-            ux_improvement_suggestions = generate_ux_improvement_suggestions(category, most_common_issue, data['issues'], predicted_problem, quotes_text)
+            # Generate UX-focused improvement suggestions based on actual user review content
+            ux_improvement_suggestions = generate_realistic_ux_suggestions(category, most_common_issue, data['issues'], predicted_problem, quotes_text)
             
             description = f"""**HEART 항목**: {heart_category_ko.get(category, category)}
 **문제 요약**: {quotes_text}에서 드러나는 {predicted_problem}
@@ -885,6 +885,102 @@ def generate_ux_improvement_suggestions(category, issue_type, issues, problem_de
 - 자주 발생하는 문제에 대한 '자주 묻는 질문' 섹션을 앱 내 쉽게 접근 가능한 위치에 배치
 - 사용자 피드백을 실시간으로 수집하고 빠른 개선 사항을 앱 내 공지로 투명하게 공유
 - 각 기능별 '도움말' 버튼을 상황에 맞게 배치하여 즉시 도움 받을 수 있도록 설계"""
+
+def generate_realistic_ux_suggestions(category, issue_type, issues, problem_description, quotes_text):
+    """
+    Generate realistic UX improvement suggestions based strictly on actual user review content
+    """
+    # Extract key phrases from actual user quotes
+    user_expressions = []
+    if "나가버림" in quotes_text or "튕겨" in quotes_text:
+        user_expressions.append("앱_크래시")
+    if "화면 확대" in quotes_text or "확대가 안" in quotes_text:
+        user_expressions.append("화면_확대_불가")
+    if "로그인" in quotes_text or "인증" in quotes_text:
+        user_expressions.append("로그인_문제")
+    if "연결" in quotes_text and "끊" in quotes_text:
+        user_expressions.append("연결_끊김")
+    if "cctv" in quotes_text.lower() or "CCTV" in quotes_text:
+        user_expressions.append("CCTV_문제")
+    if "사용불가" in quotes_text or "안됩니다" in quotes_text:
+        user_expressions.append("기능_사용불가")
+    if "오류" in quotes_text or "에러" in quotes_text:
+        user_expressions.append("오류_발생")
+    if "답답" in quotes_text or "짜증" in quotes_text:
+        user_expressions.append("사용자_불만")
+    
+    if category == 'task_success':
+        if "앱_크래시" in user_expressions:
+            return """- 앱 첫 실행 시, 사용자 선택 단계를 거치기 전에 '앱 초기 로딩 안내 화면'을 별도로 구성해 앱이 멈춘 듯한 인상을 줄이지 않도록 설계
+- 사용자 선택 중 오류가 발생하면 즉시 "문제가 발생했어요. 다시 시도하거나 고객센터로 문의해주세요" 같은 비침해성 안내 화면으로 유도
+- 반복 강제 종료 시, 사용자에게 "앱이 정상 작동하지 않나요?"라는 피드백 옵션을 제공해 사용자도 문제 인식에 기여하도록 유도
+- 크래시 발생 전 마지막 화면을 임시 저장하여 재실행 시 해당 위치에서 다시 시작할 수 있도록 설계"""
+        
+        elif "화면_확대_불가" in user_expressions:
+            return """- CCTV 화면 우측 하단에 '확대/축소 도움말' 아이콘을 상시 표시하여 사용자가 제스처 방법을 쉽게 확인할 수 있도록 설계
+- 화면 확대가 안 될 때 "화면을 두 손가락으로 벌려서 확대해보세요" 같은 직관적인 안내 메시지를 화면 중앙에 표시
+- 확대 기능 실패 시 "확대가 안 되시나요? 새로고침을 시도해보세요" 버튼과 함께 수동 새로고침 옵션 제공
+- 구형 기기에서 확대 기능이 제한적일 때 "이 기기에서는 확대 기능이 제한될 수 있습니다" 안내 메시지 표시"""
+        
+        elif "로그인_문제" in user_expressions:
+            return """- 로그인 실패 시 "아이디나 비밀번호를 다시 확인해주세요" 메시지와 함께 '아이디 찾기', '비밀번호 재설정' 버튼을 명확히 배치
+- 인증 오류 발생 시 "인증에 문제가 있습니다. 잠시 후 다시 시도해주세요" 같은 친근한 안내 메시지 표시
+- 반복 로그인 실패 시 "로그인에 계속 문제가 있으시면 고객센터로 문의해주세요" 안내와 함께 고객센터 연결 버튼 제공
+- 로그인 화면에서 "간편 로그인" 옵션을 추가하여 생체 인증 등 대안 제공"""
+        
+        elif "연결_끊김" in user_expressions:
+            return """- 연결이 끊겼을 때 "연결이 끊어졌습니다" 메시지와 함께 '재연결' 버튼을 화면 중앙에 크게 배치
+- 자주 연결이 끊기는 경우 "네트워크 상태를 확인해주세요" 안내 메시지와 함께 네트워크 진단 가이드 제공
+- 연결 중 화면에 "연결 중입니다..." 메시지와 함께 진행률 표시하여 사용자가 기다림의 이유를 알 수 있도록 설계
+- 연결 실패 반복 시 "계속 연결에 문제가 있으시면 고객센터로 문의해주세요" 옵션 제공"""
+        
+        elif "CCTV_문제" in user_expressions:
+            return """- CCTV 화면이 안 보일 때 "CCTV 연결을 확인하고 있습니다" 메시지와 함께 로딩 상태 표시
+- 영상이 끊길 때 "영상 연결이 불안정합니다. 새로고침을 시도해주세요" 버튼과 함께 수동 새로고침 옵션 제공
+- 여러 카메라 화면에서 각각 "전체화면" 버튼을 개별 배치하여 원하는 카메라만 크게 볼 수 있도록 설계
+- CCTV 기능 사용 중 문제 발생 시 "CCTV에 문제가 있나요?" 피드백 버튼으로 사용자 의견 수집"""
+        
+        else:
+            return """- 핵심 기능 사용 중 문제 발생 시 "문제가 발생했습니다. 다시 시도해주세요" 메시지와 함께 '재시도' 버튼 제공
+- 기능 실행이 오래 걸릴 때 "처리 중입니다. 잠시만 기다려주세요" 메시지와 함께 진행률 표시
+- 자주 사용하는 기능을 홈 화면 상단에 큰 버튼으로 배치하여 쉽게 접근할 수 있도록 설계
+- 오류 발생 시 "문제가 계속되면 고객센터로 문의해주세요" 안내와 함께 고객센터 연결 버튼 제공"""
+    
+    elif category == 'happiness':
+        if "사용자_불만" in user_expressions:
+            return """- 사용자 불만 표현 시 앱 내 "의견 보내기" 기능을 메뉴 상단에 쉽게 찾을 수 있도록 배치
+- 문제 해결 후 "문제가 해결되었나요?" 확인 메시지로 사용자 만족도 확인
+- 답답함을 표현하는 사용자를 위해 "도움이 필요하시면 언제든 문의해주세요" 같은 따뜻한 메시지 제공
+- 긍정적 피드백 시 "도움이 되었다면 별점 남기기" 등의 자연스러운 유도 메시지 표시"""
+        else:
+            return """- 사용자 만족도 조사를 팝업이 아닌 앱 사용 플로우에 자연스럽게 통합
+- 문제 해결 후 "해결되었나요?" 확인 메시지로 사용자 만족도 확인
+- 사용자 불만 표현 시 앱 내 "의견 보내기" 기능을 쉽게 찾을 수 있도록 메뉴 상단에 배치
+- 긍정적 피드백 시 "도움이 되었다면 별점 남기기" 등의 자연스러운 유도 메시지 표시"""
+    
+    elif category == 'engagement':
+        return """- 사용자가 특정 기능을 자주 사용할 때 "이 기능도 유용할 것 같아요" 같은 관련 기능 추천 메시지를 적절한 타이밍에 표시
+- 앱 사용 패턴을 분석하여 "자주 사용하는 기능" 섹션을 홈 화면에 배치
+- 새로운 기능 출시 시 "새로운 기능이 추가되었습니다" 알림을 기존 사용 패턴과 연결하여 자연스럽게 소개
+- 사용자 활동이 줄어들 때 "놓치신 기능이 있어요" 알림으로 재참여 유도"""
+    
+    elif category == 'retention':
+        return """- 사용자가 앱을 삭제하려 할 때 "잠깐, 문제가 있으신가요?" 팝업으로 이탈 사유 파악 및 즉시 해결 시도
+- 장기간 미사용 시 "마지막으로 사용하셨던 기능" 중심으로 "다시 시작해보세요" 메시지로 복귀 유도
+- 계정 삭제 전 "데이터를 백업해두시겠어요?" 옵션 제공하여 재사용 가능성 열어두기
+- 사용자별 이용 패턴 기반 "이런 기능도 있어요" 맞춤형 안내로 지속 사용 유도"""
+    
+    elif category == 'adoption':
+        return """- 신규 사용자 온보딩 시 "3분 만에 시작하기" 등 명확한 시간 예상치 제시
+- 복잡한 초기 설정을 "나중에 설정하기" 옵션과 함께 제공하여 진입 장벽 완화
+- 첫 성공 경험 후 "잘하셨어요! 다음 단계를 안내해드릴게요" 메시지로 자연스러운 기능 확장 유도
+- 사용 목적별 "빠른 시작" 템플릿 제공 (예: "CCTV만 사용하기", "통화 기능 중심으로 시작하기" 등)"""
+    
+    else:
+        return """- 사용자 리뷰에서 언급된 구체적 문제점을 해결하는 "단계별 가이드" 제공
+- 자주 발생하는 문제에 대한 "자주 묻는 질문" 섹션을 앱 내 쉽게 접근 가능한 위치에 배치
+- 사용자 피드백을 실시간으로 수집하고 빠른 개선 사항을 "업데이트 소식"으로 투명하게 공유
+- 각 기능별 "도움말" 버튼을 상황에 맞게 배치하여 즉시 도움 받을 수 있도록 설계"""
 
 def main():
     """Main function to run the scraper"""
