@@ -83,34 +83,25 @@ export default function UxInsights({ filters }: UxInsightsProps) {
     }
   };
 
-  const getActionableInsight = (insight: Insight) => {
-    // 실제 VOC 기반 문제점과 해결방안 매핑
-    const vocSolutions: { [key: string]: { voc: string; solution: string } } = {
-      "사용자 만족도 개선 (Happiness)": {
-        voc: `실제 리뷰: "짜증나 죽겠음", "최악이네", "구림 완전 구림" 등 ${insight.mentionCount}건의 강한 부정 감정 표현이 수집됨`,
-        solution: "고객 감정 관리 우선 대응: 부정 리뷰 작성자 개별 연락, 문제 해결 후 재평가 요청, 앱 내 실시간 지원 채팅"
-      },
-      "사용자 참여도 개선 (Engagement)": {
-        voc: `실제 리뷰: "자꾸 끊김", "연결이 안됨", "느려서 못쓰겠음" 등 ${insight.mentionCount}건의 연결/성능 불만이 접수됨`,
-        solution: "인프라 안정성 강화: 서버 용량 증설, 네트워크 최적화, 끊김 발생 시 자동 재연결 기능 개발"
-      },
-      "신규 사용자 적응 개선 (Adoption)": {
-        voc: `실제 리뷰: "설정이 복잡함", "어떻게 쓰는지 모르겠음", "등록이 어려움" 등 ${insight.mentionCount}건의 사용법 관련 문의`,
-        solution: "온보딩 프로세스 간소화: 3단계 설정 마법사, 동영상 가이드, 첫 사용자 전담 지원팀 운영"
-      },
-      "사용자 재방문율 개선 (Retention)": {
-        voc: `실제 리뷰: "삭제했어요", "해지하고 싶음", "다른 앱 쓸래요" 등 ${insight.mentionCount}건의 이탈 의도 표명`,
-        solution: "이탈 방지 전략: 해지 전 문제점 상담, 개선 완료 후 재사용 유도, 경쟁사 대비 차별화 포인트 강조"
-      },
-      "작업 성공률 개선 (Task Success)": {
-        voc: `실제 리뷰: "앱이 튕김", "CCTV 안됨", "오류 발생" 등 ${insight.mentionCount}건의 핵심 기능 실패 신고`,
-        solution: "기능 안정성 확보: 긴급 패치 배포, 실시간 모니터링 시스템, 오류 발생 시 즉시 알림 및 복구 가이드"
+  const parseInsightDescription = (insight: Insight) => {
+    const description = insight.description;
+    const lines = description.split('\n');
+    
+    let problemLine = '';
+    let solutionLine = '';
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('📢 예측되는 문제점')) {
+        problemLine = lines[i + 1]?.trim() || '';
+      } else if (line.startsWith('💡 해결 방법')) {
+        solutionLine = lines[i + 1]?.trim() || '';
       }
-    };
-
-    return vocSolutions[insight.title] || {
-      voc: insight.description,
-      solution: "실제 VOC 데이터 기반 맞춤형 해결책 도출 필요"
+    }
+    
+    return {
+      problemLine,
+      solutionLine
     };
   };
 
@@ -154,47 +145,40 @@ export default function UxInsights({ filters }: UxInsightsProps) {
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {insights?.map((insight) => {
-              const actionable = getActionableInsight(insight);
+              const parsedInsight = parseInsightDescription(insight);
               return (
                 <div
                   key={insight.id}
-                  className="space-y-3 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                  className="space-y-2 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start gap-3">
-                    <Badge
-                      variant="outline"
-                      className={`text-xs font-medium ${getPriorityColor(insight.priority)}`}
-                    >
-                      {insight.priority === "critical" ? "Critical" : 
-                       insight.priority === "major" ? "Major" : "Minor"}
-                    </Badge>
-                    <h3 className="font-semibold text-base flex-1">{insight.title}</h3>
+                  {/* Line 1: Priority + HEART Element */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {insight.priority === "critical" ? "🔴 Critical" : 
+                       insight.priority === "major" ? "🟡 Major" : "🟢 Minor"}
+                    </span>
+                    <span className="text-sm text-muted-foreground">|</span>
+                    <span className="text-sm font-medium">{insight.title.split('|')[1]?.trim() || insight.title}</span>
                   </div>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
-                        📢 예측되는 문제점
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {actionable.voc}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
-                        💡 해결 방법
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {actionable.solution}
-                      </p>
-                    </div>
+                  {/* Line 2: Problem Label (Red) */}
+                  <div className="text-sm font-medium text-red-600 dark:text-red-400">
+                    📢 예측되는 문제점
                   </div>
                   
-                  <div className="pt-3 border-t">
-                    <p className="text-sm text-muted-foreground">
-                      언급 횟수: <span className="font-medium">{insight.mentionCount}건</span>
-                    </p>
+                  {/* Line 3: Problem Summary (1 line) */}
+                  <div className="text-sm text-muted-foreground">
+                    {parsedInsight.problemLine}
+                  </div>
+                  
+                  {/* Line 4: Solution Label (Green) */}
+                  <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                    💡 해결 방법
+                  </div>
+                  
+                  {/* Line 5: Solution Details */}
+                  <div className="text-sm text-muted-foreground">
+                    {parsedInsight.solutionLine}
                   </div>
                 </div>
               );

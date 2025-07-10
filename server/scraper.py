@@ -465,8 +465,8 @@ def analyze_sentiments(reviews):
             
             insights.append({
                 'id': insight_id,
-                'title': title,
-                'description': f"📢 예측되는 문제점\n{predicted_problem}\n\n💡 해결 방법\n{realistic_solution}\n\n📊 실제 데이터 기반 맞춤형 해결책\n{solution}\n\n우선순위: {priority_emoji} {priority.title()}",
+                'title': f"{priority_emoji} {priority.title()} | {category.title().replace('_', ' ')}",
+                'description': f"📢 예측되는 문제점\n{predicted_problem}\n\n💡 해결 방법\n{realistic_solution} 📊 실제 데이터 기반 맞춤형 해결책: {solution}",
                 'priority': priority,
                 'mentionCount': count,
                 'trend': 'stable',
