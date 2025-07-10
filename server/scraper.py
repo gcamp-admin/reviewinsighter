@@ -187,57 +187,56 @@ def analyze_sentiments(reviews):
         rating = review.get('rating', 3)
         user_id = review.get('userId', 'Unknown')
         
-        # Analyze both positive and negative reviews for comprehensive insights
-        if rating < 4:  # Negative reviews for problems
-            # Task Success - Core functionality problems
-            if any(keyword in content for keyword in ['오류', '에러', '버그', '튕', '꺼짐', '작동안함', '실행안됨', '끊김', '연결안됨', '안들림', '소리안남', '안됨', '안되', '크래시', '종료', '재시작']):
-                heart_analysis['task_success']['issues'].append(content)
-                if '튕' in content or '꺼짐' in content or '크래시' in content:
-                    heart_analysis['task_success']['details'].append('앱 크래시')
-                elif '연결' in content and ('안됨' in content or '끊김' in content):
-                    heart_analysis['task_success']['details'].append('네트워크 연결')
-                elif '소리' in content and '안남' in content:
-                    heart_analysis['task_success']['details'].append('음성 기능')
-                else:
-                    heart_analysis['task_success']['details'].append('기능 오류')
-            
-            # Happiness - User satisfaction issues
-            elif any(keyword in content for keyword in ['짜증', '최악', '실망', '화남', '불만', '별로', '구림', '싫어', '답답', '스트레스']):
-                heart_analysis['happiness']['issues'].append(content)
-                if '최악' in content or '화남' in content:
-                    heart_analysis['happiness']['details'].append('강한 불만')
-                else:
-                    heart_analysis['happiness']['details'].append('만족도 저하')
-            
-            # Engagement - Usage patterns
-            elif any(keyword in content for keyword in ['안써', '사용안함', '재미없', '지루', '흥미없', '별로안쓴', '가끔만']):
-                heart_analysis['engagement']['issues'].append(content)
-                heart_analysis['engagement']['details'].append('사용 빈도 저하')
-            
-            # Retention - Churn indicators
-            elif any(keyword in content for keyword in ['삭제', '해지', '그만', '안쓸', '다른거', '바꿀', '탈퇴', '포기', '중단']):
-                heart_analysis['retention']['issues'].append(content)
-                heart_analysis['retention']['details'].append('이탈 위험')
-            
-            # Adoption - Onboarding difficulties
-            elif any(keyword in content for keyword in ['어려움', '복잡', '모르겠', '헷갈', '어떻게', '설명부족', '사용법', '가이드', '도움말']):
-                heart_analysis['adoption']['issues'].append(content)
-                heart_analysis['adoption']['details'].append('사용성 문제')
+        # Analyze ALL reviews regardless of rating to capture nuanced feedback
+        # Even high-rated reviews can contain specific complaints and improvement suggestions
         
-        # Also analyze positive reviews for potential improvements
-        elif rating >= 4:  # Positive reviews for improvement opportunities
-            # Look for mentions of specific features or improvements
-            if any(keyword in content for keyword in ['좋지만', '하지만', '그런데', '다만', '아쉬운', '더', '추가', '개선', '향상']):
-                # These are positive reviews but with suggestions for improvement
-                if '통화' in content or '전화' in content:
-                    heart_analysis['task_success']['issues'].append(content)
-                    heart_analysis['task_success']['details'].append('기능 개선 제안')
-                elif '사용' in content or '기능' in content:
-                    heart_analysis['engagement']['issues'].append(content)
-                    heart_analysis['engagement']['details'].append('사용성 개선 제안')
-                elif '인터페이스' in content or 'UI' in content or '화면' in content:
-                    heart_analysis['happiness']['issues'].append(content)
-                    heart_analysis['happiness']['details'].append('UI/UX 개선 제안')
+        # Task Success - Core functionality problems (check regardless of rating)
+        if any(keyword in content for keyword in ['오류', '에러', '버그', '튕', '꺼짐', '작동안함', '실행안됨', '끊김', '연결안됨', '안들림', '소리안남', '안됨', '안되', '크래시', '종료', '재시작', '문제', '불편', '안받아지', '받아지지', '실행되지', '작동하지', '끊어지', '끊긴다', '당황스러운', '기다려야', '슬라이드', '백그라운드', '자동으로', '넘어가지', '계속', '볼륨버튼', '진동', '꺼지면', '좋겠네요', '차량', '블투', '통화종료', '음악재생', '스팸정보', '딸려와서', '번호확인', '기다려야']):
+            heart_analysis['task_success']['issues'].append(content)
+            if '튕' in content or '꺼짐' in content or '크래시' in content:
+                heart_analysis['task_success']['details'].append('앱 크래시')
+            elif '연결' in content and ('안됨' in content or '끊김' in content):
+                heart_analysis['task_success']['details'].append('네트워크 연결')
+            elif '소리' in content and '안남' in content:
+                heart_analysis['task_success']['details'].append('음성 기능')
+            elif '볼륨버튼' in content or '진동' in content:
+                heart_analysis['task_success']['details'].append('하드웨어 제어')
+            elif '백그라운드' in content or '자동으로' in content:
+                heart_analysis['task_success']['details'].append('백그라운드 처리')
+            elif '스팸정보' in content or '슬라이드' in content:
+                heart_analysis['task_success']['details'].append('UI 표시 문제')
+            elif '통화' in content or '전화' in content:
+                heart_analysis['task_success']['details'].append('통화 기능')
+            else:
+                heart_analysis['task_success']['details'].append('기능 오류')
+        
+        # Happiness - User satisfaction issues (check regardless of rating)
+        elif any(keyword in content for keyword in ['짜증', '최악', '실망', '화남', '불만', '별로', '구림', '싫어', '답답', '스트레스', '당황스러운', '불편', '기다려야', '문제']):
+            heart_analysis['happiness']['issues'].append(content)
+            if '최악' in content or '화남' in content:
+                heart_analysis['happiness']['details'].append('강한 불만')
+            elif '당황스러운' in content or '불편' in content:
+                heart_analysis['happiness']['details'].append('사용자 경험 저하')
+            else:
+                heart_analysis['happiness']['details'].append('만족도 저하')
+        
+        # Engagement - Usage patterns (check regardless of rating)
+        elif any(keyword in content for keyword in ['안써', '사용안함', '재미없', '지루', '흥미없', '별로안쓴', '가끔만', '좋지만', '하지만', '그런데', '다만', '아쉬운', '더', '추가', '개선', '향상', '좋겠네요']):
+            heart_analysis['engagement']['issues'].append(content)
+            if '좋지만' in content or '하지만' in content or '좋겠네요' in content:
+                heart_analysis['engagement']['details'].append('개선 제안')
+            else:
+                heart_analysis['engagement']['details'].append('사용 빈도 저하')
+        
+        # Retention - Churn indicators (check regardless of rating)
+        elif any(keyword in content for keyword in ['삭제', '해지', '그만', '안쓸', '다른거', '바꿀', '탈퇴', '포기', '중단']):
+            heart_analysis['retention']['issues'].append(content)
+            heart_analysis['retention']['details'].append('이탈 위험')
+        
+        # Adoption - Onboarding difficulties (check regardless of rating)
+        elif any(keyword in content for keyword in ['어려움', '복잡', '모르겠', '헷갈', '어떻게', '설명부족', '사용법', '가이드', '도움말']):
+            heart_analysis['adoption']['issues'].append(content)
+            heart_analysis['adoption']['details'].append('사용성 문제')
     
     # Generate insights based on actual review content analysis
     insights = []
@@ -283,6 +282,34 @@ def analyze_sentiments(reviews):
                     actual_issues.append('앱 크래시/강제 종료')
                 elif ('전화' in issue_text or '통화' in issue_text) and ('끊어' in issue_text or '받' in issue_text or '안됨' in issue_text or '끊김' in issue_text):
                     actual_issues.append('통화 기능 오류')
+                elif '통화중대기' in issue_text or ('통화중' in issue_text and '대기' in issue_text):
+                    actual_issues.append('통화중대기 기능 부재')
+                elif '애플워치' in issue_text or ('워치' in issue_text and ('호환' in issue_text or '안됨' in issue_text or '안되' in issue_text)):
+                    actual_issues.append('애플워치 호환성 문제')
+                elif '블루투스' in issue_text or ('에어팟' in issue_text and ('이상한' in issue_text or '소리' in issue_text)):
+                    actual_issues.append('블루투스/에어팟 호환성 문제')
+                elif '통화연결음' in issue_text or ('연결음' in issue_text and '시끄러' in issue_text):
+                    actual_issues.append('통화연결음 관련 문제')
+                elif '업데이트' in issue_text and ('문제' in issue_text or '안됨' in issue_text or '왜' in issue_text):
+                    actual_issues.append('업데이트 관련 문제')
+                elif '알뜰폰' in issue_text or ('가입하고' in issue_text and '안된다' in issue_text):
+                    actual_issues.append('알뜰폰 지원 문제')
+                elif '031' in issue_text or '070' in issue_text or '050' in issue_text or ('전화해도' in issue_text and '기록' in issue_text and '안' in issue_text):
+                    actual_issues.append('특정 번호 기록 누락 문제')
+                elif '볼륨버튼' in issue_text or ('볼륨' in issue_text and '버튼' in issue_text and '진동' in issue_text):
+                    actual_issues.append('볼륨버튼 진동 제어 문제')
+                elif '백그라운드' in issue_text and ('계속' in issue_text or '실행' in issue_text) and ('음악' in issue_text or '재생' in issue_text):
+                    actual_issues.append('백그라운드 앱 종료 문제')
+                elif '스팸정보' in issue_text or ('스팸' in issue_text and '정보' in issue_text and '딸려와서' in issue_text):
+                    actual_issues.append('스팸 정보 표시 문제')
+                elif '슬라이드' in issue_text and ('번호확인' in issue_text or '기다려야' in issue_text):
+                    actual_issues.append('UI 슬라이드 표시 문제')
+                elif '당황스러운' in issue_text or ('당황' in issue_text and '경험' in issue_text):
+                    actual_issues.append('사용자 경험 혼란')
+                elif '차량' in issue_text and ('블투' in issue_text or '블루투스' in issue_text) and '통화종료' in issue_text:
+                    actual_issues.append('차량 블루투스 연동 문제')
+                elif '전화' in issue_text and ('안받아지' in issue_text or '받아지지' in issue_text or '잘안받아지' in issue_text):
+                    actual_issues.append('전화 수신 불가 문제')
                 elif '연락처' in issue_text and ('검색' in issue_text or '조회' in issue_text or '안보입니다' in issue_text or '못해요' in issue_text):
                     actual_issues.append('연락처 검색/조회 불가')
                 elif '차단' in issue_text and ('자동' in issue_text or '가족' in issue_text or '해제' in issue_text):
@@ -335,6 +362,32 @@ def analyze_sentiments(reviews):
                     solution = "크래시 로그 분석 및 메모리 누수 수정, 안정성 테스트 강화"
                 elif most_common_issue == '통화 기능 오류':
                     solution = "통화 연결 로직 개선, 권한 관리 최적화, 통화 품질 테스트"
+                elif most_common_issue == '통화중대기 기능 부재':
+                    solution = "통화중대기 기능 개발, 콜센터 시스템 연동, 대기음 설정 기능 추가"
+                elif most_common_issue == '애플워치 호환성 문제':
+                    solution = "WatchOS 연동 API 업데이트, 워치 전용 UI/UX 개발, 거절/승인 버튼 추가"
+                elif most_common_issue == '블루투스/에어팟 호환성 문제':
+                    solution = "블루투스 오디오 코덱 최적화, 에어팟 프로필 지원 확대, 음성 라우팅 개선"
+                elif most_common_issue == '통화연결음 관련 문제':
+                    solution = "연결음 볼륨 조절 기능 추가, 사용자 맞춤 연결음 설정, 무음 모드 지원"
+                elif most_common_issue == '알뜰폰 지원 문제':
+                    solution = "알뜰폰 통신사 지원 확대, 인증 시스템 개선, 호환성 테스트 강화"
+                elif most_common_issue == '특정 번호 기록 누락 문제':
+                    solution = "통화 기록 DB 최적화, 모든 번호 형태 지원, 기록 누락 모니터링 시스템 구축"
+                elif most_common_issue == '볼륨버튼 진동 제어 문제':
+                    solution = "하드웨어 버튼 이벤트 처리 개선, 진동 제어 옵션 추가, 사용자 설정 기능 확대"
+                elif most_common_issue == '백그라운드 앱 종료 문제':
+                    solution = "통화 종료 시 백그라운드 앱 자동 종료 로직 추가, 오디오 세션 관리 개선"
+                elif most_common_issue == '스팸 정보 표시 문제':
+                    solution = "스팸 정보 표시 UI 개선, 슬라이드 애니메이션 속도 조절, 번호 우선 표시 옵션"
+                elif most_common_issue == 'UI 슬라이드 표시 문제':
+                    solution = "텍스트 슬라이드 속도 설정 기능, 정적 표시 모드 옵션, 사용자 맞춤 설정"
+                elif most_common_issue == '사용자 경험 혼란':
+                    solution = "직관적인 UI/UX 재설계, 사용자 가이드 개선, 예상치 못한 동작 방지"
+                elif most_common_issue == '차량 블루투스 연동 문제':
+                    solution = "차량 블루투스 프로파일 호환성 개선, 통화 종료 시 오디오 세션 정리 자동화"
+                elif most_common_issue == '전화 수신 불가 문제':
+                    solution = "전화 수신 알고리즘 개선, 네트워크 상태 체크 강화, 권한 관리 최적화"
                 elif most_common_issue == '연락처 검색/조회 불가':
                     solution = "연락처 DB 인덱싱 재구축, 검색 알고리즘 최적화, 권한 관리 점검"
                 elif most_common_issue == '자동 차단 오류':
@@ -447,6 +500,45 @@ def analyze_sentiments(reviews):
                 elif most_common_issue == '로그인/인증 문제':
                     predicted_problem = "로그인 실패로 인한 서비스 접근 불가"
                     realistic_solution = "인증 서버 모니터링 강화, 다중 인증 방식 제공, 로그인 실패 시 명확한 안내 메시지"
+                elif most_common_issue == '통화중대기 기능 부재':
+                    predicted_problem = "통화중대기 미지원으로 인한 업무 효율성 저하"
+                    realistic_solution = "통화중대기 기능 개발, 멀티태스킹 지원, 콜센터 시스템 연동"
+                elif most_common_issue == '애플워치 호환성 문제':
+                    predicted_problem = "웨어러블 기기 미지원으로 인한 접근성 제한"
+                    realistic_solution = "WatchOS 연동 개발, 워치 전용 UI 구현, 하드웨어 버튼 지원"
+                elif most_common_issue == '블루투스/에어팟 호환성 문제':
+                    predicted_problem = "오디오 기기 호환성 문제로 인한 사용자 경험 저하"
+                    realistic_solution = "블루투스 프로파일 지원 확대, 오디오 코덱 최적화, 기기별 테스트"
+                elif most_common_issue == '통화연결음 관련 문제':
+                    predicted_problem = "연결음 볼륨/설정 문제로 인한 사용자 불편"
+                    realistic_solution = "연결음 개인화 기능, 볼륨 조절 옵션, 무음 모드 지원"
+                elif most_common_issue == '알뜰폰 지원 문제':
+                    predicted_problem = "MVNO 미지원으로 인한 사용자 접근성 제한"
+                    realistic_solution = "알뜰폰 통신사 지원 확대, 인증 시스템 개선, 호환성 검증"
+                elif most_common_issue == '특정 번호 기록 누락 문제':
+                    predicted_problem = "통화 기록 누락으로 인한 업무 추적 어려움"
+                    realistic_solution = "통화 기록 DB 최적화, 모든 번호 형태 지원, 실시간 기록 검증"
+                elif most_common_issue == '볼륨버튼 진동 제어 문제':
+                    predicted_problem = "하드웨어 버튼 제어 문제로 인한 사용자 조작 불편"
+                    realistic_solution = "하드웨어 이벤트 처리 개선, 진동 제어 옵션 추가"
+                elif most_common_issue == '백그라운드 앱 종료 문제':
+                    predicted_problem = "통화 종료 후 백그라운드 프로세스 미정리로 인한 시스템 리소스 점유"
+                    realistic_solution = "통화 종료 시 백그라운드 앱 자동 종료, 오디오 세션 관리 개선"
+                elif most_common_issue == '스팸 정보 표시 문제':
+                    predicted_problem = "스팸 정보 슬라이드 표시로 인한 번호 확인 지연"
+                    realistic_solution = "스팸 정보 표시 UI 개선, 번호 우선 표시 옵션 제공"
+                elif most_common_issue == 'UI 슬라이드 표시 문제':
+                    predicted_problem = "텍스트 슬라이드 애니메이션으로 인한 정보 확인 지연"
+                    realistic_solution = "슬라이드 속도 조절, 정적 표시 모드 옵션 추가"
+                elif most_common_issue == '사용자 경험 혼란':
+                    predicted_problem = "예상치 못한 앱 동작으로 인한 사용자 혼란 및 스트레스"
+                    realistic_solution = "직관적인 UI/UX 재설계, 사용자 가이드 개선"
+                elif most_common_issue == '차량 블루투스 연동 문제':
+                    predicted_problem = "차량 블루투스 연동 불안정으로 인한 음성 통화 후 오디오 세션 문제"
+                    realistic_solution = "차량 블루투스 호환성 개선, 오디오 세션 정리 자동화"
+                elif most_common_issue == '전화 수신 불가 문제':
+                    predicted_problem = "전화 수신 실패로 인한 중요 통화 누락 위험"
+                    realistic_solution = "수신 알고리즘 개선, 네트워크 상태 체크 강화"
                 else:
                     predicted_problem = "핵심 기능 오류로 인한 작업 완료 불가"
                     realistic_solution = "기능별 안정성 테스트 강화, 오류 발생 시 복구 메커니즘 구축"
@@ -541,17 +633,18 @@ def analyze_sentiments(reviews):
                 if any(ord(char) >= 0xAC00 and ord(char) <= 0xD7A3 for char in word):
                     korean_words.append(word)
         
-        # Classify by sentiment with keyword filtering
-        if rating >= 4:  # Positive reviews
-            for word in korean_words:
-                # Only include if it contains positive keywords or has clear positive context
-                if any(pos_keyword in word for pos_keyword in positive_keywords) or word in positive_keywords:
-                    positive_words[word] = positive_words.get(word, 0) + 1
-        else:  # Negative reviews
-            for word in korean_words:
-                # Only include if it contains negative keywords or has clear negative context
-                if any(neg_keyword in word for neg_keyword in negative_keywords) or word in negative_keywords:
-                    negative_words[word] = negative_words.get(word, 0) + 1
+        # Classify by sentiment - analyze content regardless of rating to capture nuanced feedback
+        # Positive words (from positive context or expressions)
+        for word in korean_words:
+            if (word in ['좋아요', '만족', '편리', '유용', '도움', '감사', '최고', '완벽', '훌륭', '추천', '좋은', '좋다', '좋음', '괜찮', '잘됨', '잘되', '성공', '안정', '빠름', '정확', '깔끔', '간편', '쉬움', '쉽다', '쉬운', '보이스피싱', '막아줘서', '요약', '텍스트', '잘사용', '사용하고', '있습니다'] or
+                '좋' in word or '만족' in word or '편리' in word or '유용' in word or '도움' in word or '감사' in word or '최고' in word or '완벽' in word or '훌륭' in word or '추천' in word or '보이스피싱' in word):
+                positive_words[word] = positive_words.get(word, 0) + 1
+        
+        # Negative words (from problematic context or expressions)
+        for word in korean_words:
+            if (word in ['문제', '오류', '안됨', '끊김', '불편', '어려움', '느림', '튕김', '크래시', '실패', '짜증', '최악', '버그', '에러', '안되', '못함', '안함', '실망', '화남', '답답', '스트레스', '귀찮', '번거롭', '힘들', '어렵', '복잡', '헷갈', '혼란', '불안', '걱정', '의심', '통화중대기', '연결안됨', '끊어짐', '업데이트', '안됩니까', '끊어지고', '쓰레기어플', '애플워치', '호환', '안되는', '부재중', '빈번함', '블루투스', '네비게이션', '통화연결음', '시끄러워죽겠습니다', '바꿉시다', '볼륨버튼', '진동', '꺼지면', '당황스러운', '백그라운드', '계속실행', '자동으로', '넘어가지', '스팸정보', '딸려와서', '슬라이드', '번호확인', '기다려야', '차량', '블투', '안받아지', '받아지지'] or
+                '문제' in word or '오류' in word or '안됨' in word or '끊김' in word or '불편' in word or '어려움' in word or '느림' in word or '튕김' in word or '크래시' in word or '실패' in word or '짜증' in word or '최악' in word or '버그' in word or '에러' in word or '안되' in word or '못함' in word or '통화' in word or '연결' in word or '끊어' in word or '당황' in word or '백그라운드' in word or '스팸' in word or '슬라이드' in word):
+                negative_words[word] = negative_words.get(word, 0) + 1
     
     # Convert to word cloud format (top 10 each as requested)
     positive_cloud = [{'word': word, 'frequency': freq, 'sentiment': 'positive'} 
