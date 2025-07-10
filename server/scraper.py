@@ -604,17 +604,14 @@ def analyze_sentiments(reviews):
                 if any(ord(char) >= 0xAC00 and ord(char) <= 0xD7A3 for char in word):
                     korean_words.append(word)
         
-        # Classify by sentiment - analyze content regardless of rating to capture nuanced feedback
-        # Positive words (from positive context or expressions)
-        for word in korean_words:
-            if (word in ['좋아요', '만족', '편리', '유용', '도움', '감사', '최고', '완벽', '훌륭', '추천', '좋은', '좋다', '좋음', '괜찮', '잘됨', '잘되', '성공', '안정', '빠름', '정확', '깔끔', '간편', '쉬움', '쉽다', '쉬운', '보이스피싱', '막아줘서', '요약', '텍스트', '잘사용', '사용하고', '있습니다'] or
-                '좋' in word or '만족' in word or '편리' in word or '유용' in word or '도움' in word or '감사' in word or '최고' in word or '완벽' in word or '훌륭' in word or '추천' in word or '보이스피싱' in word):
-                positive_words[word] = positive_words.get(word, 0) + 1
+        # Use sentiment from review to classify words
+        review_sentiment = review.get('sentiment', 'neutral')
         
-        # Negative words (from problematic context or expressions)
+        # Add all meaningful Korean words to their respective sentiment categories
         for word in korean_words:
-            if (word in ['문제', '오류', '안됨', '끊김', '불편', '어려움', '느림', '튕김', '크래시', '실패', '짜증', '최악', '버그', '에러', '안되', '못함', '안함', '실망', '화남', '답답', '스트레스', '귀찮', '번거롭', '힘들', '어렵', '복잡', '헷갈', '혼란', '불안', '걱정', '의심', '통화중대기', '연결안됨', '끊어짐', '업데이트', '안됩니까', '끊어지고', '쓰레기어플', '애플워치', '호환', '안되는', '부재중', '빈번함', '블루투스', '네비게이션', '통화연결음', '시끄러워죽겠습니다', '바꿉시다', '볼륨버튼', '진동', '꺼지면', '당황스러운', '백그라운드', '계속실행', '자동으로', '넘어가지', '스팸정보', '딸려와서', '슬라이드', '번호확인', '기다려야', '차량', '블투', '안받아지', '받아지지'] or
-                '문제' in word or '오류' in word or '안됨' in word or '끊김' in word or '불편' in word or '어려움' in word or '느림' in word or '튕김' in word or '크래시' in word or '실패' in word or '짜증' in word or '최악' in word or '버그' in word or '에러' in word or '안되' in word or '못함' in word or '통화' in word or '연결' in word or '끊어' in word or '당황' in word or '백그라운드' in word or '스팸' in word or '슬라이드' in word):
+            if review_sentiment == 'positive':
+                positive_words[word] = positive_words.get(word, 0) + 1
+            elif review_sentiment == 'negative':
                 negative_words[word] = negative_words.get(word, 0) + 1
     
     # Convert to word cloud format (top 10 each as requested)
