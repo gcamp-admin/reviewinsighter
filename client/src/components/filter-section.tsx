@@ -245,9 +245,6 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
               className="w-full"
               placeholder="분석 시작 날짜를 선택하세요"
             />
-            <p className="text-xs text-gray-500">
-              📅 분석을 위해 시작 날짜는 반드시 입력해야 합니다
-            </p>
           </div>
 
           <div className="space-y-3">
@@ -260,9 +257,6 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
               className="w-full"
               placeholder="분석 종료 날짜를 선택하세요"
             />
-            <p className="text-xs text-gray-500">
-              📅 미입력시 오늘 날짜로 자동 설정됩니다
-            </p>
           </div>
 
           {/* Review Collection Button - Moved to rightmost position */}
