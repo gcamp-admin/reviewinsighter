@@ -52,7 +52,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle sentiment parameter
       const sentiment = req.query.sentiment as string;
       
+      // Handle service ID parameter
+      const serviceId = req.query.serviceId as string;
+      
       const filters = {
+        serviceId: serviceId || undefined,
         source: source && source.length > 0 ? source : undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
@@ -87,7 +91,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle sentiment parameter
       const sentiment = req.query.sentiment as string;
       
+      // Handle service ID parameter
+      const serviceId = req.query.serviceId as string;
+      
       const filters = {
+        serviceId: serviceId || undefined,
         source: source && source.length > 0 ? source : undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
