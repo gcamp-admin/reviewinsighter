@@ -611,7 +611,7 @@ def analyze_sentiments(reviews):
             # Generate UX-focused improvement suggestions based on actual user review content
             ux_improvement_suggestions = generate_realistic_ux_suggestions(category, most_common_issue, data['issues'], predicted_problem, quotes_text)
             
-            description = f"""**HEART 항목**: {heart_category_ko.get(category, category)}
+            description = f"""**HEART 항목**: {category}
 **문제 요약**: {quotes_text}에서 드러나는 {predicted_problem}
 **UX 개선 제안**: {ux_improvement_suggestions}
 **우선순위**: {priority.upper()}"""
