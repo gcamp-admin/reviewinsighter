@@ -258,6 +258,7 @@ def analyze_sentiments(reviews):
         if data['issues']:
             print(f"    First issue: {data['issues'][0][:50]}...", file=sys.stderr)
     
+    # Generate insights based on the analyzed HEART categories
     for category, data in heart_analysis.items():
         if data['issues']:
             count = len(data['issues'])
@@ -274,7 +275,7 @@ def analyze_sentiments(reviews):
                 priority = "minor"
                 priority_emoji = "🟢"
             
-            # Analyze actual review content to identify specific problems and solutions
+            # Analyze actual review content to identify specific problems
             actual_issues = []
             for issue_text in data['issues']:
                 # Extract key phrases and issues from actual reviews
@@ -282,66 +283,14 @@ def analyze_sentiments(reviews):
                     actual_issues.append('앱 크래시/강제 종료')
                 elif ('전화' in issue_text or '통화' in issue_text) and ('끊어' in issue_text or '받' in issue_text or '안됨' in issue_text or '끊김' in issue_text):
                     actual_issues.append('통화 기능 오류')
-                elif '통화중대기' in issue_text or ('통화중' in issue_text and '대기' in issue_text):
-                    actual_issues.append('통화중대기 기능 부재')
-                elif '애플워치' in issue_text or ('워치' in issue_text and ('호환' in issue_text or '안됨' in issue_text or '안되' in issue_text)):
-                    actual_issues.append('애플워치 호환성 문제')
-                elif '블루투스' in issue_text or ('에어팟' in issue_text and ('이상한' in issue_text or '소리' in issue_text)):
-                    actual_issues.append('블루투스/에어팟 호환성 문제')
-                elif '통화연결음' in issue_text or ('연결음' in issue_text and '시끄러' in issue_text):
-                    actual_issues.append('통화연결음 관련 문제')
-                elif '업데이트' in issue_text and ('문제' in issue_text or '안됨' in issue_text or '왜' in issue_text):
-                    actual_issues.append('업데이트 관련 문제')
-                elif '알뜰폰' in issue_text or ('가입하고' in issue_text and '안된다' in issue_text):
-                    actual_issues.append('알뜰폰 지원 문제')
-                elif '031' in issue_text or '070' in issue_text or '050' in issue_text or ('전화해도' in issue_text and '기록' in issue_text and '안' in issue_text):
-                    actual_issues.append('특정 번호 기록 누락 문제')
-                elif '볼륨버튼' in issue_text or ('볼륨' in issue_text and '버튼' in issue_text and '진동' in issue_text):
-                    actual_issues.append('볼륨버튼 진동 제어 문제')
-                elif '백그라운드' in issue_text and ('계속' in issue_text or '실행' in issue_text) and ('음악' in issue_text or '재생' in issue_text):
-                    actual_issues.append('백그라운드 앱 종료 문제')
-                elif '스팸정보' in issue_text or ('스팸' in issue_text and '정보' in issue_text and '딸려와서' in issue_text):
-                    actual_issues.append('스팸 정보 표시 문제')
-                elif '슬라이드' in issue_text and ('번호확인' in issue_text or '기다려야' in issue_text):
-                    actual_issues.append('UI 슬라이드 표시 문제')
-                elif '당황스러운' in issue_text or ('당황' in issue_text and '경험' in issue_text):
-                    actual_issues.append('사용자 경험 혼란')
-                elif '차량' in issue_text and ('블투' in issue_text or '블루투스' in issue_text) and '통화종료' in issue_text:
-                    actual_issues.append('차량 블루투스 연동 문제')
-                elif '전화' in issue_text and ('안받아지' in issue_text or '받아지지' in issue_text or '잘안받아지' in issue_text):
-                    actual_issues.append('전화 수신 불가 문제')
-                elif '연락처' in issue_text and ('검색' in issue_text or '조회' in issue_text or '안보입니다' in issue_text or '못해요' in issue_text):
-                    actual_issues.append('연락처 검색/조회 불가')
-                elif '차단' in issue_text and ('자동' in issue_text or '가족' in issue_text or '해제' in issue_text):
-                    actual_issues.append('자동 차단 오류')
-                elif '전화' in issue_text and ('끊긴다' in issue_text or '끊김' in issue_text or '일림' in issue_text):
-                    actual_issues.append('통화 끊김/알림 실패')
-                elif '애플워치' in issue_text or ('워치' in issue_text and '호환' in issue_text):
-                    actual_issues.append('애플워치 호환성 문제')
-                elif '버벅' in issue_text or ('아이폰' in issue_text and '프로' in issue_text and '버벅' in issue_text):
-                    actual_issues.append('성능 저하 (최신 기기)')
-                elif '단축번호' in issue_text or ('단축' in issue_text and '설정' in issue_text):
-                    actual_issues.append('단축번호 설정 오류')
-                elif '로그인' in issue_text or '인증' in issue_text or '로그' in issue_text:
-                    actual_issues.append('로그인/인증 문제')
-                elif '느림' in issue_text or '지연' in issue_text:
-                    actual_issues.append('성능 저하')
                 elif '연결' in issue_text or '네트워크' in issue_text or '접속' in issue_text:
                     actual_issues.append('네트워크 연결 문제')
-                elif '블루투스' in issue_text or '음질' in issue_text or '소리' in issue_text:
-                    actual_issues.append('오디오 품질 문제')
-                elif '업데이트' in issue_text or '개선' in issue_text:
-                    actual_issues.append('업데이트 관련 문제')
-                elif '기기' in issue_text or '폰' in issue_text or '호환' in issue_text:
-                    actual_issues.append('기기 호환성 문제')
-                elif '불편' in issue_text or '복잡' in issue_text or '어려움' in issue_text:
-                    actual_issues.append('사용성 문제')
+                elif '로그인' in issue_text or '인증' in issue_text or '로그' in issue_text:
+                    actual_issues.append('로그인/인증 문제')
                 elif '삭제' in issue_text or '해지' in issue_text or '그만' in issue_text:
                     actual_issues.append('서비스 중단 의도')
-                elif '법인' in issue_text or '이용제한' in issue_text or '제한' in issue_text:
-                    actual_issues.append('이용 제한 문제')
-                elif '검색' in issue_text or '조회' in issue_text or '찾기' in issue_text:
-                    actual_issues.append('검색/조회 기능 오류')
+                elif '불편' in issue_text or '복잡' in issue_text or '어려움' in issue_text:
+                    actual_issues.append('사용성 문제')
                 else:
                     actual_issues.append('기타 문제')
             
@@ -352,142 +301,6 @@ def analyze_sentiments(reviews):
             else:
                 most_common_issue = '기타 문제'
                 issue_count = count
-            
-            # Generate specific problems and solutions based on actual review content
-            if category == 'task_success':
-                title = "Task Success: 핵심 기능 안정성"
-                problem = f"{most_common_issue} {issue_count}건 발생"
-                
-                if most_common_issue == '앱 크래시/강제 종료':
-                    solution = "크래시 로그 분석 및 메모리 누수 수정, 안정성 테스트 강화"
-                elif most_common_issue == '통화 기능 오류':
-                    solution = "통화 연결 로직 개선, 권한 관리 최적화, 통화 품질 테스트"
-                elif most_common_issue == '통화중대기 기능 부재':
-                    solution = "통화중대기 기능 개발, 콜센터 시스템 연동, 대기음 설정 기능 추가"
-                elif most_common_issue == '애플워치 호환성 문제':
-                    solution = "WatchOS 연동 API 업데이트, 워치 전용 UI/UX 개발, 거절/승인 버튼 추가"
-                elif most_common_issue == '블루투스/에어팟 호환성 문제':
-                    solution = "블루투스 오디오 코덱 최적화, 에어팟 프로필 지원 확대, 음성 라우팅 개선"
-                elif most_common_issue == '통화연결음 관련 문제':
-                    solution = "연결음 볼륨 조절 기능 추가, 사용자 맞춤 연결음 설정, 무음 모드 지원"
-                elif most_common_issue == '알뜰폰 지원 문제':
-                    solution = "알뜰폰 통신사 지원 확대, 인증 시스템 개선, 호환성 테스트 강화"
-                elif most_common_issue == '특정 번호 기록 누락 문제':
-                    solution = "통화 기록 DB 최적화, 모든 번호 형태 지원, 기록 누락 모니터링 시스템 구축"
-                elif most_common_issue == '볼륨버튼 진동 제어 문제':
-                    solution = "하드웨어 버튼 이벤트 처리 개선, 진동 제어 옵션 추가, 사용자 설정 기능 확대"
-                elif most_common_issue == '백그라운드 앱 종료 문제':
-                    solution = "통화 종료 시 백그라운드 앱 자동 종료 로직 추가, 오디오 세션 관리 개선"
-                elif most_common_issue == '스팸 정보 표시 문제':
-                    solution = "스팸 정보 표시 UI 개선, 슬라이드 애니메이션 속도 조절, 번호 우선 표시 옵션"
-                elif most_common_issue == 'UI 슬라이드 표시 문제':
-                    solution = "텍스트 슬라이드 속도 설정 기능, 정적 표시 모드 옵션, 사용자 맞춤 설정"
-                elif most_common_issue == '사용자 경험 혼란':
-                    solution = "직관적인 UI/UX 재설계, 사용자 가이드 개선, 예상치 못한 동작 방지"
-                elif most_common_issue == '차량 블루투스 연동 문제':
-                    solution = "차량 블루투스 프로파일 호환성 개선, 통화 종료 시 오디오 세션 정리 자동화"
-                elif most_common_issue == '전화 수신 불가 문제':
-                    solution = "전화 수신 알고리즘 개선, 네트워크 상태 체크 강화, 권한 관리 최적화"
-                elif most_common_issue == '연락처 검색/조회 불가':
-                    solution = "연락처 DB 인덱싱 재구축, 검색 알고리즘 최적화, 권한 관리 점검"
-                elif most_common_issue == '자동 차단 오류':
-                    solution = "차단 알고리즘 로직 수정, 가족/지인 번호 화이트리스트 기능 추가"
-                elif most_common_issue == '통화 끊김/알림 실패':
-                    solution = "통화 연결 안정성 강화, 푸시 알림 시스템 점검, 백그라운드 처리 개선"
-                elif most_common_issue == '애플워치 호환성 문제':
-                    solution = "WatchOS 연동 API 업데이트, 워치 전용 UI/UX 개발, 거절/승인 버튼 추가"
-                elif most_common_issue == '성능 저하 (최신 기기)':
-                    solution = "최신 iOS 최적화, 메모리 사용량 분석 및 개선, GPU 렌더링 최적화"
-                elif most_common_issue == '단축번호 설정 오류':
-                    solution = "단축번호 API 로직 재작성, 설정 저장/불러오기 기능 개선"
-                elif most_common_issue == '로그인/인증 문제':
-                    solution = "인증 서버 안정성 개선, 토큰 관리 시스템 점검"
-                elif most_common_issue == '성능 저하':
-                    solution = "UI 렌더링 최적화, 백그라운드 처리 개선"
-                elif most_common_issue == '네트워크 연결 문제':
-                    solution = "네트워크 재시도 로직 추가, 오프라인 모드 지원"
-                elif most_common_issue == '오디오 품질 문제':
-                    solution = "오디오 코덱 최적화, 블루투스 호환성 개선"
-                elif most_common_issue == '검색/조회 기능 오류':
-                    solution = "검색 인덱스 최적화, 조회 쿼리 성능 개선, 데이터 캐싱 강화"
-                elif most_common_issue == '이용 제한 문제':
-                    solution = "법인 사용자 정책 검토, 이용 제한 조건 완화, 사용자 권한 관리 개선"
-                else:
-                    solution = "핵심 기능 QA 테스트 강화, 버그 수정 프로세스 개선"
-                    
-            elif category == 'happiness':
-                title = "Happiness: 사용자 만족도 개선"
-                problem = f"{most_common_issue} {issue_count}건으로 인한 사용자 불만"
-                
-                if most_common_issue == '앱 크래시/강제 종료':
-                    solution = "크래시 로그 분석 및 메모리 누수 수정, 안정성 테스트 강화"
-                elif most_common_issue == '로그인/인증 문제':
-                    solution = "인증 서버 안정성 개선, 토큰 관리 시스템 점검"
-                elif most_common_issue == '애플워치 호환성 문제':
-                    solution = "WatchOS 연동 API 업데이트, 워치 전용 UI/UX 개발, 거절/승인 버튼 추가"
-                elif most_common_issue == '성능 저하 (최신 기기)':
-                    solution = "최신 iOS 최적화, 메모리 사용량 분석 및 개선, GPU 렌더링 최적화"
-                elif most_common_issue == '자동 차단 오류':
-                    solution = "차단 알고리즘 로직 수정, 가족/지인 번호 화이트리스트 기능 추가"
-                elif most_common_issue == '사용성 문제':
-                    solution = "UI/UX 개선, 사용자 피드백 반영한 인터페이스 재설계"
-                elif most_common_issue == '성능 저하':
-                    solution = "앱 성능 최적화, 로딩 시간 단축, 반응성 개선"
-                elif most_common_issue == '기기 호환성 문제':
-                    solution = "다양한 기기 테스트 확대, 호환성 매트릭스 구축"
-                else:
-                    solution = "사용자 만족도 조사 실시, 주요 불만 사항 우선 해결"
-                
-            elif category == 'engagement':
-                title = "Engagement: 사용자 참여도 증대"
-                problem = f"{most_common_issue} {issue_count}건으로 인한 사용 빈도 저하"
-                
-                if most_common_issue == '업데이트 관련 문제':
-                    solution = "정기적인 기능 업데이트, 사용자 요청 기능 우선 개발"
-                elif most_common_issue == '사용성 문제':
-                    solution = "핵심 기능 접근성 개선, 직관적인 네비게이션 제공"
-                else:
-                    solution = "사용자 참여를 높이는 새로운 기능 추가, 개인화 서비스 강화"
-                
-            elif category == 'retention':
-                title = "Retention: 사용자 유지율 개선"
-                problem = f"{most_common_issue} {issue_count}건으로 인한 이탈 위험"
-                
-                if most_common_issue == '서비스 중단 의도':
-                    solution = "이탈 예방 프로그램 운영, 고객 서비스 강화, 핵심 가치 재강조"
-                elif most_common_issue == '앱 크래시/강제 종료':
-                    solution = "크래시 로그 분석 및 메모리 누수 수정, 안정성 테스트 강화"
-                elif most_common_issue == '로그인/인증 문제':
-                    solution = "인증 서버 안정성 개선, 토큰 관리 시스템 점검"
-                elif most_common_issue == '연락처 검색/조회 불가':
-                    solution = "연락처 DB 인덱싱 재구축, 검색 알고리즘 최적화, 권한 관리 점검"
-                elif most_common_issue == '자동 차단 오류':
-                    solution = "차단 알고리즘 로직 수정, 가족/지인 번호 화이트리스트 기능 추가"
-                elif most_common_issue == '통화 끊김/알림 실패':
-                    solution = "통화 연결 안정성 강화, 푸시 알림 시스템 점검, 백그라운드 처리 개선"
-                elif most_common_issue == '애플워치 호환성 문제':
-                    solution = "WatchOS 연동 API 업데이트, 워치 전용 UI/UX 개발, 거절/승인 버튼 추가"
-                elif most_common_issue == '성능 저하 (최신 기기)':
-                    solution = "최신 iOS 최적화, 메모리 사용량 분석 및 개선, GPU 렌더링 최적화"
-                elif most_common_issue == '사용성 문제':
-                    solution = "사용자 온보딩 개선, 지속적인 가치 제공 방안 마련"
-                else:
-                    solution = "사용자 유지율 분석, 맞춤형 리텐션 전략 수립"
-                
-            elif category == 'adoption':
-                title = "Adoption: 신규 사용자 적응 지원"
-                problem = f"{most_common_issue} {issue_count}건으로 인한 신규 사용자 적응 어려움"
-                
-                if most_common_issue == '앱 크래시/강제 종료':
-                    solution = "크래시 로그 분석 및 메모리 누수 수정, 안정성 테스트 강화"
-                elif most_common_issue == '로그인/인증 문제':
-                    solution = "인증 서버 안정성 개선, 토큰 관리 시스템 점검"
-                elif most_common_issue == '사용성 문제':
-                    solution = "온보딩 프로세스 간소화, 단계별 가이드 제공, 튜토리얼 개선"
-                elif most_common_issue == '기기 호환성 문제':
-                    solution = "다양한 기기 지원 확대, 설치 가이드 개선"
-                else:
-                    solution = "신규 사용자 경험 최적화, 초기 사용 장벽 제거"
             
             # Generate realistic problem prediction and solution based on HEART category
             predicted_problem = ""
@@ -618,7 +431,7 @@ def analyze_sentiments(reviews):
 
             insights.append({
                 'id': insight_id,
-                'title': f"{priority_emoji} {priority.title()} | {most_common_issue} ({count}건)",
+                'title': f"{priority_emoji} {priority.title()} | HEART: {category} | {most_common_issue} ({count}건)",
                 'description': description,
                 'priority': priority,
                 'mentionCount': count,

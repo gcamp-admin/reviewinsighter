@@ -89,7 +89,6 @@ export default function UxInsights({ filters }: UxInsightsProps) {
     
     let heartCategory = '';
     let problemSummary = '';
-    let solutionMethod = '';
     let uxImprovementPoints = '';
     let priority = '';
     
@@ -99,8 +98,6 @@ export default function UxInsights({ filters }: UxInsightsProps) {
         heartCategory = line.replace('**HEART 항목**:', '').trim();
       } else if (line.startsWith('**문제 요약**:')) {
         problemSummary = line.replace('**문제 요약**:', '').trim();
-      } else if (line.startsWith('**해결 방안**:')) {
-        solutionMethod = line.replace('**해결 방안**:', '').trim();
       } else if (line.startsWith('**UX 개선 제안**:')) {
         uxImprovementPoints = line.replace('**UX 개선 제안**:', '').trim();
       } else if (line.startsWith('**UX개선 포인트**:')) {
@@ -113,7 +110,6 @@ export default function UxInsights({ filters }: UxInsightsProps) {
     return {
       heartCategory,
       problemSummary,
-      solutionMethod,
       uxImprovementPoints,
       priority
     };
@@ -165,18 +161,15 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                   key={insight.id}
                   className="space-y-2 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  {/* Title with Priority Badge */}
+                  {/* Title with Priority Badge and HEART Category */}
                   <div className="flex items-center gap-2 mb-3">
                     <Badge className={getPriorityColor(insight.priority)}>
                       {insight.priority === "critical" ? "🔴 Critical" : 
                        insight.priority === "major" ? "🟡 Major" : "🟢 Minor"}
                     </Badge>
-                    <span className="font-medium">{insight.title}</span>
-                  </div>
-                  
-                  {/* HEART Category */}
-                  <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">
-                    📊 HEART 항목: {parsedInsight.heartCategory}
+                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                      📊 HEART 항목: {parsedInsight.heartCategory}
+                    </div>
                   </div>
                   
                   {/* Problem Summary with User Quotes */}
@@ -186,16 +179,6 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                     </div>
                     <div className="text-sm text-muted-foreground italic bg-red-50 dark:bg-red-900/10 p-2 rounded border-l-2 border-red-200 dark:border-red-800">
                       {parsedInsight.problemSummary}
-                    </div>
-                  </div>
-                  
-                  {/* Solution Method */}
-                  <div className="mb-3">
-                    <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-                      💡 해결 방안
-                    </div>
-                    <div className="text-sm text-muted-foreground bg-green-50 dark:bg-green-900/10 p-2 rounded border-l-2 border-green-200 dark:border-green-800">
-                      {parsedInsight.solutionMethod}
                     </div>
                   </div>
                   
