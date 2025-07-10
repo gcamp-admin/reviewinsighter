@@ -121,10 +121,17 @@ export default function WordCloud({ filters }: WordCloudProps) {
     );
   };
 
-  // Don't show component at all if no data exists
-  if ((!positiveWords || positiveWords.length === 0) && (!negativeWords || negativeWords.length === 0)) {
-    return null;
-  }
+  // Always show component - let individual sections handle empty states
+  const hasData = (positiveWords && positiveWords.length > 0) || (negativeWords && negativeWords.length > 0);
+  
+  console.log("WordCloud render decision:", {
+    hasData,
+    positiveCount: positiveWords?.length || 0,
+    negativeCount: negativeWords?.length || 0,
+    positiveLoading,
+    negativeLoading,
+    filters
+  });
 
   return (
     <Card>

@@ -245,7 +245,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <Label className="text-sm font-medium">리뷰 수집</Label>
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo}
+              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {collectReviewsMutation.isPending ? (
@@ -270,11 +270,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 최소 하나의 스토어를 선택해주세요
               </p>
             )}
-            {localFilters.service && localFilters.source.length > 0 && (!localFilters.dateFrom || !localFilters.dateTo) && (
-              <p className="text-xs text-red-500 mt-1">
-                시작 날짜와 종료 날짜를 모두 선택해주세요
-              </p>
-            )}
+
           </div>
         </div>
 
