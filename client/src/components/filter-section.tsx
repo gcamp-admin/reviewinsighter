@@ -264,7 +264,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <Label className="text-sm font-medium">리뷰 수집</Label>
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0}
+              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {collectReviewsMutation.isPending ? (
