@@ -605,10 +605,13 @@ def analyze_sentiments(reviews):
                 'adoption': '신규 사용자 적응'
             }
             
+            # Generate specific UX improvement examples based on the category and issues
+            ux_improvement_examples = generate_ux_improvement_points(category, most_common_issue, data['issues'])
+            
             description = f"""**HEART 항목**: {heart_category_ko.get(category, category)}
 **문제 요약**: {quotes_text}에서 드러나는 {predicted_problem}
 **해결 방안**: {realistic_solution}
-**기술적 구현**: {solution}
+**UX개선 포인트**: {ux_improvement_examples}
 **우선순위**: {priority.upper()}"""
 
             insights.append({
@@ -688,6 +691,69 @@ def analyze_sentiments(reviews):
             'negative': negative_cloud
         }
     }
+
+def generate_ux_improvement_points(category, issue_type, issues):
+    """
+    Generate specific UX improvement examples based on HEART category and issue type
+    """
+    # Sample some issues for context
+    sample_issues = issues[:3] if len(issues) > 3 else issues
+    
+    if category == 'task_success':
+        if '통화' in issue_type or '전화' in issue_type:
+            return """📱 통화 품질 시각화 대시보드: 실시간 통화 품질 표시 (신호 강도, 지연시간, 음성 품질)
+🔄 원터치 재연결 버튼: 통화 끊김 시 즉시 재연결 가능한 플로팅 버튼 추가
+⚠️ 통화 전 네트워크 상태 체크: 통화 시작 전 연결 품질 미리 알림 (빨간/노란/초록 아이콘)
+🎚️ 볼륨 컨트롤 개선: 통화 중 볼륨 조절 시 진동/벨소리 자동 정지 토글"""
+        elif 'CCTV' in issue_type or '화면' in issue_type:
+            return """📱 핀치 줌 제스처 활성화: 두 손가락으로 확대/축소 가능한 직관적 인터페이스
+🖥️ 멀티 뷰 모드: 4분할/9분할 화면으로 여러 카메라 동시 모니터링
+📋 즐겨찾기 카메라: 자주 확인하는 카메라를 상단에 고정 표시
+🔄 자동 새로고침 간격 설정: 1초/3초/5초 자동 갱신 옵션"""
+        elif '앱' in issue_type and '튕김' in issue_type:
+            return """🛡️ 앱 안정성 모니터링: 크래시 발생 시 자동 재시작 및 이전 상태 복원
+💾 세션 자동 저장: 5초마다 사용자 상태 자동 저장으로 데이터 손실 방지
+🔄 오프라인 모드: 네트워크 불안정 시 캐시된 데이터로 기본 기능 유지
+⚡ 경량 모드: 저사양 기기용 단순화된 UI 및 기능 제공"""
+        else:
+            return """🎯 작업 완료 체크리스트: 사용자가 수행해야 할 단계별 가이드 제공
+📊 진행률 표시: 작업 완료도를 시각적으로 표시하는 프로그레스 바
+🔍 실시간 오류 감지: 문제 발생 시 즉시 알림 및 해결 방안 제시
+⚡ 빠른 액세스 메뉴: 자주 사용하는 기능을 홈 화면에 바로가기 제공"""
+    
+    elif category == 'happiness':
+        return """😊 사용자 피드백 실시간 반영: 앱 내 간단한 만족도 평가 (👍/👎) 버튼
+🎨 개인화 테마: 사용자 선호에 따른 색상/폰트 커스터마이징 옵션  
+🏆 성취감 제공: 기능 사용 시 작은 애니메이션과 성공 메시지 표시
+📱 사용 가이드 툴팁: 새로운 기능 사용 시 친근한 안내 말풍선 제공
+🔔 긍정적 알림: '오늘 통화 품질이 좋았습니다' 같은 격려 메시지"""
+    
+    elif category == 'engagement':
+        return """📈 사용 통계 시각화: 주간/월간 사용 패턴을 예쁜 차트로 표시
+🎯 개인 목표 설정: 통화 시간, 앱 사용 빈도 등 개인 목표 설정 기능
+🔔 스마트 알림: 사용자 패턴 기반 맞춤형 알림 (점심시간, 퇴근시간 등)
+🎁 사용 보상: 연속 사용일수에 따른 작은 혜택 제공
+📱 위젯 제공: 홈 화면에서 바로 확인 가능한 간단한 정보 표시"""
+    
+    elif category == 'retention':
+        return """🔄 사용 이력 백업: 클라우드 동기화로 기기 변경 시에도 설정 유지
+📊 개인화 대시보드: 사용자별 맞춤 정보 배치 및 자주 쓰는 기능 우선 표시
+🎯 단계별 온보딩: 신규 사용자를 위한 친근한 3단계 가이드 투어
+⚡ 빠른 복구: 앱 삭제 후 재설치 시 기존 설정 1초 복원 기능
+🔔 재방문 유도: 며칠 사용하지 않을 시 유용한 기능 소개 알림"""
+    
+    elif category == 'adoption':
+        return """🚀 3분 퀵 스타트: 핵심 기능 3개만 체험해보는 간단한 튜토리얼
+📱 무료 체험: 프리미엄 기능 7일 무료 체험 후 필요시 업그레이드
+🎯 목적별 설정: '통화용', 'CCTV용', '종합관리용' 등 사용 목적에 따른 초기 설정
+📞 실시간 헬프: 막히는 부분 있을 때 채팅으로 즉시 도움 받기
+🏃 원클릭 시작: 복잡한 설정 없이 바로 사용 가능한 '빠른 시작' 모드"""
+    
+    else:
+        return """🎯 사용자 중심 개선: 실제 사용 패턴 분석 기반 UI/UX 최적화
+📱 접근성 향상: 큰 버튼, 명확한 라벨, 직관적인 아이콘 사용
+🔄 피드백 루프: 사용자 의견 수집 → 개선 → 결과 공유 순환 구조
+⚡ 성능 최적화: 로딩 시간 단축 및 메모리 사용량 개선"""
 
 def main():
     """Main function to run the scraper"""

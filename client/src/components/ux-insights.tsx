@@ -90,7 +90,7 @@ export default function UxInsights({ filters }: UxInsightsProps) {
     let heartCategory = '';
     let problemSummary = '';
     let solutionMethod = '';
-    let technicalImplementation = '';
+    let uxImprovementPoints = '';
     let priority = '';
     
     for (let i = 0; i < lines.length; i++) {
@@ -101,8 +101,8 @@ export default function UxInsights({ filters }: UxInsightsProps) {
         problemSummary = line.replace('**문제 요약**:', '').trim();
       } else if (line.startsWith('**해결 방안**:')) {
         solutionMethod = line.replace('**해결 방안**:', '').trim();
-      } else if (line.startsWith('**기술적 구현**:')) {
-        technicalImplementation = line.replace('**기술적 구현**:', '').trim();
+      } else if (line.startsWith('**UX개선 포인트**:')) {
+        uxImprovementPoints = line.replace('**UX개선 포인트**:', '').trim();
       } else if (line.startsWith('**우선순위**:')) {
         priority = line.replace('**우선순위**:', '').trim();
       }
@@ -112,7 +112,7 @@ export default function UxInsights({ filters }: UxInsightsProps) {
       heartCategory,
       problemSummary,
       solutionMethod,
-      technicalImplementation,
+      uxImprovementPoints,
       priority
     };
   };
@@ -197,13 +197,13 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                     </div>
                   </div>
                   
-                  {/* Technical Implementation */}
+                  {/* UX Improvement Points */}
                   <div className="mb-2">
                     <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
-                      🔧 기술적 구현
+                      🎯 UX개선 포인트
                     </div>
-                    <div className="text-sm text-muted-foreground bg-purple-50 dark:bg-purple-900/10 p-2 rounded border-l-2 border-purple-200 dark:border-purple-800">
-                      {parsedInsight.technicalImplementation}
+                    <div className="text-sm text-muted-foreground bg-purple-50 dark:bg-purple-900/10 p-2 rounded border-l-2 border-purple-200 dark:border-purple-800 whitespace-pre-line">
+                      {parsedInsight.uxImprovementPoints}
                     </div>
                   </div>
                   
