@@ -165,6 +165,13 @@ def analyze_sentiments(reviews):
     
     print(f"Starting enhanced HEART analysis on {len(reviews)} reviews...", file=sys.stderr)
     
+    # Debug: Print review ratings
+    ratings = [review.get('rating', 3) for review in reviews]
+    print(f"Review ratings: {ratings}", file=sys.stderr)
+    negative_count = sum(1 for r in ratings if r < 4)
+    positive_count = sum(1 for r in ratings if r >= 4)
+    print(f"Negative reviews: {negative_count}, Positive reviews: {positive_count}", file=sys.stderr)
+    
     # HEART framework analysis with detailed issue tracking
     heart_analysis = {
         'task_success': {'issues': [], 'details': []},
@@ -180,8 +187,8 @@ def analyze_sentiments(reviews):
         rating = review.get('rating', 3)
         user_id = review.get('userId', 'Unknown')
         
-        # Only analyze negative sentiment reviews for problems
-        if rating < 4:
+        # Analyze both positive and negative reviews for comprehensive insights
+        if rating < 4:  # Negative reviews for problems
             # Task Success - Core functionality problems
             if any(keyword in content for keyword in ['오류', '에러', '버그', '튕', '꺼짐', '작동안함', '실행안됨', '끊김', '연결안됨', '안들림', '소리안남', '안됨', '안되', '크래시', '종료', '재시작']):
                 heart_analysis['task_success']['issues'].append(content)
@@ -216,6 +223,21 @@ def analyze_sentiments(reviews):
             elif any(keyword in content for keyword in ['어려움', '복잡', '모르겠', '헷갈', '어떻게', '설명부족', '사용법', '가이드', '도움말']):
                 heart_analysis['adoption']['issues'].append(content)
                 heart_analysis['adoption']['details'].append('사용성 문제')
+        
+        # Also analyze positive reviews for potential improvements
+        elif rating >= 4:  # Positive reviews for improvement opportunities
+            # Look for mentions of specific features or improvements
+            if any(keyword in content for keyword in ['좋지만', '하지만', '그런데', '다만', '아쉬운', '더', '추가', '개선', '향상']):
+                # These are positive reviews but with suggestions for improvement
+                if '통화' in content or '전화' in content:
+                    heart_analysis['task_success']['issues'].append(content)
+                    heart_analysis['task_success']['details'].append('기능 개선 제안')
+                elif '사용' in content or '기능' in content:
+                    heart_analysis['engagement']['issues'].append(content)
+                    heart_analysis['engagement']['details'].append('사용성 개선 제안')
+                elif '인터페이스' in content or 'UI' in content or '화면' in content:
+                    heart_analysis['happiness']['issues'].append(content)
+                    heart_analysis['happiness']['details'].append('UI/UX 개선 제안')
     
     # Generate insights based on actual review content analysis
     insights = []
@@ -230,16 +252,23 @@ def analyze_sentiments(reviews):
         'adoption': 1       # Low - onboarding
     }
     
+    # Debug: Print heart analysis results
+    print(f"Heart analysis results:", file=sys.stderr)
+    for category, data in heart_analysis.items():
+        print(f"  {category}: {len(data['issues'])} issues", file=sys.stderr)
+        if data['issues']:
+            print(f"    First issue: {data['issues'][0][:50]}...", file=sys.stderr)
+    
     for category, data in heart_analysis.items():
         if data['issues']:
             count = len(data['issues'])
             impact_score = count * impact_weights[category]
             
-            # Priority calculation
-            if impact_score >= 15 or (category == 'task_success' and count >= 3):
+            # Priority calculation (more lenient thresholds)
+            if impact_score >= 10 or (category == 'task_success' and count >= 2):
                 priority = "critical"
                 priority_emoji = "🔴"
-            elif impact_score >= 8 or count >= 3:
+            elif impact_score >= 4 or count >= 2:
                 priority = "major"
                 priority_emoji = "🟠"
             else:
