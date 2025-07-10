@@ -80,13 +80,17 @@ export class MemStorage implements IStorage {
         );
       }
       if (filters.dateFrom) {
+        const dateFrom = new Date(filters.dateFrom);
         filteredReviews = filteredReviews.filter(review => 
-          review.createdAt >= filters.dateFrom!
+          new Date(review.createdAt) >= dateFrom
         );
       }
       if (filters.dateTo) {
+        const dateTo = new Date(filters.dateTo);
+        // Set time to end of day for dateTo
+        dateTo.setHours(23, 59, 59, 999);
         filteredReviews = filteredReviews.filter(review => 
-          review.createdAt <= filters.dateTo!
+          new Date(review.createdAt) <= dateTo
         );
       }
       if (filters.sentiment && filters.sentiment !== "all") {
@@ -125,13 +129,17 @@ export class MemStorage implements IStorage {
         );
       }
       if (filters.dateFrom) {
+        const dateFrom = new Date(filters.dateFrom);
         filteredReviews = filteredReviews.filter(review => 
-          review.createdAt >= filters.dateFrom!
+          new Date(review.createdAt) >= dateFrom
         );
       }
       if (filters.dateTo) {
+        const dateTo = new Date(filters.dateTo);
+        // Set time to end of day for dateTo
+        dateTo.setHours(23, 59, 59, 999);
         filteredReviews = filteredReviews.filter(review => 
-          review.createdAt <= filters.dateTo!
+          new Date(review.createdAt) <= dateTo
         );
       }
       if (filters.sentiment && filters.sentiment !== "all") {

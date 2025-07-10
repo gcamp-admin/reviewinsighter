@@ -52,12 +52,6 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       if (!localFilters.source || localFilters.source.length === 0) {
         throw new Error('스토어를 선택해주세요');
       }
-      if (!localFilters.dateFrom) {
-        throw new Error('시작 날짜를 선택해주세요');
-      }
-      if (!localFilters.dateTo) {
-        throw new Error('종료 날짜를 선택해주세요');
-      }
       
       const payload = {
         appId: localFilters.service.googlePlayId,
@@ -225,7 +219,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
 
           {/* Date Range */}
           <div className="space-y-3">
-            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜 <span className="text-red-500">*</span></Label>
+            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜 (선택사항)</Label>
             <Input
               id="date-from"
               type="date"
@@ -236,7 +230,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜 <span className="text-red-500">*</span></Label>
+            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜 (선택사항)</Label>
             <Input
               id="date-to"
               type="date"
