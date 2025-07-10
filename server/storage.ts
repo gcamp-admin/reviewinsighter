@@ -236,68 +236,26 @@ export class MemStorage implements IStorage {
   }
 
   async getWordCloudData(sentiment: string, filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]> {
-    // Generate word cloud from filtered reviews instead of all reviews
-    let filteredReviews = Array.from(this.reviews.values());
+    // Return stored word cloud data from Python analysis instead of generating dynamically
+    let filteredWordCloudData = Array.from(this.wordCloudData.values());
+
+    // Filter by sentiment first
+    filteredWordCloudData = filteredWordCloudData.filter(data => data.sentiment === sentiment);
 
     if (filters) {
       if (filters.serviceId) {
-        filteredReviews = filteredReviews.filter(review => 
-          review.serviceId === filters.serviceId
+        filteredWordCloudData = filteredWordCloudData.filter(data => 
+          data.serviceId === filters.serviceId
         );
       }
-      if (filters.source && filters.source.length > 0) {
-        filteredReviews = filteredReviews.filter(review => 
-          filters.source!.includes(review.source)
-        );
-      }
-      if (filters.dateFrom) {
-        filteredReviews = filteredReviews.filter(review => 
-          review.createdAt >= filters.dateFrom!
-        );
-      }
-      if (filters.dateTo) {
-        filteredReviews = filteredReviews.filter(review => 
-          review.createdAt <= filters.dateTo!
-        );
-      }
+      // Note: source and date filtering is not applicable to word cloud data
+      // as it's generated from the analysis of all reviews within the original analysis date range
     }
 
-    const sentimentFilteredReviews = filteredReviews.filter(review => review.sentiment === sentiment);
-    
-    if (sentimentFilteredReviews.length === 0) {
-      return [];
-    }
-    
-    // Extract Korean words from review content
-    const wordFrequency = new Map<string, number>();
-    
-    sentimentFilteredReviews.forEach(review => {
-      const content = review.content;
-      
-      // Extract meaningful Korean words (2+ characters, remove common stopwords)
-      const koreanWords = content
-        .replace(/[^\uAC00-\uD7AF\u3131-\u3163\u1100-\u11FF\s]/g, ' ') // Keep only Korean characters
-        .split(/\s+/)
-        .filter(word => word.length >= 2)
-        .filter(word => !['그냥', '정말', '너무', '아주', '매우', '좀', '진짜', '완전', '조금', '많이', '잘', '안', '못', '되', '하', '이', '가', '을', '를', '의', '에', '와', '과', '도', '만', '까지', '부터', '로', '으로', '에서', '한테', '께', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열'].includes(word));
-      
-      koreanWords.forEach(word => {
-        wordFrequency.set(word, (wordFrequency.get(word) || 0) + 1);
-      });
-    });
-    
-    // Convert to WordCloudData format, sorted by frequency
-    const wordCloudData: WordCloudData[] = Array.from(wordFrequency.entries())
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 20) // Top 20 words
-      .map(([word, frequency], index) => ({
-        id: index + 1,
-        word,
-        frequency,
-        sentiment
-      }));
-    
-    return wordCloudData;
+    // Sort by frequency and return top 10 as requested
+    return filteredWordCloudData
+      .sort((a, b) => b.frequency - a.frequency)
+      .slice(0, 10);
   }
 
   async createWordCloudData(insertData: InsertWordCloudData): Promise<WordCloudData> {
