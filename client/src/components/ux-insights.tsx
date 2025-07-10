@@ -87,21 +87,33 @@ export default function UxInsights({ filters }: UxInsightsProps) {
     const description = insight.description;
     const lines = description.split('\n');
     
-    let problemLine = '';
-    let solutionLine = '';
+    let heartCategory = '';
+    let problemSummary = '';
+    let solutionMethod = '';
+    let technicalImplementation = '';
+    let priority = '';
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      if (line.startsWith('📢 예측되는 문제점')) {
-        problemLine = lines[i + 1]?.trim() || '';
-      } else if (line.startsWith('💡 해결 방법')) {
-        solutionLine = lines[i + 1]?.trim() || '';
+      if (line.startsWith('**HEART 항목**:')) {
+        heartCategory = line.replace('**HEART 항목**:', '').trim();
+      } else if (line.startsWith('**문제 요약**:')) {
+        problemSummary = line.replace('**문제 요약**:', '').trim();
+      } else if (line.startsWith('**해결 방안**:')) {
+        solutionMethod = line.replace('**해결 방안**:', '').trim();
+      } else if (line.startsWith('**기술적 구현**:')) {
+        technicalImplementation = line.replace('**기술적 구현**:', '').trim();
+      } else if (line.startsWith('**우선순위**:')) {
+        priority = line.replace('**우선순위**:', '').trim();
       }
     }
     
     return {
-      problemLine,
-      solutionLine
+      heartCategory,
+      problemSummary,
+      solutionMethod,
+      technicalImplementation,
+      priority
     };
   };
 
@@ -151,34 +163,53 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                   key={insight.id}
                   className="space-y-2 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  {/* Line 1: Priority + HEART Element */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
+                  {/* Title with Priority Badge */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge className={getPriorityColor(insight.priority)}>
                       {insight.priority === "critical" ? "🔴 Critical" : 
                        insight.priority === "major" ? "🟡 Major" : "🟢 Minor"}
-                    </span>
-                    <span className="text-sm text-muted-foreground">|</span>
-                    <span className="text-sm font-medium">{insight.title.split('|')[1]?.trim() || insight.title}</span>
+                    </Badge>
+                    <span className="font-medium">{insight.title}</span>
                   </div>
                   
-                  {/* Line 2: Problem Label (Red) */}
-                  <div className="text-sm font-medium text-red-600 dark:text-red-400">
-                    📢 예측되는 문제점
+                  {/* HEART Category */}
+                  <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">
+                    📊 HEART 항목: {parsedInsight.heartCategory}
                   </div>
                   
-                  {/* Line 3: Problem Summary (1 line) */}
-                  <div className="text-sm text-muted-foreground">
-                    {parsedInsight.problemLine}
+                  {/* Problem Summary with User Quotes */}
+                  <div className="mb-3">
+                    <div className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">
+                      📢 문제 요약
+                    </div>
+                    <div className="text-sm text-muted-foreground italic bg-red-50 dark:bg-red-900/10 p-2 rounded border-l-2 border-red-200 dark:border-red-800">
+                      {parsedInsight.problemSummary}
+                    </div>
                   </div>
                   
-                  {/* Line 4: Solution Label (Green) */}
-                  <div className="text-sm font-medium text-green-600 dark:text-green-400">
-                    💡 해결 방법
+                  {/* Solution Method */}
+                  <div className="mb-3">
+                    <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                      💡 해결 방안
+                    </div>
+                    <div className="text-sm text-muted-foreground bg-green-50 dark:bg-green-900/10 p-2 rounded border-l-2 border-green-200 dark:border-green-800">
+                      {parsedInsight.solutionMethod}
+                    </div>
                   </div>
                   
-                  {/* Line 5: Solution Details */}
-                  <div className="text-sm text-muted-foreground">
-                    {parsedInsight.solutionLine}
+                  {/* Technical Implementation */}
+                  <div className="mb-2">
+                    <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
+                      🔧 기술적 구현
+                    </div>
+                    <div className="text-sm text-muted-foreground bg-purple-50 dark:bg-purple-900/10 p-2 rounded border-l-2 border-purple-200 dark:border-purple-800">
+                      {parsedInsight.technicalImplementation}
+                    </div>
+                  </div>
+                  
+                  {/* Mention Count */}
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <span>📈 언급 횟수: {insight.mentionCount}건</span>
                   </div>
                 </div>
               );

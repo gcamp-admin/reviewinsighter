@@ -584,10 +584,37 @@ def analyze_sentiments(reviews):
                     predicted_problem = "핵심 가치 이해 부족으로 인한 초기 이탈률 증가"
                     realistic_solution = "핵심 기능 우선 노출, 사용자 유형별 맞춤 온보딩, 첫 성공 경험 보장"
             
+            # Extract actual user quotes from reviews for more authentic problem descriptions
+            user_quotes = []
+            for issue_text in data['issues'][:3]:  # Get first 3 issues for quotes
+                # Extract meaningful quotes (first 50 chars)
+                if len(issue_text) > 50:
+                    quote = issue_text[:50] + "..."
+                else:
+                    quote = issue_text
+                user_quotes.append(f'"{quote}"')
+            
+            quotes_text = " / ".join(user_quotes) if user_quotes else "사용자 피드백 분석 결과"
+            
+            # Create more detailed, UX-researcher style description
+            heart_category_ko = {
+                'task_success': '핵심 기능 수행',
+                'happiness': '사용자 만족도', 
+                'engagement': '사용자 참여도',
+                'retention': '사용자 유지율',
+                'adoption': '신규 사용자 적응'
+            }
+            
+            description = f"""**HEART 항목**: {heart_category_ko.get(category, category)}
+**문제 요약**: {quotes_text}에서 드러나는 {predicted_problem}
+**해결 방안**: {realistic_solution}
+**기술적 구현**: {solution}
+**우선순위**: {priority.upper()}"""
+
             insights.append({
                 'id': insight_id,
-                'title': f"{priority_emoji} {priority.title()} | {category.title().replace('_', ' ')}",
-                'description': f"📢 예측되는 문제점\n{predicted_problem}\n\n💡 해결 방법\n{realistic_solution} 📊 실제 데이터 기반 맞춤형 해결책: {solution}",
+                'title': f"{priority_emoji} {priority.title()} | {most_common_issue} ({count}건)",
+                'description': description,
                 'priority': priority,
                 'mentionCount': count,
                 'trend': 'stable',
