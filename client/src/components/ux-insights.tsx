@@ -101,6 +101,8 @@ export default function UxInsights({ filters }: UxInsightsProps) {
         problemSummary = line.replace('**문제 요약**:', '').trim();
       } else if (line.startsWith('**해결 방안**:')) {
         solutionMethod = line.replace('**해결 방안**:', '').trim();
+      } else if (line.startsWith('**UX 개선 제안**:')) {
+        uxImprovementPoints = line.replace('**UX 개선 제안**:', '').trim();
       } else if (line.startsWith('**UX개선 포인트**:')) {
         uxImprovementPoints = line.replace('**UX개선 포인트**:', '').trim();
       } else if (line.startsWith('**우선순위**:')) {
@@ -200,7 +202,7 @@ export default function UxInsights({ filters }: UxInsightsProps) {
                   {/* UX Improvement Points */}
                   <div className="mb-2">
                     <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
-                      🎯 UX개선 포인트
+                      🎯 UX 개선 제안
                     </div>
                     <div className="text-sm text-muted-foreground bg-purple-50 dark:bg-purple-900/10 p-2 rounded border-l-2 border-purple-200 dark:border-purple-800 whitespace-pre-line">
                       {parsedInsight.uxImprovementPoints}

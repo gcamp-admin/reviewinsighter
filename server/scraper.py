@@ -608,10 +608,12 @@ def analyze_sentiments(reviews):
             # Generate specific UX improvement examples based on the category and issues
             ux_improvement_examples = generate_ux_improvement_points(category, most_common_issue, data['issues'])
             
+            # Generate UX-focused improvement suggestions based on actual user issues
+            ux_improvement_suggestions = generate_ux_improvement_suggestions(category, most_common_issue, data['issues'], predicted_problem, quotes_text)
+            
             description = f"""**HEART 항목**: {heart_category_ko.get(category, category)}
 **문제 요약**: {quotes_text}에서 드러나는 {predicted_problem}
-**해결 방안**: {realistic_solution}
-**UX개선 포인트**: {ux_improvement_examples}
+**UX 개선 제안**: {ux_improvement_suggestions}
 **우선순위**: {priority.upper()}"""
 
             insights.append({
@@ -754,6 +756,135 @@ def generate_ux_improvement_points(category, issue_type, issues):
 📱 접근성 향상: 큰 버튼, 명확한 라벨, 직관적인 아이콘 사용
 🔄 피드백 루프: 사용자 의견 수집 → 개선 → 결과 공유 순환 구조
 ⚡ 성능 최적화: 로딩 시간 단축 및 메모리 사용량 개선"""
+
+def generate_technical_implementation(category, issue_type, issues, problem_description):
+    """
+    Generate specific technical implementation based on actual user issues
+    """
+    # Sample issues for context
+    sample_issues = issues[:5] if len(issues) > 5 else issues
+    
+    if category == 'task_success':
+        if '통화' in issue_type or '전화' in issue_type:
+            return """🔧 통화 연결 실패 재현: 네트워크 상태별 통화 시도 케이스 100개 테스트
+📊 VoIP 서버 모니터링: 연결 성공률, 응답 시간, 패킷 손실률 실시간 트래킹
+🔍 통화 품질 로깅: 음성 코덱, 지연시간, 에코 제거 성능 데이터 수집
+⚡ 자동 재연결 알고리즘: 연결 실패 시 3초/10초/30초 간격으로 재시도 로직 구현"""
+        elif 'CCTV' in issue_type or '화면' in issue_type:
+            return """🔧 화면 확대 제스처 라이브러리 적용: PinchGestureRecognizer 구현
+📊 영상 스트리밍 최적화: 해상도별 압축률 조정 및 버퍼링 개선
+🔍 멀티 카메라 메모리 관리: 비활성 뷰 리소스 해제 및 가비지 컬렉션 최적화
+⚡ 실시간 스트림 캐싱: 3초 백 버퍼링으로 네트워크 끊김 시 무중단 재생"""
+        elif '앱' in issue_type and ('튕김' in issue_type or '나가버림' in issue_type):
+            return """🔧 크래시 재현 시나리오 작성: 사용자 선택 단계별 메모리 누수 추적
+📊 실시간 크래시 리포팅: Firebase Crashlytics 도입으로 스택 트레이스 자동 수집
+🔍 앱 상태 복원 시스템: SharedPreferences/UserDefaults 활용 세션 자동 저장
+⚡ 메모리 오버플로우 방지: 이미지 로딩 시 메모리 풀 관리 및 비동기 처리"""
+        elif '로그인' in issue_type or '인증' in issue_type:
+            return """🔧 인증 실패 케이스 분석: 기기별, OS별 로그인 시도 로그 수집
+📊 토큰 갱신 로직 개선: JWT 만료 10분 전 자동 갱신 구현
+🔍 OAuth 연동 디버깅: 제3자 인증 응답 시간 및 에러 코드 분석
+⚡ 오프라인 인증 캐싱: 마지막 성공 인증 정보 암호화 저장"""
+        else:
+            return """🔧 핵심 기능 단위 테스트: 주요 워크플로우 자동화 테스트 케이스 100개 작성
+📊 성능 지표 모니터링: 응답 시간, 메모리 사용량, CPU 점유율 실시간 추적
+🔍 에러 트래킹 시스템: Sentry 도입으로 실시간 버그 리포팅 및 알림
+⚡ 기능별 롤백 시스템: 문제 발생 시 이전 안정 버전으로 즉시 복구"""
+    
+    elif category == 'happiness':
+        return """🔧 사용자 만족도 측정: 앱 내 NPS 점수 수집 및 피드백 분석 시스템
+📊 감정 분석 API: 리뷰 텍스트 감정 분석으로 불만 키워드 자동 추출
+🔍 사용자 행동 분석: 히트맵 툴 도입으로 UI 사용 패턴 시각화
+⚡ 개인화 알고리즘: 사용 패턴 기반 맞춤형 UI 배치 및 기능 추천"""
+    
+    elif category == 'engagement':
+        return """🔧 사용자 활동 데이터 수집: 세션 길이, 기능 사용 빈도, 이탈 지점 분석
+📊 푸시 알림 최적화: A/B 테스트로 최적 발송 시간 및 메시지 개선
+🔍 사용자 여정 매핑: 주요 기능별 사용자 플로우 분석 및 병목 지점 식별
+⚡ 게임화 요소 구현: 사용 목표 달성 시 포인트 지급 및 배지 시스템"""
+    
+    elif category == 'retention':
+        return """🔧 이탈 예측 모델: 사용자 행동 패턴 기반 이탈 가능성 스코어링
+📊 재방문 유도 시스템: 비활성 사용자 대상 맞춤형 이메일/SMS 캠페인
+🔍 코호트 분석 구축: 가입 시점별 사용자 그룹 생존 분석 및 개선점 도출
+⚡ 계정 연동 강화: 소셜 로그인, 클라우드 백업으로 기기 변경 시 데이터 유지"""
+    
+    elif category == 'adoption':
+        return """🔧 온보딩 플로우 개선: 신규 사용자 첫 7일간 사용 패턴 분석
+📊 퍼널 분석 시스템: 가입부터 첫 성공 경험까지 단계별 이탈률 측정
+🔍 사용자 세그먼트 분석: 사용 목적별 맞춤형 초기 설정 워크플로우 개발
+⚡ 프로그레시브 디스클로저: 복잡한 기능을 단계별로 점진적 노출"""
+    
+    else:
+        return """🔧 종합 품질 관리: 자동화된 회귀 테스트 및 성능 벤치마킹 시스템
+📊 사용자 피드백 분석: 리뷰 키워드 분석 및 우선순위 기반 개발 로드맵 수립
+🔍 크로스 플랫폼 호환성: iOS/Android/Web 일관된 사용자 경험 보장
+⚡ 지속적 개선 프로세스: 주간 사용자 데이터 리뷰 및 빠른 개선 사이클 구축"""
+
+def generate_ux_improvement_suggestions(category, issue_type, issues, problem_description, quotes_text):
+    """
+    Generate UX-focused improvement suggestions based on actual user review quotes and issues
+    """
+    if category == 'task_success':
+        if '통화' in issue_type or '전화' in issue_type:
+            return """- 통화 연결 실패 시 즉시 '다시 시도하기', '다른 번호로 걸기', '문자 보내기' 버튼이 포함된 옵션 화면 제공
+- 통화 품질이 좋지 않을 때 화면 하단에 '음질 개선' 토글 버튼 배치하여 사용자가 직접 조정 가능하도록 설계
+- 통화 연결 중 로딩 화면에 '연결 중입니다' 메시지와 함께 예상 대기 시간 표시
+- 통화 실패 반복 시 '네트워크 상태 확인' 가이드 팝업과 함께 고객센터 직접 연결 버튼 제공"""
+        
+        elif 'CCTV' in issue_type or '화면' in issue_type:
+            return """- CCTV 화면 확대 안 될 때 화면 상단에 '확대/축소 도움말' 아이콘 상시 표시하여 제스처 가이드 제공
+- 영상 끊김 발생 시 화면 중앙에 '재연결 중' 상태를 시각적으로 표시하고, 수동 새로고침 버튼 배치
+- 여러 카메라 동시 보기 시 각 화면에 '전체화면' 버튼을 개별 배치하여 원하는 화면만 크게 보기 가능
+- 영상 로딩 지연 시 '잠시만 기다려주세요' 메시지와 함께 예상 로딩 시간 프로그레스 바 표시"""
+        
+        elif '앱' in issue_type and ('튕김' in issue_type or '나가버림' in issue_type):
+            return """- 앱 진입 시 사용자 설정/선택 화면을 단계적으로 로딩하도록 개선하여 오류 발생 가능성을 줄이고, 오류 발생 시에는 '다시 시도하기' 또는 '고객센터 연결' 옵션이 있는 Fallback 화면 제공
+- 첫 실행 시 로딩 애니메이션과 진행 상태를 시각적으로 안내해, 앱이 멈춘 듯한 인상을 주지 않도록 설계
+- 동일한 문제 발생 시 사용자에게 비침해적 팝업을 통해 대응 방법 안내 (예: "일시적인 오류입니다. 고객센터 문의 또는 재시도를 권장합니다")
+- 크래시 발생 전 마지막 화면을 임시 저장하여 재실행 시 이전 상태로 복원 가능하도록 설계"""
+        
+        elif '로그인' in issue_type or '인증' in issue_type:
+            return """- 로그인 실패 시 '아이디 찾기', '비밀번호 재설정', '고객센터 문의' 버튼을 한 화면에 명확히 배치
+- 인증 오류 발생 시 구체적인 오류 원인과 해결 방법을 친근한 말투로 안내 (예: "휴대폰 번호를 다시 확인해주세요")
+- 로그인 화면에 '간편 로그인' 옵션 추가하여 생체 인증, 패턴 인증 등 대안 제공
+- 반복 로그인 실패 시 '로그인 도움말' 화면으로 자동 이동하여 단계별 해결 가이드 제공"""
+        
+        else:
+            return """- 핵심 기능 사용 중 오류 발생 시 즉시 '문제 신고하기' 버튼과 함께 임시 해결 방법 안내
+- 기능 실행 전 로딩 시간이 예상될 때 진행 상황을 %로 표시하고 '취소' 버튼 제공
+- 자주 사용하는 기능을 홈 화면 상단에 바로가기로 배치하여 접근성 향상
+- 오류 발생 시 사용자 친화적인 메시지로 상황 설명 및 다음 단계 안내"""
+    
+    elif category == 'happiness':
+        return """- 사용자 불만 표현 시 앱 내 '의견 보내기' 기능을 쉽게 찾을 수 있도록 메뉴 상단에 배치
+- 긍정적 피드백 시 '도움이 되었다면 별점 남기기' 등의 자연스러운 유도 메시지 표시
+- 사용자 만족도 조사를 팝업이 아닌 앱 사용 플로우에 자연스럽게 통합
+- 문제 해결 후 '해결되었나요?' 확인 메시지로 사용자 만족도 확인"""
+    
+    elif category == 'engagement':
+        return """- 사용자가 특정 기능을 자주 사용할 때 관련 기능 추천 메시지를 적절한 타이밍에 표시
+- 앱 사용 패턴을 분석하여 사용자별 맞춤형 홈 화면 구성 제안
+- 새로운 기능 출시 시 기존 사용 패턴과 연결하여 자연스럽게 소개
+- 사용자 활동이 줄어들 때 '놓친 기능' 알림으로 재참여 유도"""
+    
+    elif category == 'retention':
+        return """- 사용자가 앱을 삭제하려 할 때 '잠깐, 문제가 있으신가요?' 팝업으로 이탈 사유 파악 및 즉시 해결 시도
+- 장기간 미사용 시 '새로운 기능 업데이트' 알림보다는 '마지막으로 사용하셨던 기능' 중심으로 복귀 유도
+- 계정 삭제 전 '데이터 백업' 옵션 제공하여 재사용 가능성 열어두기
+- 사용자별 이용 패턴 기반 맞춤형 '다시 시작하기' 가이드 제공"""
+    
+    elif category == 'adoption':
+        return """- 신규 사용자 온보딩 시 '3분 만에 시작하기' 등 명확한 시간 예상치 제시
+- 복잡한 초기 설정을 '나중에 하기' 옵션과 함께 제공하여 진입 장벽 완화
+- 첫 성공 경험 후 '다음 단계 안내' 메시지로 자연스러운 기능 확장 유도
+- 사용 목적별 '빠른 시작' 템플릿 제공 (예: 'CCTV만 사용', '통화 기능 중심' 등)"""
+    
+    else:
+        return """- 사용자 리뷰에서 언급된 구체적 문제점을 해결하는 단계별 가이드 제공
+- 자주 발생하는 문제에 대한 '자주 묻는 질문' 섹션을 앱 내 쉽게 접근 가능한 위치에 배치
+- 사용자 피드백을 실시간으로 수집하고 빠른 개선 사항을 앱 내 공지로 투명하게 공유
+- 각 기능별 '도움말' 버튼을 상황에 맞게 배치하여 즉시 도움 받을 수 있도록 설계"""
 
 def main():
     """Main function to run the scraper"""
