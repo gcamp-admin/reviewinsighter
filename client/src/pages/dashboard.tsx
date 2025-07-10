@@ -10,6 +10,10 @@ import SentimentTrendChart from "@/components/sentiment-trend-chart";
 import EnhancedWordCloud from "@/components/enhanced-word-cloud";
 import HeartRadarChart from "@/components/heart-radar-chart";
 import PriorityMatrix from "@/components/priority-matrix";
+import AnomalyDetection from "@/components/anomaly-detection";
+import CompetitiveAnalysis from "@/components/competitive-analysis";
+import PredictiveAnalytics from "@/components/predictive-analytics";
+import AutoReportGenerator from "@/components/auto-report-generator";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
@@ -64,6 +68,15 @@ export default function Dashboard() {
         
         {/* Priority Matrix */}
         <PriorityMatrix filters={filters} />
+        
+        {/* Advanced Analytics */}
+        <AnomalyDetection filters={filters} />
+        
+        <CompetitiveAnalysis filters={filters} />
+        
+        <PredictiveAnalytics filters={filters} />
+        
+        <AutoReportGenerator filters={filters} />
         
         <ReviewList 
           filters={filters}
