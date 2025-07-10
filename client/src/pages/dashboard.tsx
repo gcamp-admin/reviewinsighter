@@ -5,7 +5,6 @@ import StatsOverview from "@/components/stats-overview";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
-import ExportSection from "@/components/export-section";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
@@ -44,8 +43,6 @@ export default function Dashboard() {
         <AIAnalysisSection filters={filters} />
         
         <WordCloudAndInsights filters={filters} />
-        
-        <ExportSection filters={filters} />
       </main>
     </div>
   );
