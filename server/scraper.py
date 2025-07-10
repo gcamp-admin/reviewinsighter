@@ -10,6 +10,125 @@ from datetime import datetime
 from google_play_scraper import Sort, reviews
 import pandas as pd
 import xml.etree.ElementTree as ET
+import re
+
+def analyze_text_sentiment(text):
+    """
+    Korean text-based sentiment analysis
+    Analyzes review content to determine sentiment regardless of star ratings
+    
+    Args:
+        text: Review text content
+        
+    Returns:
+        String: 'positive' or 'negative'
+    """
+    if not text or not isinstance(text, str):
+        return "positive"  # Default to positive for empty/invalid text
+    
+    # Convert to lowercase for analysis
+    content = text.lower()
+    
+    # Strong negative indicators (Korean expressions)
+    strong_negative_keywords = [
+        # Critical issues
+        '오류', '에러', '버그', '튕김', '튕긴다', '나가버림', '꺼짐', '크래시', '종료', '재시작',
+        '작동안함', '실행안됨', '안됨', '안되', '안받아져', '받아지지', '실행되지', '작동하지',
+        '끊김', '끊어지', '끊긴다', '연결안됨', '안들림', '소리안남',
+        
+        # Strong dissatisfaction
+        '최악', '쓰레기', '짜증', '화남', '빡침', '열받', '실망', '불만', '구림', '싫어',
+        '답답', '스트레스', '당황스러운', '불편', '문제', '고장', '망함', '엉망',
+        
+        # Deletion/cancellation intent
+        '삭제', '지움', '해지', '그만', '안쓸', '다른거', '바꿀', '탈퇴', '포기', '중단',
+        '안써', '사용안함', '별로', '나쁘', '못쓰겠', '쓸모없',
+        
+        # Specific app issues
+        '통화중 대기', '안지원', '볼륨버튼', '진동', '백그라운드', '자동으로', '슬라이드',
+        '스팸정보', '딸려와서', '번호확인', '기다려야', '차량', '블투', '통화종료',
+        
+        # Emotional expressions
+        '나가버림', '화면 확대 안됨', '안받아져', '못알아', '지나치는', '애플이든', '삼성이든',
+        '저격하려고', '알뜰폰 안된다', '짜증나죠', '안될거', '왜 안됩니까', '난리났음',
+        '상대방과 나의 목소리의 싱크가 맞지 않고', '울리지않거나', '부재중', '바로 끊기고',
+        '안걸리는', '빈번함', '시끄러워죽겠습니다', '당황스러운', '불편하네요'
+    ]
+    
+    # Positive indicators (Korean expressions)
+    positive_keywords = [
+        # Direct praise
+        '좋아', '좋다', '좋네', '좋음', '훌륭', '우수', '최고', '대박', '완벽', '만족',
+        '잘', '편리', '유용', '도움', '감사', '고마워', '추천', '괜찮', '나쁘지않',
+        
+        # Functional satisfaction
+        '잘사용', '잘쓰', '잘됨', '잘되', '잘작동', '정상', '원활', '부드럽', '빠르',
+        '간편', '쉽', '편해', '깔끔', '안정', '신뢰',
+        
+        # Appreciation
+        '유용하고', '좋아요', '막아줘서', '요약되고', '텍스트로', '써져서',
+        '보이스피싱', '막아줘서', '좋아요', 'ai고', '통화내용',
+        
+        # Mild complaints that are still generally positive
+        '좋지만', '만족합니다만', '전반적인 기능은 만족', '잘 사용하고 있습니다',
+        '딱 한가지 아쉬운게', '이것만 된다면', '정말 완벽할거'
+    ]
+    
+    # Count negative and positive indicators
+    negative_count = 0
+    positive_count = 0
+    
+    for keyword in strong_negative_keywords:
+        if keyword in content:
+            negative_count += 1
+    
+    for keyword in positive_keywords:
+        if keyword in content:
+            positive_count += 1
+    
+    # Special handling for mixed sentiment reviews
+    # If review contains both positive and negative elements, analyze overall tone
+    if negative_count > 0 and positive_count > 0:
+        # Check for constructive feedback patterns
+        constructive_patterns = [
+            '좋지만', '만족합니다만', '좋겠네요', '된다면', '지원해줄수', '개선',
+            '추가', '향상', '업데이트', '바꿉시다', '하면 좋겠'
+        ]
+        
+        is_constructive = any(pattern in content for pattern in constructive_patterns)
+        
+        # If it's constructive feedback, weight it based on severity
+        if is_constructive:
+            # Count severity of negative issues
+            critical_issues = ['오류', '에러', '버그', '튕김', '크래시', '최악', '쓰레기', '삭제']
+            has_critical = any(issue in content for issue in critical_issues)
+            
+            if has_critical:
+                return "negative"
+            else:
+                # Constructive feedback without critical issues = positive
+                return "positive"
+        else:
+            # Mixed sentiment without constructive tone - go with majority
+            return "negative" if negative_count > positive_count else "positive"
+    
+    # Pure sentiment analysis
+    if negative_count > 0:
+        return "negative"
+    elif positive_count > 0:
+        return "positive"
+    else:
+        # No clear sentiment indicators - analyze length and structure
+        # Very short reviews or question-only reviews default to positive
+        if len(content.strip()) < 10:
+            return "positive"
+        
+        # Check for question marks (often constructive)
+        if '?' in content or '언제' in content or '어떻게' in content:
+            return "positive"
+        
+        # Default to positive for neutral content
+        return "positive"
 
 def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr'):
     """
@@ -37,8 +156,8 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
         # Process and clean the data
         processed_reviews = []
         for review in result:
-            # Simple sentiment analysis based on score
-            sentiment = "positive" if review['score'] >= 4 else "negative"
+            # Text-based sentiment analysis - ignore star ratings completely
+            sentiment = analyze_text_sentiment(review['content'])
             
             processed_review = {
                 'userId': review['userName'] if review['userName'] else '익명',
@@ -100,8 +219,8 @@ def scrape_app_store_reviews(app_id='1571096278', count=100):
                 updated_elem = entry.find('{http://www.w3.org/2005/Atom}updated')
                 created_at = updated_elem.text if updated_elem is not None else datetime.now().isoformat()
                 
-                # Simple sentiment analysis based on rating
-                sentiment = "positive" if rating >= 4 else "negative"
+                # Text-based sentiment analysis - ignore star ratings completely
+                sentiment = analyze_text_sentiment(content)
                 
                 processed_review = {
                     'userId': author,
@@ -165,12 +284,15 @@ def analyze_sentiments(reviews):
     
     print(f"Starting enhanced HEART analysis on {len(reviews)} reviews...", file=sys.stderr)
     
-    # Debug: Print review ratings
-    ratings = [review.get('rating', 3) for review in reviews]
-    print(f"Review ratings: {ratings}", file=sys.stderr)
-    negative_count = sum(1 for r in ratings if r < 4)
-    positive_count = sum(1 for r in ratings if r >= 4)
-    print(f"Negative reviews: {negative_count}, Positive reviews: {positive_count}", file=sys.stderr)
+    # Re-analyze sentiment based on text content only (ignore star ratings)
+    for review in reviews:
+        # Update sentiment based on text analysis
+        review['sentiment'] = analyze_text_sentiment(review['content'])
+    
+    # Debug: Print text-based sentiment analysis results
+    text_based_negative = sum(1 for r in reviews if r['sentiment'] == 'negative')
+    text_based_positive = sum(1 for r in reviews if r['sentiment'] == 'positive')
+    print(f"Text-based sentiment analysis: {text_based_positive} positive, {text_based_negative} negative", file=sys.stderr)
     
     # HEART framework analysis with detailed issue tracking
     heart_analysis = {
