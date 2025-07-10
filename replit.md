@@ -147,6 +147,9 @@ Changelog:
 - July 10, 2025. Implemented complete text-based sentiment analysis that ignores app store star ratings completely
 - July 10, 2025. Added priority rule: any review containing '불편' (uncomfortable/inconvenient) is automatically classified as negative
 - July 10, 2025. Implemented strict date validation requirements for analysis: start date is mandatory, end date defaults to today if not provided, validates date range order
+- July 10, 2025. Fixed word cloud generation issue: modified analysis to use review sentiment classification instead of keyword matching for better word extraction
+- July 10, 2025. Resolved date filtering problem in analysis endpoint - system now correctly processes reviews within specified date ranges
+- July 10, 2025. Successfully implemented word cloud display with 10 positive and 10 negative Korean words extracted from actual user reviews
 
 ## User Preferences
 
