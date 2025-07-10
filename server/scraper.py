@@ -29,6 +29,10 @@ def analyze_text_sentiment(text):
     # Convert to lowercase for analysis
     content = text.lower()
     
+    # Priority rule: Any review containing '불편' is automatically negative
+    if '불편' in content:
+        return "negative"
+    
     # Strong negative indicators (Korean expressions)
     strong_negative_keywords = [
         # Critical issues
