@@ -92,12 +92,29 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         throw new Error('서비스를 선택해주세요');
       }
       
+      // 📅 [1] 날짜 조건 검증 (필수 입력)
+      if (!localFilters.dateFrom) {
+        throw new Error('시작 날짜를 반드시 입력해주세요');
+      }
+      
+      // 종료 날짜가 없으면 오늘 날짜를 자동으로 설정
+      let endDate = localFilters.dateTo;
+      if (!endDate) {
+        endDate = new Date();
+        endDate.setHours(23, 59, 59, 999); // 오늘 끝 시간으로 설정
+      }
+      
+      // 종료 날짜가 시작 날짜보다 앞서지 않도록 검증
+      if (endDate < localFilters.dateFrom) {
+        throw new Error('날짜 범위가 유효하지 않습니다. 종료 날짜는 시작 날짜보다 앞설 수 없습니다.');
+      }
+      
       const payload = {
         serviceId: localFilters.service.id,
         serviceName: localFilters.service.name,
         source: localFilters.source,
         dateFrom: localFilters.dateFrom,
-        dateTo: localFilters.dateTo
+        dateTo: endDate
       };
       const response = await apiRequest("POST", "/api/analyze", payload);
       return response.json();
@@ -219,25 +236,33 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
 
           {/* Date Range */}
           <div className="space-y-3">
-            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜 (선택사항)</Label>
+            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜 <span className="text-red-500">*</span></Label>
             <Input
               id="date-from"
               type="date"
               value={formatDateForInput(localFilters.dateFrom)}
               onChange={(e) => handleDateChange('dateFrom', e.target.value)}
               className="w-full"
+              placeholder="분석 시작 날짜를 선택하세요"
             />
+            <p className="text-xs text-gray-500">
+              📅 분석을 위해 시작 날짜는 반드시 입력해야 합니다
+            </p>
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜 (선택사항)</Label>
+            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜</Label>
             <Input
               id="date-to"
               type="date"
               value={formatDateForInput(localFilters.dateTo)}
               onChange={(e) => handleDateChange('dateTo', e.target.value)}
               className="w-full"
+              placeholder="분석 종료 날짜를 선택하세요"
             />
+            <p className="text-xs text-gray-500">
+              📅 미입력시 오늘 날짜로 자동 설정됩니다
+            </p>
           </div>
 
           {/* Review Collection Button - Moved to rightmost position */}

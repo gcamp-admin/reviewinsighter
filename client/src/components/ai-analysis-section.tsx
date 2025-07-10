@@ -50,12 +50,29 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         throw new Error('서비스를 선택해주세요');
       }
       
+      // 📅 [1] 날짜 조건 검증 (필수 입력)
+      if (!filters.dateFrom) {
+        throw new Error('시작 날짜를 반드시 입력해주세요');
+      }
+      
+      // 종료 날짜가 없으면 오늘 날짜를 자동으로 설정
+      let endDate = filters.dateTo;
+      if (!endDate) {
+        endDate = new Date();
+        endDate.setHours(23, 59, 59, 999); // 오늘 끝 시간으로 설정
+      }
+      
+      // 종료 날짜가 시작 날짜보다 앞서지 않도록 검증
+      if (endDate < filters.dateFrom) {
+        throw new Error('날짜 범위가 유효하지 않습니다. 종료 날짜는 시작 날짜보다 앞설 수 없습니다.');
+      }
+      
       const payload = {
         serviceId: filters.service.id,
         serviceName: filters.service.name,
         source: filters.source,
         dateFrom: filters.dateFrom,
-        dateTo: filters.dateTo
+        dateTo: endDate
       };
       const response = await apiRequest("POST", "/api/analyze", payload);
       return response.json();
@@ -104,8 +121,8 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         <div className="flex flex-col items-center space-y-4">
           <Button 
             onClick={() => analyzeReviewsMutation.mutate()}
-            disabled={analyzeReviewsMutation.isPending}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold"
+            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold disabled:opacity-50"
             size="lg"
           >
             {analyzeReviewsMutation.isPending ? (
@@ -121,7 +138,13 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
             )}
           </Button>
           
-          {!hasAnalyzed && !analyzeReviewsMutation.isPending && (
+          {!filters.dateFrom && (
+            <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
+              📅 분석을 위해 시작 날짜를 먼저 입력해주세요
+            </p>
+          )}
+          
+          {filters.dateFrom && !hasAnalyzed && !analyzeReviewsMutation.isPending && (
             <p className="text-center text-sm text-gray-600">
               버튼을 클릭하여 감정 워드클라우드와 HEART 프레임워크 분석을 시작하세요
             </p>

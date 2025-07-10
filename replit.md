@@ -144,6 +144,9 @@ Changelog:
 - July 10, 2025. Enhanced quote-based analysis to detect exact user expressions like "통화중 대기가 되지 않아서 불편하네요", "볼륨버튼 누르면 진동이 꺼지면 좋겠네요" etc.
 - July 10, 2025. UX suggestions now provide concrete UI solutions: button placement, message content, interaction flows, and visual feedback based on actual user pain points
 - July 10, 2025. Eliminated generic and abstract suggestions - all UX improvements are now logically connected to specific user expressions and problems
+- July 10, 2025. Implemented complete text-based sentiment analysis that ignores app store star ratings completely
+- July 10, 2025. Added priority rule: any review containing '불편' (uncomfortable/inconvenient) is automatically classified as negative
+- July 10, 2025. Implemented strict date validation requirements for analysis: start date is mandatory, end date defaults to today if not provided, validates date range order
 
 ## User Preferences
 
