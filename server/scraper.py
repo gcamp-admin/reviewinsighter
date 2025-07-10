@@ -624,6 +624,10 @@ def analyze_sentiments(reviews):
                       for word, freq in sorted(negative_words.items(), key=lambda x: x[1], reverse=True)[:10]]
     
     print(f"Generated {len(insights)} HEART insights, {len(positive_cloud)} positive words, {len(negative_cloud)} negative words", file=sys.stderr)
+    print(f"Debug - positive_words dict: {list(positive_words.keys())[:10]}", file=sys.stderr)
+    print(f"Debug - negative_words dict: {list(negative_words.keys())[:10]}", file=sys.stderr)
+    print(f"Debug - positive_cloud: {positive_cloud}", file=sys.stderr)
+    print(f"Debug - negative_cloud: {negative_cloud}", file=sys.stderr)
     
     return {
         'insights': insights,
