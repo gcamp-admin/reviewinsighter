@@ -17,6 +17,7 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [hasCollectedReviews, setHasCollectedReviews] = useState(false);
+  const [activeAnalysisSection, setActiveAnalysisSection] = useState<'wordcloud' | 'heart' | null>(null);
 
   const handleFiltersChange = (newFilters: ReviewFilters) => {
     setFilters(newFilters);
@@ -25,6 +26,10 @@ export default function Dashboard() {
 
   const handleCollectionSuccess = () => {
     setHasCollectedReviews(true);
+  };
+
+  const handleAnalysisSuccess = (analysisType: 'wordcloud' | 'heart') => {
+    setActiveAnalysisSection(analysisType);
   };
 
   return (
@@ -48,9 +53,9 @@ export default function Dashboard() {
           />
         )}
         
-        {hasCollectedReviews && <AIAnalysisSection filters={filters} />}
+        {hasCollectedReviews && <AIAnalysisSection filters={filters} onAnalysisSuccess={handleAnalysisSuccess} />}
         
-        {hasCollectedReviews && <WordCloudAndInsights filters={filters} />}
+        {hasCollectedReviews && activeAnalysisSection && <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} />}
       </main>
     </div>
   );

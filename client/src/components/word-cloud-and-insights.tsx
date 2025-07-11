@@ -5,9 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 
 interface WordCloudAndInsightsProps {
   filters: ReviewFilters;
+  activeSection: 'wordcloud' | 'heart';
 }
 
-export default function WordCloudAndInsights({ filters }: WordCloudAndInsightsProps) {
+export default function WordCloudAndInsights({ filters, activeSection }: WordCloudAndInsightsProps) {
   // Check if there's any analysis data to show
   const { data: positiveWords } = useQuery({
     queryKey: ["/api/wordcloud/positive", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
@@ -99,14 +100,26 @@ export default function WordCloudAndInsights({ filters }: WordCloudAndInsightsPr
   const hasWordCloudData = (positiveWords && positiveWords.length > 0) || (negativeWords && negativeWords.length > 0);
   const hasInsightsData = insights && insights.length > 0;
 
-  if (!hasWordCloudData && !hasInsightsData) {
-    return null;
+  // Show content based on active section
+  if (activeSection === 'wordcloud') {
+    if (!hasWordCloudData) {
+      return null;
+    }
+    return (
+      <div className="grid grid-cols-1 gap-8">
+        <WordCloud filters={filters} />
+      </div>
+    );
+  } else if (activeSection === 'heart') {
+    if (!hasInsightsData) {
+      return null;
+    }
+    return (
+      <div className="grid grid-cols-1 gap-8">
+        <UxInsights filters={filters} />
+      </div>
+    );
   }
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <WordCloud filters={filters} />
-      <UxInsights filters={filters} />
-    </div>
-  );
+  return null;
 }

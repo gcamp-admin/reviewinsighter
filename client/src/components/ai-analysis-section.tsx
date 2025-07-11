@@ -9,9 +9,10 @@ import type { ReviewFilters } from "@/types";
 
 interface AIAnalysisSectionProps {
   filters: ReviewFilters;
+  onAnalysisSuccess: (analysisType: 'wordcloud' | 'heart') => void;
 }
 
-export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
+export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnalysisSectionProps) {
   const [hasAnalyzedWordCloud, setHasAnalyzedWordCloud] = useState(false);
   const [hasAnalyzedHeart, setHasAnalyzedHeart] = useState(false);
   const { toast } = useToast();
@@ -99,6 +100,7 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         description: data.message,
       });
       setHasAnalyzedWordCloud(true);
+      onAnalysisSuccess('wordcloud');
       // Invalidate word cloud data
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
     },
@@ -156,6 +158,7 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         description: data.message,
       });
       setHasAnalyzedHeart(true);
+      onAnalysisSuccess('heart');
       // Invalidate insights data
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
     },
