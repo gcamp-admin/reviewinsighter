@@ -1,5 +1,11 @@
-/* LG Smart UI Font support */
-@import url('https://cdn.jsdelivr.net/npm/@lge/lge-ui-font@latest/dist/css/LG-Smart-UI.css');
+/* LG Smart UI Font support - Local TTF file */
+@font-face {
+  font-family: 'LG Smart UI';
+  src: url('/src/assets/fonts/LG-Smart-UI.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
