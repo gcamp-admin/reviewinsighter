@@ -294,6 +294,11 @@ Changelog:
 - July 11, 2025. Removed "필터 설정" text from filter section header for cleaner interface
 - July 11, 2025. Updated button text and icon colors to black for better readability on brand color background
 - July 11, 2025. Optimized component spacing from space-y-6 to space-y-4, space-y-3 to space-y-2, and space-y-2 to space-y-1 for tighter layout
+- July 11, 2025. Fixed critical Naver blog and cafe crawling issue - added proper data transformation from Naver API to review format
+- July 11, 2025. Implemented date format conversion (YYYYMMDD → ISO format) and user ID extraction for Naver reviews
+- July 11, 2025. Enhanced crawler.py with proper serviceId mapping and review structure for multi-source compatibility
+- July 11, 2025. Updated run_crawler.py with differentiated data handling for Naver vs app store reviews
+- July 11, 2025. Successfully tested Naver integration: 6 blog reviews + 6 cafe reviews collected and stored properly
 
 ## User Preferences
 

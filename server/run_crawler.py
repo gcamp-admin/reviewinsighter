@@ -61,15 +61,30 @@ def main():
                         }
                         mapped_source = source_mapping.get(source, source)
                         
-                        review_data = {
-                            'userId': review.get('userName', review.get('title', '익명')),
-                            'content': review.get('content', review.get('description', '')),
-                            'rating': review.get('score', 0),
-                            'source': mapped_source,
-                            'createdAt': review.get('at', review.get('pubDate', datetime.now().isoformat())),
-                            'serviceId': 'ixio',
-                            'appId': review.get('reviewId', str(total_reviews))
-                        }
+                        # Handle different review formats
+                        if source in ['naver_blog', 'naver_cafe']:
+                            # For Naver reviews, use the data from crawler.py
+                            review_data = {
+                                'userId': review.get('userId', '익명'),
+                                'content': review.get('content', ''),
+                                'rating': review.get('rating', 5),
+                                'source': review.get('source', mapped_source),
+                                'createdAt': review.get('createdAt', datetime.now().isoformat()),
+                                'serviceId': review.get('serviceId', 'ixio'),
+                                'appId': review.get('appId', str(total_reviews)),
+                                'link': review.get('link', '')
+                            }
+                        else:
+                            # For app store reviews, use the old format
+                            review_data = {
+                                'userId': review.get('userName', review.get('title', '익명')),
+                                'content': review.get('content', review.get('description', '')),
+                                'rating': review.get('score', 0),
+                                'source': mapped_source,
+                                'createdAt': review.get('at', review.get('pubDate', datetime.now().isoformat())),
+                                'serviceId': 'ixio',
+                                'appId': review.get('reviewId', str(total_reviews))
+                            }
                         
                         # Send to Node.js API
                         response = requests.post(
