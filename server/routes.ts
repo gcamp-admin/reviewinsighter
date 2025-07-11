@@ -288,49 +288,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Update sentiment analysis for reviews using optimized batch processing
             if (storedReviews.length > 0) {
               try {
-                // Extract review texts for batch processing
-                const reviewTexts = storedReviews.map(review => review.content);
+                // Filter reviews by date range for more efficient processing
+                let reviewsToAnalyze = storedReviews;
+                if (startDate && endDate) {
+                  const fromDate = new Date(startDate);
+                  const toDate = new Date(endDate);
+                  
+                  reviewsToAnalyze = storedReviews.filter(review => {
+                    const reviewDate = new Date(review.createdAt);
+                    return reviewDate >= fromDate && reviewDate <= toDate;
+                  });
+                  
+                  console.log(`Filtering sentiment analysis to ${reviewsToAnalyze.length} reviews within date range (${startDate} to ${endDate})`);
+                }
                 
-                // Call GPT batch sentiment analysis endpoint
-                const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment-batch', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    texts: reviewTexts
-                  })
-                });
-                
-                if (sentimentResponse.ok) {
-                  const sentimentData = await sentimentResponse.json();
-                  // Update reviews with sentiment analysis results
-                  for (let i = 0; i < storedReviews.length; i++) {
-                    const sentiment = sentimentData.sentiments[i];
-                    await storage.updateReview(storedReviews[i].id, { sentiment });
-                  }
-                  console.log(`Batch sentiment analysis completed for ${storedReviews.length} reviews`);
-                } else {
-                  console.error('Batch sentiment analysis failed, falling back to individual analysis');
-                  // Fallback to individual analysis
-                  for (const review of storedReviews) {
-                    try {
-                      const individualResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          text: review.content
-                        })
-                      });
-                      
-                      if (individualResponse.ok) {
-                        const sentimentData = await individualResponse.json();
-                        await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
+                if (reviewsToAnalyze.length > 0) {
+                  // Extract review texts for batch processing (only for filtered reviews)
+                  const reviewTexts = reviewsToAnalyze.map(review => review.content);
+                  
+                  // Call GPT batch sentiment analysis endpoint
+                  const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment-batch', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      texts: reviewTexts
+                    })
+                  });
+                  
+                  if (sentimentResponse.ok) {
+                    const sentimentData = await sentimentResponse.json();
+                    // Update only the filtered reviews with sentiment analysis results
+                    for (let i = 0; i < reviewsToAnalyze.length; i++) {
+                      const sentiment = sentimentData.sentiments[i];
+                      await storage.updateReview(reviewsToAnalyze[i].id, { sentiment });
+                    }
+                    console.log(`Batch sentiment analysis completed for ${reviewsToAnalyze.length} reviews`);
+                  } else {
+                    console.error('Batch sentiment analysis failed, falling back to individual analysis');
+                    // Fallback to individual analysis (only for filtered reviews)
+                    for (const review of reviewsToAnalyze) {
+                      try {
+                        const individualResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            text: review.content
+                          })
+                        });
+                        
+                        if (individualResponse.ok) {
+                          const sentimentData = await individualResponse.json();
+                          await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
+                        }
+                      } catch (error) {
+                        console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
                       }
-                    } catch (error) {
-                      console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
+                    }
+                  }
+                }
+                
+                // For reviews outside date range, use quick rule-based analysis
+                if (startDate && endDate) {
+                  const remainingReviews = storedReviews.filter(review => !reviewsToAnalyze.includes(review));
+                  if (remainingReviews.length > 0) {
+                    console.log(`Using rule-based analysis for ${remainingReviews.length} reviews outside date range`);
+                    for (const review of remainingReviews) {
+                      // Simple rule-based sentiment for reviews outside date range
+                      const content = review.content.toLowerCase();
+                      let sentiment = '중립';
+                      
+                      // Quick positive/negative detection
+                      if (content.includes('좋') || content.includes('만족') || content.includes('편리')) {
+                        sentiment = '긍정';
+                      } else if (content.includes('불편') || content.includes('안되') || content.includes('문제')) {
+                        sentiment = '부정';
+                      }
+                      
+                      await storage.updateReview(review.id, { sentiment });
                     }
                   }
                 }
