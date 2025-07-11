@@ -453,20 +453,65 @@ print(json.dumps(result, ensure_ascii=False))
           
           // Store insights (only for heart analysis or full analysis)
           if (result.insights && result.insights.length > 0 && (analysisType === 'heart' || !analysisType)) {
-            for (const insight of result.insights) {
+            // For HEART analysis, use GPT-based analysis
+            if (analysisType === 'heart') {
               try {
-                await storage.createInsight({
-                  title: insight.title,
-                  description: insight.description,
-                  priority: insight.priority,
-                  mentionCount: insight.mentionCount,
-                  trend: insight.trend,
-                  category: insight.category,
-                  serviceId: serviceId,
-                });
-                insightsStored++;
-              } catch (err) {
-                console.error("Error storing insight:", err);
+                const { analyzeHeartFrameworkWithGPT } = await import('./openai_analysis');
+                const gptInsights = await analyzeHeartFrameworkWithGPT(reviewsForAnalysis);
+                
+                for (const insight of gptInsights) {
+                  try {
+                    await storage.createInsight({
+                      title: insight.title,
+                      description: `**HEART 항목**: ${insight.category}\n**문제 요약**: ${insight.problem_summary}\n**UX 개선 제안**: ${insight.ux_suggestions}\n**우선순위**: ${insight.priority.toUpperCase()}`,
+                      priority: insight.priority,
+                      mentionCount: insight.mention_count,
+                      trend: insight.trend,
+                      category: insight.category,
+                      serviceId: serviceId,
+                    });
+                    insightsStored++;
+                  } catch (err) {
+                    console.error("Error storing GPT insight:", err);
+                  }
+                }
+              } catch (gptError) {
+                console.error("GPT analysis failed, falling back to Python analysis:", gptError);
+                // Fallback to Python analysis
+                for (const insight of result.insights) {
+                  try {
+                    await storage.createInsight({
+                      title: insight.title,
+                      description: insight.description,
+                      priority: insight.priority,
+                      mentionCount: insight.mentionCount,
+                      trend: insight.trend,
+                      category: insight.category,
+                      serviceId: serviceId,
+                    });
+                    insightsStored++;
+                  } catch (err) {
+                    console.error("Error storing insight:", err);
+                  }
+                }
+              }
+            } else {
+              // For full analysis, use Python analysis
+              for (const insight of result.insights) {
+                try {
+                  await storage.createInsight({
+                    title: insight.title,
+                    description: insight.description,
+                    priority: insight.priority,
+                    mentionCount: insight.mentionCount,
+                    trend: insight.trend,
+                    category: insight.category,
+                    serviceId: serviceId,
+                  });
+                  insightsStored++;
+                } catch (err) {
+                  console.error("Error storing insight:", err);
+                }
               }
             }
           }

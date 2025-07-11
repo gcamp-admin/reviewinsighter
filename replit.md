@@ -221,6 +221,10 @@ Changelog:
 - July 11, 2025. Implemented section visibility control where only the most recently clicked analysis button's content is displayed
 - July 11, 2025. Fixed sentiment classification display issue - changed from English ("positive"/"negative") to Korean ("긍정"/"부정") matching backend data
 - July 11, 2025. Corrected app store rating display by fixing source field matching ("app_store" vs "apple_store")
+- July 11, 2025. Enhanced HEART framework analysis with GPT-4o integration for comprehensive UX insights
+- July 11, 2025. Implemented GPT-based HEART analysis that provides authentic user quote analysis and specific UX improvement suggestions
+- July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
+- July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
 
 ## User Preferences
 

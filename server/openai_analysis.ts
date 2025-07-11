@@ -9,6 +9,100 @@ const openai = new OpenAI({
 const sentimentCache = new Map<string, '긍정' | '부정' | '중립'>();
 
 // Batch processing for multiple reviews to reduce API calls
+// GPT-based HEART framework analysis
+export async function analyzeHeartFrameworkWithGPT(reviews: any[]): Promise<any[]> {
+  if (!reviews || reviews.length === 0) {
+    return [];
+  }
+
+  try {
+    // Prepare review texts for analysis
+    const reviewTexts = reviews.map(review => ({
+      content: review.content,
+      rating: review.rating,
+      source: review.source
+    }));
+
+    // Create prompt for HEART framework analysis
+    const prompt = `
+다음 리뷰들을 HEART 프레임워크에 따라 분석하여 UX 개선 제안을 생성해주세요.
+
+HEART 프레임워크:
+- Happiness: 사용자 만족도 및 감정
+- Engagement: 사용자 참여도 및 활동 수준
+- Adoption: 새로운 기능 채택 및 사용 시작
+- Retention: 사용자 유지 및 재사용
+- Task Success: 작업 완료 및 성공률
+
+리뷰 데이터:
+${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
+내용: ${review.content}`).join('\n\n')}
+
+분석 결과를 다음 JSON 형식으로 반환해주세요:
+{
+  "insights": [
+    {
+      "category": "happiness|engagement|adoption|retention|task_success",
+      "title": "🔴 Critical | HEART: [category] | [문제유형] ([건수]건)",
+      "problem_summary": "실제 사용자 표현을 인용하며 구체적인 문제점 설명",
+      "ux_suggestions": "구체적이고 실행 가능한 UX 개선 제안 (3-5가지)",
+      "priority": "critical|major|minor",
+      "mention_count": 건수,
+      "trend": "stable"
+    }
+  ]
+}
+
+우선순위 기준:
+- Critical: 핵심 기능 오류, 앱 크래시, 작업 실패 (3건 이상)
+- Major: 주요 불편사항, 사용성 문제 (2건 이상)
+- Minor: 개선 제안, 소소한 불편 (1건)
+
+실제 사용자 리뷰에서 발견된 문제만 분석하고, 가상의 문제는 만들지 마세요.
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // Use more powerful model for complex analysis
+      messages: [
+        {
+          role: "system",
+          content: "당신은 UX 전문가입니다. 사용자 리뷰를 분석하여 실용적인 UX 개선 제안을 생성합니다. 응답은 반드시 유효한 JSON 배열 형태로 해주세요."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 2000,
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const result = response.choices[0].message.content;
+    
+    try {
+      const parsedResult = JSON.parse(result || '{}');
+      
+      // Ensure the result has the expected structure
+      if (parsedResult.insights && Array.isArray(parsedResult.insights)) {
+        return parsedResult.insights;
+      } else if (Array.isArray(parsedResult)) {
+        return parsedResult;
+      } else {
+        console.warn('GPT returned unexpected HEART analysis format:', result);
+        return [];
+      }
+    } catch (parseError) {
+      console.error('Failed to parse GPT HEART analysis response:', parseError);
+      return [];
+    }
+    
+  } catch (error) {
+    console.error('OpenAI API error in HEART analysis:', error);
+    return [];
+  }
+}
+
 export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promise<('긍정' | '부정' | '중립')[]> {
   const results: ('긍정' | '부정' | '중립')[] = [];
   const needsGPTAnalysis: { text: string; index: number }[] = [];
