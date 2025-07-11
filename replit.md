@@ -242,6 +242,9 @@ Changelog:
 - July 11, 2025. Updated header with new commento.ai logo - converted to SVG format for transparent background
 - July 11, 2025. Removed unnecessary header icons (real-time analysis, AI insights, settings) for cleaner design
 - July 11, 2025. Increased header height to accommodate logo and improved visual hierarchy
+- July 11, 2025. Added "코멘토는 누구?" popup modal with AI introduction and contact information
+- July 11, 2025. Implemented modal with proper z-index, centered positioning, and close button functionality
+- July 11, 2025. Added Innovation CoE contact details (최아진 | ahjinchoe@lguplus.co.kr) to popup
 - July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
 - July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
 - July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis
