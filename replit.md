@@ -179,6 +179,7 @@ Changelog:
 - July 11, 2025. Added date formatting (YYYY.MM.DD) and proper pagination support for up to 10 pages
 - July 11, 2025. Implemented review quality filtering for Naver content to exclude promotional/press content
 - July 11, 2025. Added is_likely_user_review function to filter authentic user reviews from blog/cafe results
+- July 11, 2025. Enhanced sentiment analysis with comprehensive negative keywords list including '귀찮', '스트레스', '힘들', '어렵', '형편없', '구리', '실망', '렉', '복잡', '직관', '답변 없음', '광고 많', '강제', '먹통', '멈춤', '느림' for more accurate emotion detection
 
 ## User Preferences
 
