@@ -3,6 +3,8 @@ export interface Service {
   name: string;
   googlePlayId: string;
   appleStoreId: string;
+  naverBlogId?: string;
+  naverCafeId?: string;
 }
 
 export interface ReviewFilters {

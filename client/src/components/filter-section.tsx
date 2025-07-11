@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple, Brain } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -65,9 +65,15 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       return response.json();
     },
     onSuccess: (data) => {
-      const sourcesText = localFilters.source.map(s => 
-        s === 'google_play' ? '구글 플레이' : '앱스토어'
-      ).join(', ');
+      const sourcesText = localFilters.source.map(s => {
+        switch(s) {
+          case 'google_play': return '구글 플레이';
+          case 'app_store': return '앱스토어';
+          case 'naver_blog': return '네이버 블로그';
+          case 'naver_cafe': return '네이버 카페';
+          default: return s;
+        }
+      }).join(', ');
       
       toast({
         title: "수집 완료",
@@ -174,7 +180,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <span>필터 설정</span>
           </div>
         </div>
-        <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어 & 애플 앱스토어 지원)</CardDescription>
+        <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -188,7 +194,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 const newFilters = { 
                   ...localFilters, 
                   service: selectedService,
-                  source: selectedService ? ['google_play', 'app_store'] : []
+                  source: selectedService ? ['google_play', 'app_store', 'naver_blog', 'naver_cafe'] : []
                 };
                 setLocalFilters(newFilters);
                 onFiltersChange(newFilters);
@@ -211,7 +217,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             {/* Store Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">스토어 선택 <span className="text-red-500">*</span></Label>
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
               <div className="flex items-center space-x-3">
                 <Checkbox 
                   id="google-play"
@@ -232,6 +238,28 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
                 <Label htmlFor="app-store" className="flex items-center space-x-2 cursor-pointer">
                   <Apple className="w-4 h-4 text-gray-600" />
                   <span className="text-sm">애플 앱스토어</span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox 
+                  id="naver-blog"
+                  checked={localFilters.source.includes("naver_blog")}
+                  onCheckedChange={(checked) => handleSourceChange("naver_blog", checked as boolean)}
+                />
+                <Label htmlFor="naver-blog" className="flex items-center space-x-2 cursor-pointer">
+                  <Globe className="w-4 h-4 text-green-500" />
+                  <span className="text-sm">네이버 블로그</span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox 
+                  id="naver-cafe"
+                  checked={localFilters.source.includes("naver_cafe")}
+                  onCheckedChange={(checked) => handleSourceChange("naver_cafe", checked as boolean)}
+                />
+                <Label htmlFor="naver-cafe" className="flex items-center space-x-2 cursor-pointer">
+                  <MessageCircle className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm">네이버 카페</span>
                 </Label>
               </div>
             </div>

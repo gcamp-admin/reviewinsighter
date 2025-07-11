@@ -24,7 +24,7 @@ const collectReviewsSchema = z.object({
   appId: z.string().optional().default('com.lguplus.sohoapp'),
   appIdApple: z.string().optional().default('1571096278'),
   count: z.coerce.number().min(1).max(500).optional().default(100),
-  sources: z.array(z.enum(['google_play', 'app_store'])).optional().default(['google_play']),
+  sources: z.array(z.enum(['google_play', 'app_store', 'naver_blog', 'naver_cafe'])).optional().default(['google_play']),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {

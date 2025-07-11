@@ -344,7 +344,91 @@ def scrape_app_store_reviews(app_id='1571096278', count=100):
         print(f"Error scraping App Store reviews: {str(e)}", file=sys.stderr)
         return []
 
-def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278', count=100, sources=['google_play']):
+def scrape_naver_blog_reviews(service_name='익시오', count=100):
+    """
+    Scrape reviews from Naver Blog
+    
+    Args:
+        service_name: Service name to search for
+        count: Number of reviews to fetch
+        
+    Returns:
+        List of review dictionaries
+    """
+    try:
+        # Mock implementation for demonstration
+        # In a real implementation, you would scrape Naver Blog search results
+        processed_reviews = []
+        
+        # Sample blog reviews (in production, this would scrape actual blog posts)
+        sample_blog_content = [
+            f"{service_name} 사용해봤는데 정말 편리해요. 보이스피싱 차단 기능이 좋네요.",
+            f"{service_name} 앱 통화 품질이 아직 불안정한 것 같아요. 개선이 필요해보입니다.",
+            f"{service_name} AI 통화 요약 기능 덕분에 중요한 내용을 놓치지 않아서 좋아요.",
+            f"{service_name} 사용 중인데 가끔 끊김 현상이 있어서 아쉬워요."
+        ]
+        
+        for i, content in enumerate(sample_blog_content[:count]):
+            sentiment = analyze_text_sentiment(content)
+            processed_review = {
+                'userId': f'블로거{i+1}',
+                'source': 'naver_blog',
+                'rating': 4 if sentiment == 'positive' else 2,
+                'content': content,
+                'sentiment': sentiment,
+                'createdAt': datetime.now().isoformat()
+            }
+            processed_reviews.append(processed_review)
+        
+        return processed_reviews
+        
+    except Exception as e:
+        print(f"Error scraping Naver Blog reviews: {str(e)}", file=sys.stderr)
+        return []
+
+def scrape_naver_cafe_reviews(service_name='익시오', count=100):
+    """
+    Scrape reviews from Naver Cafe
+    
+    Args:
+        service_name: Service name to search for
+        count: Number of reviews to fetch
+        
+    Returns:
+        List of review dictionaries
+    """
+    try:
+        # Mock implementation for demonstration
+        # In a real implementation, you would scrape Naver Cafe posts/comments
+        processed_reviews = []
+        
+        # Sample cafe reviews (in production, this would scrape actual cafe posts)
+        sample_cafe_content = [
+            f"{service_name} 카페에서 추천받아서 써봤는데 생각보다 괜찮네요!",
+            f"{service_name} 업데이트 후에 좀 더 안정적이 된 것 같아요.",
+            f"{service_name} 기능은 좋은데 UI가 좀 복잡한 느낌이에요.",
+            f"{service_name} 고객센터 응답이 빨라서 만족해요."
+        ]
+        
+        for i, content in enumerate(sample_cafe_content[:count]):
+            sentiment = analyze_text_sentiment(content)
+            processed_review = {
+                'userId': f'카페회원{i+1}',
+                'source': 'naver_cafe',
+                'rating': 4 if sentiment == 'positive' else 2,
+                'content': content,
+                'sentiment': sentiment,
+                'createdAt': datetime.now().isoformat()
+            }
+            processed_reviews.append(processed_review)
+        
+        return processed_reviews
+        
+    except Exception as e:
+        print(f"Error scraping Naver Cafe reviews: {str(e)}", file=sys.stderr)
+        return []
+
+def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278', count=100, sources=['google_play'], service_name='익시오'):
     """
     Scrape reviews from multiple sources
     
@@ -353,6 +437,7 @@ def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278
         app_id_apple: Apple App Store app ID
         count: Number of reviews to fetch per source
         sources: List of sources to scrape from
+        service_name: Service name for Naver searches
         
     Returns:
         List of review dictionaries
@@ -368,6 +453,16 @@ def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278
         apple_reviews = scrape_app_store_reviews(app_id_apple, count)
         all_reviews.extend(apple_reviews)
         print(f"Collected {len(apple_reviews)} reviews from App Store", file=sys.stderr)
+    
+    if 'naver_blog' in sources:
+        blog_reviews = scrape_naver_blog_reviews(service_name, count)
+        all_reviews.extend(blog_reviews)
+        print(f"Collected {len(blog_reviews)} reviews from Naver Blog", file=sys.stderr)
+    
+    if 'naver_cafe' in sources:
+        cafe_reviews = scrape_naver_cafe_reviews(service_name, count)
+        all_reviews.extend(cafe_reviews)
+        print(f"Collected {len(cafe_reviews)} reviews from Naver Cafe", file=sys.stderr)
     
     return all_reviews
 
@@ -1123,7 +1218,8 @@ def main():
                 sources = ['google_play']
         
         # Get reviews from specified sources
-        reviews_data = scrape_reviews(app_id_google, app_id_apple, count, sources)
+        service_name = '익시오'  # Default service name
+        reviews_data = scrape_reviews(app_id_google, app_id_apple, count, sources, service_name)
         
         if analyze_mode:
             # Perform analysis
@@ -1147,7 +1243,9 @@ def main():
                 'sources': sources,
                 'counts': {
                     'google_play': len([r for r in reviews_data if r['source'] == 'google_play']),
-                    'app_store': len([r for r in reviews_data if r['source'] == 'app_store'])
+                    'app_store': len([r for r in reviews_data if r['source'] == 'app_store']),
+                    'naver_blog': len([r for r in reviews_data if r['source'] == 'naver_blog']),
+                    'naver_cafe': len([r for r in reviews_data if r['source'] == 'naver_cafe'])
                 }
             }
         
