@@ -213,7 +213,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 const newFilters = { 
                   ...localFilters, 
                   service: selectedService,
-                  source: selectedService ? ['google_play', 'app_store', 'naver_blog', 'naver_cafe'] : []
+                  source: [] // No channels selected by default
                 };
                 setLocalFilters(newFilters);
                 onFiltersChange(newFilters);
