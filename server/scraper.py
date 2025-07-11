@@ -157,32 +157,34 @@ def analyze_text_sentiment(text):
     if '불편' in content:
         return "negative"
     
-    # Enhanced negative keywords in Korean
+    # Refined negative keywords focusing on specific app issues
     strong_negative_keywords = [
-        # Original priority keyword
-        "불편", "귀찮", "짜증", "화남", "거슬림", "스트레스",
-        "힘들", "어렵", "별로", "최악", "형편없", "구리", "실망",
-        "나쁘", "안됨", "안돼", "안되", "에러", "오류", "먹통",
-        "멈춤", "튕김", "느림", "렉", "복잡", "직관", "답변 없음", "광고 많", "강제",
+        "뜨거움", "불편", "방해", "없음", "오류", "안됨", "안돼", 
+        "스팸", "차단 안", "문제", "끊김", "과열", "거슬림",
         
-        # Critical issues
+        # Additional critical issues
+        "귀찮", "짜증", "화남", "스트레스", "힘들", "어렵", 
+        "별로", "최악", "형편없", "구리", "실망", "나쁘", 
+        "에러", "먹통", "멈춤", "튕김", "느림", "렉", "복잡",
+        
+        # Technical problems
         '버그', '튕긴다', '나가버림', '꺼짐', '크래시', '종료', '재시작',
         '작동안함', '실행안됨', '안받아져', '받아지지', '실행되지', '작동하지',
-        '끊김', '끊어지', '끊긴다', '연결안됨', '안들림', '소리안남',
+        '끊어지', '끊긴다', '연결안됨', '안들림', '소리안남',
         
-        # Strong dissatisfaction
+        # User dissatisfaction
         '쓰레기', '빡침', '열받', '불만', '싫어', '답답', '당황스러운',
-        '문제', '고장', '망함', '엉망',
+        '고장', '망함', '엉망',
         
-        # Deletion/cancellation intent
+        # Usage abandonment
         '삭제', '지움', '해지', '그만', '안쓸', '다른거', '바꿀', '탈퇴', '포기', '중단',
         '안써', '사용안함', '못쓰겠', '쓸모없',
         
-        # Specific app issues
+        # App-specific issues
         '통화중 대기', '안지원', '볼륨버튼', '진동', '백그라운드', '자동으로', '슬라이드',
         '스팸정보', '딸려와서', '번호확인', '기다려야', '차량', '블투', '통화종료',
         
-        # Emotional expressions
+        # User experience problems
         '화면 확대 안됨', '못알아', '지나치는', '애플이든', '삼성이든',
         '저격하려고', '알뜰폰 안된다', '짜증나죠', '안될거', '왜 안됩니까', '난리났음',
         '상대방과 나의 목소리의 싱크가 맞지 않고', '울리지않거나', '부재중', '바로 끊기고',

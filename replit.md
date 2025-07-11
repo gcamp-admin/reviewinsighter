@@ -181,6 +181,7 @@ Changelog:
 - July 11, 2025. Added is_likely_user_review function to filter authentic user reviews from blog/cafe results
 - July 11, 2025. Enhanced sentiment analysis with comprehensive negative keywords list including '귀찮', '스트레스', '힘들', '어렵', '형편없', '구리', '실망', '렉', '복잡', '직관', '답변 없음', '광고 많', '강제', '먹통', '멈춤', '느림' for more accurate emotion detection
 - July 11, 2025. Implemented section-based sentiment analysis that detects negative keywords after "단점" sections and uses threshold-based detection (2+ negative keywords) for more nuanced Korean review analysis
+- July 11, 2025. Refined negative keywords list to focus on specific app issues including "뜨거움", "방해", "없음", "차단 안", "과열", "거슬림" for more targeted sentiment detection
 
 ## User Preferences
 
