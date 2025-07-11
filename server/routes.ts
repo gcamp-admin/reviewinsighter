@@ -148,8 +148,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordcloud/:sentiment", async (req, res) => {
     try {
       const { sentiment } = req.params;
-      if (!["positive", "negative"].includes(sentiment)) {
-        return res.status(400).json({ error: "Invalid sentiment. Must be 'positive' or 'negative'" });
+      const validSentiments = ['positive', 'negative', '긍정', '부정'];
+      if (!validSentiments.includes(sentiment)) {
+        return res.status(400).json({ error: "Invalid sentiment. Must be 'positive', 'negative', '긍정', or '부정'" });
       }
       
       // Handle source parameter (can be string or array)
@@ -517,24 +518,85 @@ print(json.dumps(result, ensure_ascii=False))
           }
           
           // Store word cloud data (only for wordcloud analysis or full analysis)
-          if (result.wordCloud && (analysisType === 'wordcloud' || !analysisType)) {
-            // Handle both positive and negative word clouds
-            const allWordCloudData = [
-              ...(result.wordCloud.positive || []),
-              ...(result.wordCloud.negative || [])
-            ];
-            
-            for (const wordData of allWordCloudData) {
+          if (analysisType === 'wordcloud' || !analysisType) {
+            // For wordcloud analysis, use GPT-based analysis
+            if (analysisType === 'wordcloud') {
               try {
-                await storage.createWordCloudData({
-                  word: wordData.word,
-                  frequency: wordData.frequency,
-                  sentiment: wordData.sentiment,
-                  serviceId: serviceId,
-                });
-                wordCloudStored++;
-              } catch (err) {
-                console.error("Error storing word cloud data:", err);
+                const { generateWordCloudWithGPT } = await import('./openai_analysis');
+                const gptWordCloud = await generateWordCloudWithGPT(reviewsForAnalysis);
+                
+                // Store positive words
+                for (const wordData of gptWordCloud.positive) {
+                  try {
+                    await storage.createWordCloudData({
+                      word: wordData.word,
+                      frequency: wordData.frequency,
+                      sentiment: "긍정",
+                      serviceId: serviceId,
+                    });
+                    wordCloudStored++;
+                  } catch (err) {
+                    console.error("Error storing GPT positive word cloud data:", err);
+                  }
+                }
+                
+                // Store negative words
+                for (const wordData of gptWordCloud.negative) {
+                  try {
+                    await storage.createWordCloudData({
+                      word: wordData.word,
+                      frequency: wordData.frequency,
+                      sentiment: "부정",
+                      serviceId: serviceId,
+                    });
+                    wordCloudStored++;
+                  } catch (err) {
+                    console.error("Error storing GPT negative word cloud data:", err);
+                  }
+                }
+              } catch (gptError) {
+                console.error("GPT word cloud analysis failed, falling back to Python analysis:", gptError);
+                // Fallback to Python analysis
+                if (result.wordCloud) {
+                  const allWordCloudData = [
+                    ...(result.wordCloud.positive || []),
+                    ...(result.wordCloud.negative || [])
+                  ];
+                  
+                  for (const wordData of allWordCloudData) {
+                    try {
+                      await storage.createWordCloudData({
+                        word: wordData.word,
+                        frequency: wordData.frequency,
+                        sentiment: wordData.sentiment,
+                        serviceId: serviceId,
+                      });
+                      wordCloudStored++;
+                    } catch (err) {
+                      console.error("Error storing word cloud data:", err);
+                    }
+                  }
+                }
+              }
+            } else if (result.wordCloud) {
+              // For full analysis, use Python analysis
+              const allWordCloudData = [
+                ...(result.wordCloud.positive || []),
+                ...(result.wordCloud.negative || [])
+              ];
+              
+              for (const wordData of allWordCloudData) {
+                try {
+                  await storage.createWordCloudData({
+                    word: wordData.word,
+                    frequency: wordData.frequency,
+                    sentiment: wordData.sentiment,
+                    serviceId: serviceId,
+                  });
+                  wordCloudStored++;
+                } catch (err) {
+                  console.error("Error storing word cloud data:", err);
+                }
               }
             }
           }

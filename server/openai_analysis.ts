@@ -103,6 +103,128 @@ ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: $
   }
 }
 
+// GPT-based word cloud analysis
+export async function generateWordCloudWithGPT(reviews: any[]): Promise<{
+  positive: { word: string; frequency: number; sentiment: string }[];
+  negative: { word: string; frequency: number; sentiment: string }[];
+}> {
+  if (!reviews || reviews.length === 0) {
+    return { positive: [], negative: [] };
+  }
+
+  try {
+    // Separate reviews by sentiment
+    const positiveReviews = reviews.filter(r => r.sentiment === '긍정');
+    const negativeReviews = reviews.filter(r => r.sentiment === '부정');
+
+    // Create prompts for positive and negative word extraction
+    const positivePrompt = `
+다음 긍정적인 리뷰들에서 자주 언급되는 중요한 한국어 단어 10개를 추출해주세요.
+
+긍정 리뷰:
+${positiveReviews.map((review, index) => `${index + 1}. ${review.content}`).join('\n')}
+
+다음 JSON 형식으로 반환해주세요:
+{
+  "words": [
+    {"word": "단어", "frequency": 빈도수, "sentiment": "positive"}
+  ]
+}
+
+조건:
+- 의미 있는 명사나 형용사만 선택
+- 한국어 단어만 추출
+- 빈도수는 실제 언급 횟수 기반
+- 총 10개 단어 선택
+`;
+
+    const negativePrompt = `
+다음 부정적인 리뷰들에서 자주 언급되는 중요한 한국어 단어 10개를 추출해주세요.
+
+부정 리뷰:
+${negativeReviews.map((review, index) => `${index + 1}. ${review.content}`).join('\n')}
+
+다음 JSON 형식으로 반환해주세요:
+{
+  "words": [
+    {"word": "단어", "frequency": 빈도수, "sentiment": "negative"}
+  ]
+}
+
+조건:
+- 의미 있는 명사나 형용사만 선택
+- 한국어 단어만 추출
+- 빈도수는 실제 언급 횟수 기반
+- 총 10개 단어 선택
+`;
+
+    // Process positive words
+    let positiveWords: any[] = [];
+    if (positiveReviews.length > 0) {
+      const positiveResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "당신은 한국어 텍스트 분석 전문가입니다. 리뷰에서 의미 있는 키워드를 추출합니다."
+          },
+          {
+            role: "user",
+            content: positivePrompt
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      });
+
+      try {
+        const positiveResult = JSON.parse(positiveResponse.choices[0].message.content || '{}');
+        positiveWords = positiveResult.words || [];
+      } catch (error) {
+        console.error('Failed to parse positive words:', error);
+      }
+    }
+
+    // Process negative words
+    let negativeWords: any[] = [];
+    if (negativeReviews.length > 0) {
+      const negativeResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "당신은 한국어 텍스트 분석 전문가입니다. 리뷰에서 의미 있는 키워드를 추출합니다."
+          },
+          {
+            role: "user",
+            content: negativePrompt
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      });
+
+      try {
+        const negativeResult = JSON.parse(negativeResponse.choices[0].message.content || '{}');
+        negativeWords = negativeResult.words || [];
+      } catch (error) {
+        console.error('Failed to parse negative words:', error);
+      }
+    }
+
+    return {
+      positive: positiveWords,
+      negative: negativeWords
+    };
+
+  } catch (error) {
+    console.error('OpenAI API error in word cloud analysis:', error);
+    return { positive: [], negative: [] };
+  }
+}
+
 export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promise<('긍정' | '부정' | '중립')[]> {
   const results: ('긍정' | '부정' | '중립')[] = [];
   const needsGPTAnalysis: { text: string; index: number }[] = [];
