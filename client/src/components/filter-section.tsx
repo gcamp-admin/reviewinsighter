@@ -21,19 +21,22 @@ const SERVICES: Service[] = [
     id: "ixio",
     name: "익시오",
     googlePlayId: "com.lguplus.aicallagent",
-    appleStoreId: "6503931858"
+    appleStoreId: "6503931858",
+    keywords: ["익시오", "ixio", "익시o", "ixi오", "LG익시오", "U+익시오", "유플러스익시오"]
   },
   {
     id: "ai-bizcall",
     name: "AI비즈콜",
     googlePlayId: "com.uplus.ubizai",
-    appleStoreId: "6503284354"
+    appleStoreId: "6503284354",
+    keywords: ["ai비즈콜", "에이아이비즈콜", "LG비즈콜", "유플러스비즈콜", "U+비즈콜"]
   },
   {
     id: "soho-package",
-    name: "SOHO우리가게 패키지",
+    name: "SOHO우리가게패키지",
     googlePlayId: "com.lguplus.sohoapp",
-    appleStoreId: "1571096278"
+    appleStoreId: "1571096278",
+    keywords: ["우리가게패키지", "LG우리가게", "U+우리가게", "유플러스우리가게", "유플러스소호패키지"]
   }
 ];
 

@@ -5,6 +5,7 @@ export interface Service {
   appleStoreId: string;
   naverBlogId?: string;
   naverCafeId?: string;
+  keywords?: string[];
 }
 
 export interface ReviewFilters {
