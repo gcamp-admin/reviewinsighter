@@ -38,22 +38,14 @@ export default function Header() {
       
       {/* 팝업 모달 */}
       {isPopupOpen && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-            style={{ zIndex: 999998 }}
-            onClick={() => setIsPopupOpen(false)}
-          />
-          <div 
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8"
-            style={{ zIndex: 999999 }}
-          >
+        <div className="popup-overlay" onClick={() => setIsPopupOpen(false)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             {/* 닫기 버튼 */}
             <button
               onClick={() => setIsPopupOpen(false)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+              className="popup-close-btn"
             >
-              <X className="w-6 h-6" />
+              <X size={24} />
             </button>
             
             {/* 팝업 내용 */}
@@ -94,7 +86,7 @@ export default function Header() {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </header>
   );
