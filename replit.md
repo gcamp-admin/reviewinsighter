@@ -232,6 +232,11 @@ Changelog:
 - July 11, 2025. Fixed frontend word cloud display issue by updating API calls to use Korean sentiment labels (긍정/부정) instead of English (positive/negative)
 - July 11, 2025. Successfully tested GPT word cloud analysis generating 10 positive and 10 negative keywords from actual review content
 - July 11, 2025. Word cloud analysis now provides contextually relevant Korean keywords extracted through AI analysis of user review text
+- July 11, 2025. Enhanced review collection button styling to match AI analysis buttons with same size, font weight, and gradient colors
+- July 11, 2025. Added AI analysis disclaimer notice below review list with appropriate gray styling
+- July 11, 2025. Implemented user ID extraction system for Naver Blog and Cafe reviews to capture actual blogger IDs and cafe names
+- July 11, 2025. Enhanced Naver API integration to extract user IDs from blog URLs (blog.naver.com/USERNAME) and cafe URLs (cafe.naver.com/CAFENAME)
+- July 11, 2025. Added debugging logs to track extracted user IDs during review collection for better monitoring
 
 ## User Preferences
 

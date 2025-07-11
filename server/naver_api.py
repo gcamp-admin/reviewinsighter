@@ -8,9 +8,52 @@ Naver API Integration for Blog and Cafe Search
 import requests
 import urllib.parse
 import sys
+import re
 
 NAVER_CLIENT_ID = "YINpbvMCsck1Vr0PwwJd"
 NAVER_CLIENT_SECRET = "gdi7lnyV1Z"
+
+def extract_user_id_from_url(bloggerlink, link, search_type):
+    """
+    Extract user ID from Naver Blog or Cafe URL
+    
+    Args:
+        bloggerlink: Blogger link (for blog)
+        link: Direct link to the content
+        search_type: 'blog' or 'cafe'
+        
+    Returns:
+        Extracted user ID or default value
+    """
+    try:
+        if search_type == "blog":
+            # For blog, try to extract from bloggerlink first
+            if bloggerlink:
+                # Pattern: https://blog.naver.com/USERNAME
+                match = re.search(r'blog\.naver\.com/([^/?]+)', bloggerlink)
+                if match:
+                    return match.group(1)
+            
+            # If bloggerlink fails, try from link
+            if link:
+                # Pattern: https://blog.naver.com/USERNAME/POST_ID
+                match = re.search(r'blog\.naver\.com/([^/?]+)', link)
+                if match:
+                    return match.group(1)
+                    
+        elif search_type == "cafe":
+            # For cafe, extract from link
+            if link:
+                # Pattern: https://cafe.naver.com/CAFE_NAME/ARTICLE_ID
+                match = re.search(r'cafe\.naver\.com/([^/?]+)', link)
+                if match:
+                    return f"카페_{match.group(1)}"
+                    
+        return None
+        
+    except Exception as e:
+        print(f"Error extracting user ID: {str(e)}", file=sys.stderr)
+        return None
 
 def search_naver(keyword, search_type="blog", display=10):
     """
@@ -45,7 +88,12 @@ def search_naver(keyword, search_type="blog", display=10):
         res = requests.get(url, headers=headers, timeout=10)
         
         if res.status_code == 200:
-            return res.json().get("items", [])
+            items = res.json().get("items", [])
+            # Extract user IDs from URLs
+            for item in items:
+                user_id = extract_user_id_from_url(item.get('bloggerlink', ''), item.get('link', ''), search_type)
+                item['extracted_user_id'] = user_id
+            return items
         else:
             print(f"네이버 API 오류: {res.status_code} - {res.text}", file=sys.stderr)
             return []

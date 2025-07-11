@@ -906,8 +906,14 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
                 except:
                     created_at = datetime.now().isoformat()
                 
+                # Extract actual user ID from the item
+                user_id = item.get('extracted_user_id') or item.get('bloggername', f"블로거{i+1}")
+                
+                # Debug: Print extracted user ID
+                print(f"Blog Review {i+1}: User ID = {user_id}, URL = {item.get('link', '')}", file=sys.stderr)
+                
                 processed_review = {
-                    'userId': f"블로거{i+1}",
+                    'userId': user_id,
                     'source': 'naver_blog',
                     'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length
@@ -1024,8 +1030,14 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
                 
+                # Extract actual user ID from the item
+                user_id = item.get('extracted_user_id') or item.get('cafename', f"카페회원{i+1}")
+                
+                # Debug: Print extracted user ID
+                print(f"Cafe Review {i+1}: User ID = {user_id}, URL = {item.get('link', '')}", file=sys.stderr)
+                
                 processed_review = {
-                    'userId': f"카페회원{i+1}",
+                    'userId': user_id,
                     'source': 'naver_cafe',
                     'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length
