@@ -1,4 +1,4 @@
-import logoSvg from "/assets/logo.svg";
+import logoImg from "/assets/commento_logo_transparent.png";
 
 export default function Header() {
   return (
@@ -8,7 +8,7 @@ export default function Header() {
           <div className="flex items-center space-x-4 group">
             <div className="flex items-center">
               <img 
-                src={logoSvg} 
+                src={logoImg} 
                 alt="commento.ai Logo" 
                 className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300"
               />
