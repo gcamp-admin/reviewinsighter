@@ -6,7 +6,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }>;
-  getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number }>;
+  getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, neutral: number, averageRating: number }>;
   createReview(review: InsertReview): Promise<Review>;
   
   getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]>;
@@ -111,7 +111,7 @@ export class MemStorage implements IStorage {
     };
   }
 
-  async getReviewStats(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number, countsBySource: { googlePlay: number, appleStore: number, naverBlog: number, naverCafe: number } }> {
+  async getReviewStats(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, neutral: number, averageRating: number, countsBySource: { googlePlay: number, appleStore: number, naverBlog: number, naverCafe: number } }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
@@ -157,14 +157,15 @@ export class MemStorage implements IStorage {
     };
     
     if (total === 0) {
-      return { total: 0, positive: 0, negative: 0, averageRating: 0, countsBySource };
+      return { total: 0, positive: 0, negative: 0, neutral: 0, averageRating: 0, countsBySource };
     }
     
     const positive = filteredReviews.filter(r => r.sentiment === "positive").length;
     const negative = filteredReviews.filter(r => r.sentiment === "negative").length;
+    const neutral = filteredReviews.filter(r => r.sentiment === "neutral").length;
     const averageRating = filteredReviews.reduce((sum, r) => sum + r.rating, 0) / total;
 
-    return { total, positive, negative, averageRating: Math.round(averageRating * 10) / 10, countsBySource };
+    return { total, positive, negative, neutral, averageRating: Math.round(averageRating * 10) / 10, countsBySource };
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {

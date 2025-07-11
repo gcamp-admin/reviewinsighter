@@ -220,7 +220,11 @@ def analyze_review_sentiment_transformer(text):
         sentiment = analyze_text_sentiment(text)
         return {
             "final_label": sentiment,
-            "score": {"positive": 1 if sentiment == "positive" else 0, "negative": 1 if sentiment == "negative" else 0},
+            "score": {
+                "positive": 1 if sentiment == "positive" else 0, 
+                "negative": 1 if sentiment == "negative" else 0,
+                "neutral": 1 if sentiment == "neutral" else 0
+            },
             "total_sentences": 1,
             "method": "rule_based"
         }
@@ -242,16 +246,24 @@ def analyze_review_sentiment_transformer(text):
         total = scores["positive"] + scores["negative"]
         if total == 0:
             return {
-                "final_label": "positive",
-                "score": {"positive": 1, "negative": 0},
+                "final_label": "neutral",
+                "score": {"positive": 0, "negative": 0},
                 "total_sentences": 0,
                 "method": "transformer_default"
             }
         
         negative_ratio = scores["negative"] / total
         
+        # Three-way classification with neutral category
+        if negative_ratio >= 0.6:  # 60% negative
+            final_label = "negative"
+        elif negative_ratio <= 0.3:  # 30% negative (70% positive)
+            final_label = "positive"
+        else:  # 30-60% negative = neutral/mixed
+            final_label = "neutral"
+        
         return {
-            "final_label": "negative" if negative_ratio >= 0.4 else "positive",
+            "final_label": final_label,
             "score": scores,
             "total_sentences": total,
             "method": "transformer"
@@ -263,7 +275,11 @@ def analyze_review_sentiment_transformer(text):
         sentiment = analyze_text_sentiment(text)
         return {
             "final_label": sentiment,
-            "score": {"positive": 1 if sentiment == "positive" else 0, "negative": 1 if sentiment == "negative" else 0},
+            "score": {
+                "positive": 1 if sentiment == "positive" else 0, 
+                "negative": 1 if sentiment == "negative" else 0,
+                "neutral": 1 if sentiment == "neutral" else 0
+            },
             "total_sentences": 1,
             "method": "rule_based_fallback"
         }
@@ -294,17 +310,17 @@ def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
 
 def analyze_text_sentiment(text):
     """
-    Hybrid Korean text-based sentiment analysis
+    Enhanced three-way Korean sentiment analysis (positive, negative, neutral)
     Uses transformer-based analysis when available, falls back to rule-based analysis
     
     Args:
         text: Review text content
         
     Returns:
-        String: 'positive' or 'negative'
+        String: 'positive', 'negative', or 'neutral'
     """
     if not text or not isinstance(text, str):
-        return "positive"  # Default to positive for empty/invalid text
+        return "neutral"  # Default to neutral for empty/invalid text
     
     # Convert to lowercase for analysis
     content = text.lower()
@@ -421,23 +437,53 @@ def analyze_text_sentiment(text):
             # Mixed sentiment without constructive tone - go with majority
             return "negative" if negative_count > positive_count else "positive"
     
-    # Pure sentiment analysis
-    if negative_count > 0:
+    # Three-way sentiment analysis with neutral category
+    sentiment_ratio = 0
+    if negative_count + positive_count > 0:
+        sentiment_ratio = negative_count / (negative_count + positive_count)
+    
+    # Neutral keywords that indicate balanced or informational content
+    neutral_keywords = [
+        '궁금', '문의', '질문', '어떤지', '어떻게', '방법', '설정', '사용법', '알려주세요',
+        '비교', '차이', '선택', '고민', '추천해주세요', '어떤 것', '무엇을', '어디서',
+        '언제', '왜', '어떻게 하면', '알고 싶', '정보', '안내', '가이드', '설명',
+        '사양', '기능', '특징', '장단점', '비교해보면', '검토', '분석', '평가',
+        '좋기도', '나쁘기도', '괜찮은', '그냥', '보통', '평범', '무난', '그런대로'
+    ]
+    
+    neutral_count = sum(1 for keyword in neutral_keywords if keyword in content)
+    
+    # Check for neutral indicators first (questions, requests, balanced views)
+    if neutral_count >= 1:  # Contains neutral indicators
+        return "neutral"
+    
+    # Check for question marks (often informational)
+    if '?' in content or any(q in content for q in ['언제', '어떻게', '왜', '무엇', '어디']):
+        return "neutral"
+    
+    # Strong sentiment thresholds
+    if sentiment_ratio >= 0.7:  # 70% negative
+        return "negative"
+    elif sentiment_ratio <= 0.3:  # 30% negative (70% positive)
+        return "positive"
+    elif negative_count > 0 and positive_count > 0:  # Mixed sentiment
+        # If it's mixed but not strongly in either direction, consider it neutral
+        if abs(negative_count - positive_count) <= 1:
+            return "neutral"
+        else:
+            return "negative" if negative_count > positive_count else "positive"
+    elif negative_count > 0:
         return "negative"
     elif positive_count > 0:
         return "positive"
     else:
-        # No clear sentiment indicators - analyze length and structure
-        # Very short reviews or question-only reviews default to positive
+        # No clear sentiment indicators - analyze context
+        # Very short reviews or question-only reviews default to neutral
         if len(content.strip()) < 10:
-            return "positive"
+            return "neutral"
         
-        # Check for question marks (often constructive)
-        if '?' in content or '언제' in content or '어떻게' in content:
-            return "positive"
-        
-        # Default to positive for neutral content
-        return "positive"
+        # Default to neutral for unclear content
+        return "neutral"
 
 def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr'):
     """

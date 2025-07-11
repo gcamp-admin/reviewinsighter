@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Smartphone, Apple, Star, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Eye, Filter } from "lucide-react";
+import { Smartphone, Apple, Star, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Eye, Filter, Minus } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -136,11 +136,13 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   };
 
   const getSentimentBadge = (sentiment: string) => {
-    return sentiment === "positive" ? (
-      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">긍정</Badge>
-    ) : (
-      <Badge className="bg-red-100 text-red-800 hover:bg-red-100">부정</Badge>
-    );
+    if (sentiment === "positive") {
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">긍정</Badge>;
+    } else if (sentiment === "negative") {
+      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">부정</Badge>;
+    } else {
+      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">중립</Badge>;
+    }
   };
 
   if (isLoading) {
@@ -223,6 +225,12 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                       <span>부정</span>
                     </div>
                   </SelectItem>
+                  <SelectItem value="neutral">
+                    <div className="flex items-center gap-2">
+                      <Minus className="h-4 w-4 text-gray-600" />
+                      <span>중립</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -275,6 +283,12 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                     <div className="flex items-center gap-2">
                       <ThumbsDown className="h-4 w-4 text-red-600" />
                       <span>부정</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="neutral">
+                    <div className="flex items-center gap-2">
+                      <Minus className="h-4 w-4 text-gray-600" />
+                      <span>중립</span>
                     </div>
                   </SelectItem>
                 </SelectContent>

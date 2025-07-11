@@ -1,4 +1,4 @@
-import { MessageSquare, ThumbsUp, ThumbsDown, Star } from "lucide-react";
+import { MessageSquare, ThumbsUp, ThumbsDown, Star, Minus } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -70,8 +70,8 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
 
   if (isLoading) {
     return (
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {[...Array(4)].map((_, i) => (
+      <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        {[...Array(5)].map((_, i) => (
           <Card key={i}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
 
   if (!stats) {
     return (
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-gray-500">
@@ -103,7 +103,7 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
   }
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
@@ -167,6 +167,20 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <ThumbsDown className="w-6 h-6 text-red-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">중립 리뷰</p>
+              <p className="text-2xl font-bold text-gray-600">{stats.neutral?.toLocaleString() || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Minus className="w-6 h-6 text-gray-600" />
             </div>
           </div>
         </CardContent>

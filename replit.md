@@ -192,6 +192,12 @@ Changelog:
 - July 11, 2025. Implemented hybrid sentiment analysis system with transformer-based KcELECTRA model support and rule-based fallback
 - July 11, 2025. Added analyze_review_sentiment_transformer function for advanced sentence-level sentiment analysis
 - July 11, 2025. Configured system to use transformers when available, gracefully falling back to rule-based analysis
+- July 11, 2025. Enhanced sentiment analysis to three-way classification: positive, negative, and neutral categories
+- July 11, 2025. Updated frontend components to display neutral sentiment with gray color scheme and minus icon
+- July 11, 2025. Improved neutral keyword detection with priority logic for informational/balanced content
+- July 11, 2025. Updated database schema and API endpoints to support neutral sentiment statistics
+- July 11, 2025. Modified stats overview to show 5-column layout including neutral review count
+- July 11, 2025. Enhanced review list filtering to include neutral sentiment selection option
 - July 11, 2025. Confirmed complete system functionality: 519 reviews collected successfully, proper date filtering, AI analysis generation, and word cloud display
 
 ## User Preferences
