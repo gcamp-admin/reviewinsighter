@@ -346,16 +346,17 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || hasDateRangeError}
-              className="w-full bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-md"
+              className="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50"
+              size="lg"
             >
               {collectReviewsMutation.isPending ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  수집 중...
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                  <span className="animate-pulse">수집 중...</span>
                 </>
               ) : (
                 <>
-                  <Search className="w-4 h-4 mr-2" />
+                  <Search className="w-5 h-5 mr-3" />
                   리뷰 수집
                 </>
               )}
