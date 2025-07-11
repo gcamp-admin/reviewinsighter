@@ -257,8 +257,6 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         </div>
         <CardDescription className="text-gray-600">
           스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)
-          <br />
-          <span className="text-amber-600 font-medium">📅 수집 기간은 최대 31일까지 설정 가능합니다</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
@@ -345,7 +343,10 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
 
           {/* Row 3: Date Range */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">수집 기간 선택</Label>
+            <div className="flex items-center space-x-2">
+              <Label className="text-sm font-medium">수집 기간 선택</Label>
+              <span className="text-xs text-amber-600">(최대 31일)</span>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date-from" className="text-sm text-gray-600">시작 날짜 <span className="text-red-500">*</span></Label>
