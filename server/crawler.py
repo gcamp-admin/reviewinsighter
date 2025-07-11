@@ -66,13 +66,30 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                 except:
                     iso_date = "2025-01-01T00:00:00Z"
                 
+                # Clean content from HTML tags
+                title = blog.get("title", "")
+                description = blog.get("description", "")
+                
+                # Remove HTML tags from content
+                import re
+                def clean_html(text):
+                    # Remove HTML tags
+                    text = re.sub(r'<[^>]+>', '', text)
+                    # Decode HTML entities
+                    text = text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                    text = text.replace('&quot;', '"').replace('&#39;', "'")
+                    return text.strip()
+                
+                clean_title = clean_html(title)
+                clean_description = clean_html(description)
+                
                 blog_review = {
                     "userId": blog.get("extracted_user_id") or blog.get("bloggername", "Unknown"),
                     "source": "naver_blog",
                     "serviceId": "ixio",
                     "appId": f"blog_{blog.get('postdate', 'unknown')}",
                     "rating": 5,  # Default rating for blog posts
-                    "content": blog.get("title", "") + " " + blog.get("description", ""),
+                    "content": f"{clean_title} {clean_description}",
                     "createdAt": iso_date,
                     "link": blog.get("link", ""),
                     "platform": "naver_blog"
@@ -86,13 +103,30 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3)
             # Convert to review format
             for cafe in naver_cafes:
+                # Clean content from HTML tags
+                title = cafe.get("title", "")
+                description = cafe.get("description", "")
+                
+                # Remove HTML tags from content
+                import re
+                def clean_html(text):
+                    # Remove HTML tags
+                    text = re.sub(r'<[^>]+>', '', text)
+                    # Decode HTML entities
+                    text = text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                    text = text.replace('&quot;', '"').replace('&#39;', "'")
+                    return text.strip()
+                
+                clean_title = clean_html(title)
+                clean_description = clean_html(description)
+                
                 cafe_review = {
                     "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
                     "source": "naver_cafe",
                     "serviceId": "ixio",
                     "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
                     "rating": 5,  # Default rating for cafe posts
-                    "content": cafe.get("title", "") + " " + cafe.get("description", ""),
+                    "content": f"{clean_title} {clean_description}",
                     "createdAt": "2025-01-01T00:00:00Z",  # Default date in ISO format
                     "link": cafe.get("link", ""),
                     "platform": "naver_cafe"

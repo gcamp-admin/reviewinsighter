@@ -18,6 +18,7 @@ export const reviews = pgTable("reviews", {
   content: text("content").notNull(),
   sentiment: text("sentiment").notNull(), // "positive" or "negative"
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  link: text("link"), // For Naver reviews
 });
 
 export const insights = pgTable("insights", {
@@ -49,6 +50,7 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
   appId: true,
   rating: true,
   content: true,
+  link: true,
 }).extend({
   sentiment: z.string().optional().default("중립"),
   createdAt: z.string().optional(),

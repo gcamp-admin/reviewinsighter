@@ -113,12 +113,16 @@ def extract_text_from_html(html_content):
     """
     import re
     
-    # Remove HTML tags
+    if not html_content:
+        return ""
+    
+    # Remove HTML tags including <b>, <i>, <strong>, etc.
     clean_text = re.sub(r'<[^>]+>', '', html_content)
     
     # Decode HTML entities
     clean_text = clean_text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
     clean_text = clean_text.replace('&quot;', '"').replace('&#39;', "'")
+    clean_text = clean_text.replace('&nbsp;', ' ').replace('&hellip;', '...')
     
     # Remove extra whitespace
     clean_text = re.sub(r'\s+', ' ', clean_text).strip()
@@ -137,12 +141,16 @@ def strip_html(html_content):
     """
     import re
     
-    # Remove HTML tags
+    if not html_content:
+        return ""
+    
+    # Remove HTML tags including <b>, <i>, <strong>, etc.
     clean_text = re.sub(r'<[^>]+>', '', html_content)
     
     # Decode HTML entities
     clean_text = clean_text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
     clean_text = clean_text.replace('&quot;', '"').replace('&#39;', "'")
+    clean_text = clean_text.replace('&nbsp;', ' ').replace('&hellip;', '...')
     
     # Remove extra whitespace
     clean_text = re.sub(r'\s+', ' ', clean_text).strip()

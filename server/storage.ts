@@ -196,6 +196,7 @@ export class MemStorage implements IStorage {
       id,
       serviceId: insertReview.serviceId || null,
       appId: insertReview.appId || null,
+      link: insertReview.link || null,
       createdAt: typeof insertReview.createdAt === 'string' ? new Date(insertReview.createdAt) : new Date()
     };
     this.reviews.set(id, review);

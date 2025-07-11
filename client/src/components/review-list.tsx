@@ -343,20 +343,21 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 </div>
               </div>
               <div className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors">
-                {/* Check if review has url for external links */}
-                {(review as any).url ? (
-                  <a 
-                    href={(review as any).url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline hover:bg-blue-50 px-1 py-0.5 rounded transition-all duration-300"
-                  >
-                    {review.content.length > 100 ? review.content.slice(0, 100) + '...' : review.content}
-                  </a>
-                ) : (
-                  <span>
-                    {review.content.length > 200 ? review.content.slice(0, 200) + '...' : review.content}
-                  </span>
+                <span>
+                  {review.content.length > 200 ? review.content.slice(0, 200) + '...' : review.content}
+                </span>
+                {/* Add link for Naver reviews */}
+                {(review.source === 'naver_blog' || review.source === 'naver_cafe') && (review as any).link && (
+                  <div className="mt-2">
+                    <a 
+                      href={(review as any).link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm underline hover:bg-blue-50 px-1 py-0.5 rounded transition-all duration-300"
+                    >
+                      원문 보기 →
+                    </a>
+                  </div>
                 )}
               </div>
             </div>
