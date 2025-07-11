@@ -71,9 +71,41 @@ except ImportError:
     _sentiment_pipeline = None
     _model_loaded = False
 
+def analyze_text_sentiment_fast(text):
+    """
+    Fast rule-based sentiment analysis for obvious cases
+    
+    Args:
+        text: Review text content
+        
+    Returns:
+        String: '긍정', '부정', or '중립' (returns '중립' for uncertain cases)
+    """
+    content = text.lower()
+    
+    # Priority negative patterns
+    priority_negative = ['안되', '안돼', '안되어', '안되네', '안되요', '안됨']
+    if any(pattern in content for pattern in priority_negative):
+        return '부정'
+    
+    # Strong negative indicators
+    strong_negative = ['최악', '형편없', '별로', '짜증', '실망', '불편', '문제', '오류', '버그', '끊김']
+    # Strong positive indicators  
+    strong_positive = ['최고', '좋아', '만족', '편리', '감사', '추천', '대박', '완벽', '훌륭']
+    
+    neg_count = sum(1 for word in strong_negative if word in content)
+    pos_count = sum(1 for word in strong_positive if word in content)
+    
+    if neg_count > 0 and pos_count == 0:
+        return '부정'
+    elif pos_count > 0 and neg_count == 0:
+        return '긍정'
+    else:
+        return '중립'  # Uncertain cases need GPT analysis
+
 def analyze_sentiment_with_gpt_batch(texts):
     """
-    Analyze sentiment for multiple texts using GPT API batch processing
+    Optimized sentiment analysis for multiple texts using GPT API batch processing
     
     Args:
         texts: List of review text content
@@ -82,25 +114,59 @@ def analyze_sentiment_with_gpt_batch(texts):
         List: List of sentiment strings ('긍정', '부정', '중립')
     """
     try:
-        # Make request to batch GPT sentiment analysis endpoint
-        response = requests.post(
-            'http://localhost:5000/api/gpt-sentiment-batch',
-            json={'texts': texts},
-            headers={'Content-Type': 'application/json'},
-            timeout=120  # Longer timeout for batch processing
-        )
+        # Pre-filter with fast rule-based analysis
+        results = []
+        gpt_needed = []
+        gpt_indices = []
         
-        if response.status_code == 200:
-            result = response.json()
-            sentiments = result.get('sentiments', [])
-            print(f"GPT batch sentiment analysis: {len(sentiments)} results processed", file=sys.stderr)
-            return sentiments
-        else:
-            print(f"GPT batch API error: {response.status_code} - {response.text}", file=sys.stderr)
-            return [analyze_text_sentiment_fallback(text) for text in texts]
+        for i, text in enumerate(texts):
+            fast_result = analyze_text_sentiment_fast(text)
+            if fast_result != '중립':
+                results.append(fast_result)
+            else:
+                results.append(None)  # Placeholder
+                gpt_needed.append(text)
+                gpt_indices.append(i)
+        
+        print(f"Fast analysis resolved {len(results) - len(gpt_needed)}/{len(texts)} reviews", file=sys.stderr)
+        
+        # Process uncertain cases with GPT
+        if gpt_needed:
+            print(f"Processing {len(gpt_needed)} uncertain reviews with GPT", file=sys.stderr)
+            
+            response = requests.post(
+                'http://localhost:5000/api/gpt-sentiment-batch',
+                json={'texts': gpt_needed},
+                headers={'Content-Type': 'application/json'},
+                timeout=120
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                gpt_sentiments = result.get('sentiments', [])
+                
+                # Fill GPT results into placeholder positions
+                for i, sentiment in enumerate(gpt_sentiments):
+                    if i < len(gpt_indices):
+                        results[gpt_indices[i]] = sentiment
+                        
+                print(f"GPT batch sentiment analysis: {len(gpt_sentiments)} results processed", file=sys.stderr)
+            else:
+                print(f"GPT batch API error: {response.status_code}", file=sys.stderr)
+                # Use fallback for GPT-needed texts
+                for i, idx in enumerate(gpt_indices):
+                    results[idx] = analyze_text_sentiment_fallback(gpt_needed[i])
+        
+        # Fill any remaining None values
+        for i in range(len(results)):
+            if results[i] is None:
+                results[i] = '중립'
+        
+        return results
+        
     except Exception as e:
         print(f"GPT batch sentiment analysis error: {e}", file=sys.stderr)
-        return [analyze_text_sentiment_fallback(text) for text in texts]
+        return [analyze_text_sentiment_fast(text) for text in texts]
 
 def analyze_sentiment_with_gpt(text):
     """

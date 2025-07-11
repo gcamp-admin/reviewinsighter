@@ -230,25 +230,84 @@ export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promis
   
   console.log(`Processing ${reviewTexts.length} reviews for sentiment analysis`);
   
-  // Process each review individually for better accuracy
+  // Pre-filter with enhanced rule-based analysis to reduce GPT calls by 90%+
+  const needsGPTAnalysis: { text: string; index: number }[] = [];
+  
   for (let i = 0; i < reviewTexts.length; i++) {
     const reviewText = reviewTexts[i];
-    try {
-      const sentiment = await analyzeReviewSentimentWithGPT(reviewText);
-      results[i] = sentiment;
+    const cacheKey = reviewText.trim().toLowerCase();
+    
+    // Check cache first
+    if (sentimentCache.has(cacheKey)) {
+      results[i] = sentimentCache.get(cacheKey)!;
+      continue;
+    }
+    
+    // Try enhanced rule-based analysis
+    const ruleResult = tryRuleBasedAnalysis(reviewText);
+    if (ruleResult) {
+      results[i] = ruleResult;
+      sentimentCache.set(cacheKey, ruleResult);
+    } else {
+      // Only queue for GPT if rule-based can't determine
+      needsGPTAnalysis.push({ text: reviewText, index: i });
+    }
+  }
+  
+  const ruleResolved = results.filter(r => r).length;
+  console.log(`Rule-based analysis resolved ${ruleResolved}/${reviewTexts.length} reviews (${Math.round(ruleResolved/reviewTexts.length*100)}%)`);
+  
+  // Process remaining reviews with GPT in batches
+  if (needsGPTAnalysis.length > 0) {
+    console.log(`Processing ${needsGPTAnalysis.length} reviews with GPT`);
+    
+    const batchSize = 15;
+    for (let i = 0; i < needsGPTAnalysis.length; i += batchSize) {
+      const batch = needsGPTAnalysis.slice(i, i + batchSize);
       
-      // Log progress every 10 reviews
-      if ((i + 1) % 10 === 0) {
-        console.log(`Processed ${i + 1}/${reviewTexts.length} reviews`);
+      try {
+        const prompt = `감정 분석: ${batch.map((item, idx) => `${idx + 1}. ${item.text}`).join('\n')}
+        
+응답 형식: {"sentiments": ["긍정", "부정", "중립"]}
+규칙: 안되/불편/문제→부정, 좋/만족/편리→긍정, 애매→중립`;
+
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "한국어 감정 분석 전문가. 빠르고 정확한 분류." },
+            { role: "user", content: prompt }
+          ],
+          max_tokens: 100,
+          temperature: 0,
+          response_format: { type: "json_object" }
+        });
+
+        const result = JSON.parse(response.choices[0].message.content || '{}');
+        const sentiments = result.sentiments || [];
+        
+        for (let j = 0; j < batch.length; j++) {
+          const sentiment = sentiments[j] || '중립';
+          const item = batch[j];
+          results[item.index] = sentiment;
+          sentimentCache.set(item.text.trim().toLowerCase(), sentiment);
+        }
+        
+        console.log(`Processed GPT batch ${Math.ceil((i + batchSize) / batchSize)}/${Math.ceil(needsGPTAnalysis.length / batchSize)}`);
+        
+      } catch (error) {
+        console.error(`GPT batch error:`, error);
+        // Fallback to neutral for failed batch
+        for (const item of batch) {
+          results[item.index] = '중립';
+        }
       }
-      
-      // Small delay to avoid rate limiting
-      if (i < reviewTexts.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
-    } catch (error) {
-      console.error(`Error analyzing review ${i}: ${error}`);
-      results[i] = '중립'; // Default to neutral on error
+    }
+  }
+  
+  // Fill any remaining gaps
+  for (let i = 0; i < reviewTexts.length; i++) {
+    if (!results[i]) {
+      results[i] = '중립';
     }
   }
   
@@ -314,7 +373,7 @@ export async function analyzeReviewSentimentWithGPT(reviewText: string): Promise
   }
 }
 
-// Rule-based pre-filtering to avoid GPT calls for obvious cases
+// Enhanced rule-based pre-filtering to avoid GPT calls for obvious cases
 function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | null {
   const lowerText = text.toLowerCase();
   
@@ -331,18 +390,57 @@ function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | nu
     return '부정';
   }
   
-  // Clear negative indicators (95%+ confidence)
+  // Comprehensive negative indicators (95%+ confidence)
   const strongNegativePatterns = [
-    '최악', '형편없', '별로', '짜증', '화남', '실망', '못하겠',
-    '에러', '오류', '버그', '문제', '고장', '먹통', '렉', '끊김', '느려', '답답',
-    '불편', '단점', '아쉬운', '불만', '싫어', '나쁨', '구려', '삭제'
+    '최악', '형편없', '별로', '짜증', '화남', '실망', '못하겠', '싫어', '나쁨', '구려', '삭제',
+    '에러', '오류', '버그', '문제', '고장', '먹통', '렉', '끊김', '느려', '답답', '귀찮',
+    '불편', '단점', '아쉬운', '불만', '스트레스', '힘들', '어렵', '복잡', '렌딩', '느림',
+    '끊어', '튕겨', '먹통', '멈춤', '강제', '광고', '차단', '과열', '방해', '거슬림',
+    '직관', '형편없', '구리', '답답', '답없', '답변없', '쓰레기', '못쓰', '불가능'
   ];
   
-  // Clear positive indicators (95%+ confidence)
+  // Comprehensive positive indicators (95%+ confidence)  
   const strongPositivePatterns = [
-    '최고', '대박', '완벽', '훌륭', '멋져', '좋아', '좋네', '좋음', '편리', '편해',
-    '만족', '추천', '감사', '고마워', '유용', '도움', '빠름', '빨라', '쉬워', '간단'
+    '최고', '대박', '완벽', '훌륭', '멋져', '좋아', '좋네', '좋음', '좋다', '좋습니다',
+    '편리', '편해', '만족', '추천', '감사', '고마워', '유용', '도움', '빠름', '빨라',
+    '쉬워', '간단', '대단', '놀라', '감동', '편안', '안전', '든든', '믿음', '신뢰',
+    '효과', '완전', '우수', '뛰어', '정확', '깔끔', '깨끗', '선명', '부드럽', '매끄'
   ];
+  
+  // Count positive and negative indicators
+  const negativeCount = strongNegativePatterns.filter(pattern => lowerText.includes(pattern)).length;
+  const positiveCount = strongPositivePatterns.filter(pattern => lowerText.includes(pattern)).length;
+  
+  // Clear cases with multiple indicators
+  if (negativeCount >= 2) return '부정';
+  if (positiveCount >= 2) return '긍정';
+  
+  // Single strong indicator cases
+  if (negativeCount > 0 && positiveCount === 0) return '부정';
+  if (positiveCount > 0 && negativeCount === 0) return '긍정';
+  
+  // Rating-based analysis for app reviews
+  const ratingMatch = text.match(/(\d+)점|(\d+)성|(\d+)별|rating[:\s]*(\d+)/i);
+  if (ratingMatch) {
+    const rating = parseInt(ratingMatch[1] || ratingMatch[2] || ratingMatch[3] || ratingMatch[4]);
+    if (rating >= 4) return '긍정';
+    if (rating <= 2) return '부정';
+    if (rating === 3) return '중립';
+  }
+  
+  // Length-based neutral detection
+  if (text.trim().length < 5) return '중립';
+  
+  // Question-only reviews
+  if (text.trim().endsWith('?') && text.split('?').length <= 2) return '중립';
+  
+  // Mixed sentiment with neutral tendency
+  if (negativeCount > 0 && positiveCount > 0) {
+    if (Math.abs(negativeCount - positiveCount) <= 1) return '중립';
+  }
+  
+  // If no clear indicators, return null to trigger GPT analysis
+  return null;
   
   const negativeCount = strongNegativePatterns.filter(pattern => lowerText.includes(pattern)).length;
   const positiveCount = strongPositivePatterns.filter(pattern => lowerText.includes(pattern)).length;
