@@ -318,11 +318,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           </div>
 
           {/* Row 4: Review Collection Button */}
-          <div className="flex justify-end pt-2">
+          <div className="pt-2">
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || isDateRangeInvalid}
-              className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-md min-w-[120px]"
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-md"
             >
               {collectReviewsMutation.isPending ? (
                 <>
