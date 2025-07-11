@@ -426,13 +426,27 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100):
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
                 
+                # Convert date from YYYYMMDD to ISO format
+                postdate = item.get('postdate', datetime.now().strftime('%Y%m%d'))
+                try:
+                    # Parse YYYYMMDD format and convert to ISO
+                    if len(postdate) == 8 and postdate.isdigit():
+                        year = int(postdate[:4])
+                        month = int(postdate[4:6])
+                        day = int(postdate[6:8])
+                        created_at = datetime(year, month, day).isoformat()
+                    else:
+                        created_at = datetime.now().isoformat()
+                except:
+                    created_at = datetime.now().isoformat()
+                
                 processed_review = {
                     'userId': f"블로거{i+1}",
                     'source': 'naver_blog',
                     'rating': 4 if sentiment == 'positive' else 2,
                     'content': content[:500],  # Limit content length
                     'sentiment': sentiment,
-                    'createdAt': item.get('postdate', datetime.now().strftime('%Y%m%d')),
+                    'createdAt': created_at,
                     'url': item.get('link', '')
                 }
                 processed_reviews.append(processed_review)
@@ -492,13 +506,27 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
                 
+                # Convert date from YYYYMMDD to ISO format
+                postdate = item.get('postdate', datetime.now().strftime('%Y%m%d'))
+                try:
+                    # Parse YYYYMMDD format and convert to ISO
+                    if len(postdate) == 8 and postdate.isdigit():
+                        year = int(postdate[:4])
+                        month = int(postdate[4:6])
+                        day = int(postdate[6:8])
+                        created_at = datetime(year, month, day).isoformat()
+                    else:
+                        created_at = datetime.now().isoformat()
+                except:
+                    created_at = datetime.now().isoformat()
+                
                 processed_review = {
                     'userId': f"카페회원{i+1}",
                     'source': 'naver_cafe',
                     'rating': 4 if sentiment == 'positive' else 2,
                     'content': content[:500],  # Limit content length
                     'sentiment': sentiment,
-                    'createdAt': datetime.now().isoformat(),
+                    'createdAt': created_at,
                     'url': item.get('link', ''),
                     'cafe_name': item.get('cafename', '')
                 }

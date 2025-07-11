@@ -48,9 +48,9 @@ export default function Dashboard() {
           />
         )}
         
-        <AIAnalysisSection filters={filters} />
+        {hasCollectedReviews && <AIAnalysisSection filters={filters} />}
         
-        <WordCloudAndInsights filters={filters} />
+        {hasCollectedReviews && <WordCloudAndInsights filters={filters} />}
       </main>
     </div>
   );
