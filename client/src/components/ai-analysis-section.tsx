@@ -258,11 +258,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
             </p>
           )}
           
-          {filters.dateFrom && !hasAnalyzedWordCloud && !hasAnalyzedHeart && !analyzeWordCloudMutation.isPending && !analyzeHeartMutation.isPending && (
-            <p className="text-center text-sm text-gray-600">
-              각 버튼을 클릭하여 워드클라우드 또는 HEART 프레임워크 분석을 개별적으로 실행하세요
-            </p>
-          )}
+
           
           {(analyzeWordCloudMutation.isPending || analyzeHeartMutation.isPending) && (
             <div className="text-center">
