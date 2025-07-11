@@ -245,6 +245,9 @@ Changelog:
 - July 11, 2025. Added "코멘토는 누구?" popup modal with AI introduction and contact information
 - July 11, 2025. Implemented modal with proper z-index, centered positioning, and close button functionality
 - July 11, 2025. Added Innovation CoE contact details (최아진 | ahjinchoe@lguplus.co.kr) to popup
+- July 11, 2025. Fixed review collection button functionality and added comprehensive date range validation
+- July 11, 2025. Implemented 31-day maximum date range limitation for both collection and analysis with proper error messaging
+- July 11, 2025. Enhanced UI with warning messages for date range violations and improved validation feedback
 - July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
 - July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
 - July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis

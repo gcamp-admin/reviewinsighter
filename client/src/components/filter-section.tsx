@@ -58,6 +58,26 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         throw new Error('스토어를 선택해주세요');
       }
       
+      // 📅 리뷰 수집 시에도 날짜 범위 검증 추가
+      if (localFilters.dateFrom && localFilters.dateTo) {
+        // 종료 날짜가 시작 날짜보다 앞서지 않도록 검증
+        if (localFilters.dateTo < localFilters.dateFrom) {
+          throw new Error('날짜 범위가 유효하지 않습니다. 종료 날짜는 시작 날짜보다 앞설 수 없습니다.');
+        }
+        
+        // 종료 날짜가 미래 날짜가 아닌지 검증
+        if (localFilters.dateTo > new Date()) {
+          throw new Error('종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다.');
+        }
+        
+        // 📅 날짜 범위 최대 31일 제한
+        const timeDifference = localFilters.dateTo.getTime() - localFilters.dateFrom.getTime();
+        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+        if (daysDifference > 31) {
+          throw new Error('수집 기간은 최대 31일까지만 설정할 수 있습니다.');
+        }
+      }
+      
       const payload = {
         selectedService: localFilters.service.name,
         selectedChannels: {
@@ -75,6 +95,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         startDate: localFilters.dateFrom?.toISOString(),
         endDate: localFilters.dateTo?.toISOString(),
       };
+      
+      console.log('Collection payload:', payload);
       const response = await apiRequest("POST", "/api/reviews/collect", payload);
       return response.json();
     },
@@ -141,6 +163,13 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         throw new Error('종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다.');
       }
       
+      // 📅 [2] 날짜 범위 최대 31일 제한
+      const timeDifference = endDate.getTime() - localFilters.dateFrom.getTime();
+      const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+      if (daysDifference > 31) {
+        throw new Error('분석 기간은 최대 31일까지만 설정할 수 있습니다.');
+      }
+      
       const payload = {
         serviceId: localFilters.service.id,
         serviceName: localFilters.service.name,
@@ -191,6 +220,13 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
   // Check if end date is before start date
   const isDateRangeInvalid = localFilters.dateTo && localFilters.dateFrom && localFilters.dateTo < localFilters.dateFrom;
 
+  // Check if date range exceeds 31 days
+  const isDateRangeExceeded = localFilters.dateTo && localFilters.dateFrom && (() => {
+    const timeDifference = localFilters.dateTo.getTime() - localFilters.dateFrom.getTime();
+    const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+    return daysDifference > 31;
+  })();
+
   const formatDateForInput = (date?: Date) => {
     if (!date) return "";
     return date.toISOString().split('T')[0];
@@ -205,7 +241,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
   const isEndDateInFuture = localFilters.dateTo && localFilters.dateTo > new Date();
 
   // Combined validation for date range issues
-  const hasDateRangeError = isDateRangeInvalid || isEndDateInFuture;
+  const hasDateRangeError = isDateRangeInvalid || isEndDateInFuture || isDateRangeExceeded;
 
   return (
     <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
@@ -221,6 +257,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         </div>
         <CardDescription className="text-gray-600">
           스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)
+          <br />
+          <span className="text-amber-600 font-medium">📅 수집 기간은 최대 31일까지 설정 가능합니다</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
@@ -343,6 +381,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 ⚠️ 종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다
               </p>
             )}
+            {isDateRangeExceeded && (
+              <p className="text-xs text-red-500 mt-1">
+                ⚠️ 수집 기간은 최대 31일까지만 설정할 수 있습니다
+              </p>
+            )}
           </div>
 
           {/* Row 4: Review Collection Button */}
@@ -387,6 +430,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             {isDateRangeInvalid && (
               <p className="text-xs text-red-500">
                 종료 날짜는 시작 날짜보다 뒤에 있어야 합니다
+              </p>
+            )}
+            {isDateRangeExceeded && (
+              <p className="text-xs text-red-500">
+                수집 기간은 최대 31일까지만 설정할 수 있습니다
               </p>
             )}
           </div>
