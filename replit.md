@@ -154,6 +154,8 @@ Changelog:
 - July 11, 2025. Added visual indicators (red borders) and disabled buttons for invalid date ranges
 - July 11, 2025. Made "종료날짜" (end date) a required field with proper validation and error messaging
 - July 11, 2025. Enhanced form validation to prevent submission when date range is invalid or required dates are missing
+- July 11, 2025. Increased review collection limit from 100 to 500 reviews per source to capture more comprehensive data
+- July 11, 2025. Optimized collection to gather up to 300 Google Play reviews and 49 App Store reviews (RSS feed limitation)
 
 ## User Preferences
 

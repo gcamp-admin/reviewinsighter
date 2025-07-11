@@ -56,7 +56,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       const payload = {
         appId: localFilters.service.googlePlayId,
         appIdApple: localFilters.service.appleStoreId,
-        count: 100,
+        count: 500,
         sources: localFilters.source,
         serviceId: localFilters.service.id,
         serviceName: localFilters.service.name,
