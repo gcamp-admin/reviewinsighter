@@ -1,4 +1,5 @@
 import { MessageSquare, ThumbsUp, ThumbsDown, Star } from "lucide-react";
+import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,6 +7,28 @@ import type { ReviewStats, ReviewFilters } from "@/types";
 
 interface StatsOverviewProps {
   filters: ReviewFilters;
+}
+
+const storeIcons = {
+  googlePlay: <FaGooglePlay color="#34A853" />,
+  appleStore: <FaApple color="#333" />,
+  naverBlog: <FaPenNib color="#03c75a" />,
+  naverCafe: <FaMugHot color="#03c75a" />
+};
+
+function StoreIcon({ source }: { source: string }) {
+  switch (source) {
+    case 'google_play':
+      return storeIcons.googlePlay;
+    case 'app_store':
+      return storeIcons.appleStore;
+    case 'naver_blog':
+      return storeIcons.naverBlog;
+    case 'naver_cafe':
+      return storeIcons.naverCafe;
+    default:
+      return null;
+  }
 }
 
 export default function StatsOverview({ filters }: StatsOverviewProps) {
@@ -89,16 +112,28 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
               <p className="text-2xl font-bold text-gray-900">{stats.total.toLocaleString()}</p>
               <div className="text-xs text-gray-400 mt-1 space-y-0.5">
                 {stats.countsBySource.googlePlay > 0 && (
-                  <div>📱 구글플레이 {stats.countsBySource.googlePlay}건</div>
+                  <div className="flex items-center gap-1">
+                    <StoreIcon source="google_play" />
+                    <span>구글플레이 {stats.countsBySource.googlePlay}건</span>
+                  </div>
                 )}
                 {stats.countsBySource.appleStore > 0 && (
-                  <div>🍎 애플앱스토어 {stats.countsBySource.appleStore}건</div>
+                  <div className="flex items-center gap-1">
+                    <StoreIcon source="app_store" />
+                    <span>애플앱스토어 {stats.countsBySource.appleStore}건</span>
+                  </div>
                 )}
                 {stats.countsBySource.naverBlog > 0 && (
-                  <div>📝 네이버블로그 {stats.countsBySource.naverBlog}건</div>
+                  <div className="flex items-center gap-1">
+                    <StoreIcon source="naver_blog" />
+                    <span>네이버블로그 {stats.countsBySource.naverBlog}건</span>
+                  </div>
                 )}
                 {stats.countsBySource.naverCafe > 0 && (
-                  <div>☕ 네이버카페 {stats.countsBySource.naverCafe}건</div>
+                  <div className="flex items-center gap-1">
+                    <StoreIcon source="naver_cafe" />
+                    <span>네이버카페 {stats.countsBySource.naverCafe}건</span>
+                  </div>
                 )}
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Smartphone, Apple, Star, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Eye, Filter } from "lucide-react";
+import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +13,28 @@ interface ReviewListProps {
   filters: ReviewFilters;
   currentPage: number;
   onPageChange: (page: number) => void;
+}
+
+const storeIcons = {
+  googlePlay: <FaGooglePlay color="#34A853" size={14} />,
+  appleStore: <FaApple color="#333" size={14} />,
+  naverBlog: <FaPenNib color="#03c75a" size={14} />,
+  naverCafe: <FaMugHot color="#03c75a" size={14} />
+};
+
+function StoreIcon({ source }: { source: string }) {
+  switch (source) {
+    case 'google_play':
+      return storeIcons.googlePlay;
+    case 'apple_store':
+      return storeIcons.appleStore;
+    case 'naver_blog':
+      return storeIcons.naverBlog;
+    case 'naver_cafe':
+      return storeIcons.naverCafe;
+    default:
+      return null;
+  }
 }
 
 export default function ReviewList({ filters, currentPage, onPageChange }: ReviewListProps) {
@@ -94,18 +117,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   };
 
   const getSourceIcon = (source: string) => {
-    switch (source) {
-      case "google_play":
-        return "📱";
-      case "apple_store":
-        return "🍎";
-      case "naver_blog":
-        return "📝";
-      case "naver_cafe":
-        return "☕";
-      default:
-        return "📄";
-    }
+    return <StoreIcon source={source} />;
   };
 
   const getSourceName = (source: string) => {
