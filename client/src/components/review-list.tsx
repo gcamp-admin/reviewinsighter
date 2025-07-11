@@ -136,9 +136,9 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   };
 
   const getSentimentBadge = (sentiment: string) => {
-    if (sentiment === "positive") {
+    if (sentiment === "긍정") {
       return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">긍정</Badge>;
-    } else if (sentiment === "negative") {
+    } else if (sentiment === "부정") {
       return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">부정</Badge>;
     } else {
       return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">중립</Badge>;
@@ -213,19 +213,19 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                       <span>전체</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="positive">
+                  <SelectItem value="긍정">
                     <div className="flex items-center gap-2">
                       <ThumbsUp className="h-4 w-4 text-green-600" />
                       <span>긍정</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="negative">
+                  <SelectItem value="부정">
                     <div className="flex items-center gap-2">
                       <ThumbsDown className="h-4 w-4 text-red-600" />
                       <span>부정</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="neutral">
+                  <SelectItem value="중립">
                     <div className="flex items-center gap-2">
                       <Minus className="h-4 w-4 text-gray-600" />
                       <span>중립</span>
@@ -273,19 +273,19 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                       <span>전체</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="positive">
+                  <SelectItem value="긍정">
                     <div className="flex items-center gap-2">
                       <ThumbsUp className="h-4 w-4 text-green-600" />
                       <span>긍정</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="negative">
+                  <SelectItem value="부정">
                     <div className="flex items-center gap-2">
                       <ThumbsDown className="h-4 w-4 text-red-600" />
                       <span>부정</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="neutral">
+                  <SelectItem value="중립">
                     <div className="flex items-center gap-2">
                       <Minus className="h-4 w-4 text-gray-600" />
                       <span>중립</span>
