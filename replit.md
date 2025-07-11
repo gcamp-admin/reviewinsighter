@@ -1,4 +1,4 @@
-# 우리가게 패키지 리뷰 분석 대시보드
+# commento.ai - AI 기반 리뷰 분석 플랫폼
 
 ## Overview
 
@@ -236,6 +236,8 @@ Changelog:
 - July 11, 2025. Applied LG Smart UI Font globally across all components and updated HTML meta tags for Korean language support
 - July 11, 2025. Installed custom LG Smart UI TTF font file locally to replace CDN version
 - July 11, 2025. Configured @font-face declaration for local LG Smart UI font with proper file path and font-display optimization
+- July 11, 2025. Rebranded application from "우리가게 패키지" to "commento.ai" - AI 기반 리뷰 분석 플랫폼
+- July 11, 2025. Updated page title, header component, and documentation to reflect new brand identity
 - July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
 - July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
 - July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis

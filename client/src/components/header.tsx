@@ -11,10 +11,10 @@ export default function Header() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-300">
-                LG U+ 앱서비스
+                commento.ai
               </h1>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                리뷰 분석 대시보드
+                AI 기반 리뷰 분석 플랫폼
               </p>
             </div>
           </div>
