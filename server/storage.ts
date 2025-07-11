@@ -111,7 +111,7 @@ export class MemStorage implements IStorage {
     };
   }
 
-  async getReviewStats(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number }> {
+  async getReviewStats(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, averageRating: number, countsBySource: { googlePlay: number, appleStore: number, naverBlog: number, naverCafe: number } }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
@@ -147,15 +147,24 @@ export class MemStorage implements IStorage {
     }
 
     const total = filteredReviews.length;
+    
+    // Count by source
+    const countsBySource = {
+      googlePlay: filteredReviews.filter(r => r.source === "google_play").length,
+      appleStore: filteredReviews.filter(r => r.source === "app_store").length,
+      naverBlog: filteredReviews.filter(r => r.source === "naver_blog").length,
+      naverCafe: filteredReviews.filter(r => r.source === "naver_cafe").length
+    };
+    
     if (total === 0) {
-      return { total: 0, positive: 0, negative: 0, averageRating: 0 };
+      return { total: 0, positive: 0, negative: 0, averageRating: 0, countsBySource };
     }
     
     const positive = filteredReviews.filter(r => r.sentiment === "positive").length;
     const negative = filteredReviews.filter(r => r.sentiment === "negative").length;
     const averageRating = filteredReviews.reduce((sum, r) => sum + r.rating, 0) / total;
 
-    return { total, positive, negative, averageRating: Math.round(averageRating * 10) / 10 };
+    return { total, positive, negative, averageRating: Math.round(averageRating * 10) / 10, countsBySource };
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {

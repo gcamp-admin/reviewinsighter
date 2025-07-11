@@ -87,6 +87,20 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
             <div>
               <p className="text-sm text-gray-500">총 리뷰 수</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total.toLocaleString()}</p>
+              <div className="text-xs text-gray-400 mt-1 space-y-0.5">
+                {stats.countsBySource.googlePlay > 0 && (
+                  <div>📱 구글플레이 {stats.countsBySource.googlePlay}건</div>
+                )}
+                {stats.countsBySource.appleStore > 0 && (
+                  <div>🍎 애플앱스토어 {stats.countsBySource.appleStore}건</div>
+                )}
+                {stats.countsBySource.naverBlog > 0 && (
+                  <div>📝 네이버블로그 {stats.countsBySource.naverBlog}건</div>
+                )}
+                {stats.countsBySource.naverCafe > 0 && (
+                  <div>☕ 네이버카페 {stats.countsBySource.naverCafe}건</div>
+                )}
+              </div>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <MessageSquare className="w-6 h-6 text-blue-600" />

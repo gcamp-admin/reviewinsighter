@@ -20,6 +20,12 @@ export interface ReviewStats {
   positive: number;
   negative: number;
   averageRating: number;
+  countsBySource: {
+    googlePlay: number;
+    appleStore: number;
+    naverBlog: number;
+    naverCafe: number;
+  };
 }
 
 export interface PaginatedReviews {
