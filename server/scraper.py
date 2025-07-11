@@ -24,6 +24,27 @@ except ImportError:
     ADVANCED_PROCESSING = False
     print("Advanced Korean processing libraries not available, using basic text processing", file=sys.stderr)
 
+# NLTK for enhanced sentiment analysis
+try:
+    import nltk
+    from nltk.tokenize import word_tokenize
+    from nltk.corpus import stopwords
+    NLTK_AVAILABLE = True
+    
+    # Download required NLTK data
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt', quiet=True)
+    
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords', quiet=True)
+        
+except ImportError:
+    NLTK_AVAILABLE = False
+
 def extract_korean_words_advanced(text_list, sentiment='positive', max_words=10):
     """
     Enhanced Korean word extraction using KoNLPy for morphological analysis
@@ -122,7 +143,17 @@ def rule_flagged_negative(text: str) -> bool:
     Returns:
         Boolean indicating if review contains explicit negative indicators
     """
-    return any(term in text.lower() for term in ["단점", "아쉬운 점", "불편한 점", "불만", "싫은 점"])
+    text_lower = text.lower()
+    
+    # Check for explicit negative indicators
+    negative_indicators = ["단점", "아쉬운 점", "불편한 점", "불만", "싫은 점"]
+    has_negative = any(term in text_lower for term in negative_indicators)
+    
+    # Priority rule: If both "단점" and "장점" are present → negative takes priority
+    if "단점" in text_lower and "장점" in text_lower:
+        return True
+    
+    return has_negative
 
 def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
     """
