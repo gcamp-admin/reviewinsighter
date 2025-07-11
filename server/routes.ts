@@ -186,8 +186,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Collect reviews endpoint with Python scraper
   app.post("/api/reviews/collect", async (req, res) => {
     try {
-      // Parse the new JSON structure
-      const { selectedService, selectedChannels, appId, appIdApple, count, serviceId, serviceName } = req.body;
+      // Parse the new JSON structure with filtering support
+      const { selectedService, selectedChannels, appId, appIdApple, count, serviceId, serviceName, startDate, endDate } = req.body;
       
       // Convert selectedChannels to sources array
       const sources = [];
@@ -216,10 +216,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Run Python scraper with multiple sources
+      // Run Python scraper with multiple sources and filtering
       const scraperPath = path.join(__dirname, 'scraper.py');
       const sourcesStr = validatedData.sources.join(',');
-      const pythonProcess = spawn('python3', [scraperPath, validatedData.appId, validatedData.appIdApple, validatedData.count.toString(), sourcesStr, serviceId || '', selectedService || serviceName || '']);
+      
+      // Build command line arguments with filtering parameters
+      const args = [
+        scraperPath,
+        validatedData.appId,
+        validatedData.appIdApple,
+        validatedData.count.toString(),
+        sourcesStr,
+        serviceId || '',
+        selectedService || serviceName || '',
+        startDate || '',
+        endDate || ''
+      ];
+      
+      console.log(`Running Python scraper with filters: ${args.join(' ')}`);
+      const pythonProcess = spawn('python3', args);
       
       let stdout = '';
       let stderr = '';

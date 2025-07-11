@@ -351,6 +351,88 @@ def analyze_review_sentiment_transformer(text):
             "method": "rule_based_fallback"
         }
 
+def is_relevant_review(review_content, service_keywords, min_length=10):
+    """
+    Check if review is relevant to the service based on content analysis
+    
+    Args:
+        review_content: Review text content
+        service_keywords: List of service-related keywords
+        min_length: Minimum content length to consider
+        
+    Returns:
+        Boolean indicating if review is relevant
+    """
+    if not review_content or len(review_content.strip()) < min_length:
+        return False
+    
+    content_lower = review_content.lower()
+    
+    # Check if at least one service keyword is mentioned
+    keyword_found = any(keyword.lower() in content_lower for keyword in service_keywords)
+    
+    # Exclude generic promotional content
+    promotional_indicators = ['홍보', '광고', '협찬', '제공받아', '체험단', '무료제공']
+    is_promotional = any(indicator in content_lower for indicator in promotional_indicators)
+    
+    return keyword_found and not is_promotional
+
+def filter_reviews_by_date_range(reviews, start_date=None, end_date=None):
+    """
+    Filter reviews by date range
+    
+    Args:
+        reviews: List of review dictionaries
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
+        
+    Returns:
+        List of filtered reviews
+    """
+    if not start_date and not end_date:
+        return reviews
+    
+    filtered_reviews = []
+    
+    for review in reviews:
+        try:
+            # Parse review date
+            if isinstance(review.get('createdAt'), str):
+                review_date = datetime.fromisoformat(review['createdAt'].replace('Z', '+00:00'))
+            else:
+                continue
+            
+            # Check date range
+            if start_date:
+                try:
+                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                    # Make timezone-aware if needed
+                    if start_dt.tzinfo is None:
+                        start_dt = start_dt.replace(tzinfo=review_date.tzinfo)
+                    if review_date < start_dt:
+                        continue
+                except Exception:
+                    continue
+            
+            if end_date:
+                try:
+                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                    # Make timezone-aware if needed
+                    if end_dt.tzinfo is None:
+                        end_dt = end_dt.replace(tzinfo=review_date.tzinfo)
+                    if review_date > end_dt:
+                        continue
+                except Exception:
+                    continue
+            
+            filtered_reviews.append(review)
+            
+        except Exception as e:
+            print(f"Error parsing date for review: {e}", file=sys.stderr)
+            continue
+    
+    return filtered_reviews
+
 def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
     """
     Check if review is negative based on section analysis
@@ -578,15 +660,18 @@ def analyze_text_sentiment_original(text):
         # Default to neutral for unclear content
         return "neutral"
 
-def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr'):
+def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr', service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Google Play Store
+    Scrape reviews from Google Play Store with filtering
     
     Args:
         app_id: Google Play Store app ID
         count: Number of reviews to fetch
         lang: Language code (default: 'ko')
         country: Country code (default: 'kr')
+        service_keywords: List of service-related keywords for filtering
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
         
     Returns:
         List of review dictionaries
@@ -598,24 +683,37 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
             lang=lang,
             country=country,
             sort=Sort.NEWEST,
-            count=count
+            count=count * 2  # Fetch extra to account for filtering
         )
         
-        # Process and clean the data
+        # Process and filter the data
         processed_reviews = []
         for review in result:
-            # Text-based sentiment analysis - ignore star ratings completely
-            sentiment = analyze_text_sentiment(review['content'])
-            
-            processed_review = {
+            # First check if review is relevant to the service
+            if service_keywords and not is_relevant_review(review['content'], service_keywords):
+                continue
+                
+            # Create review object with date
+            review_obj = {
                 'userId': review['userName'] if review['userName'] else '익명',
                 'source': 'google_play',
                 'rating': review['score'],
                 'content': review['content'],
-                'sentiment': sentiment,
                 'createdAt': review['at'].isoformat() if review['at'] else datetime.now().isoformat()
             }
-            processed_reviews.append(processed_review)
+            
+            processed_reviews.append(review_obj)
+        
+        # Filter by date range
+        if start_date or end_date:
+            processed_reviews = filter_reviews_by_date_range(processed_reviews, start_date, end_date)
+        
+        # Limit to requested count
+        processed_reviews = processed_reviews[:count]
+        
+        # Now apply GPT sentiment analysis only to filtered reviews
+        for review in processed_reviews:
+            review['sentiment'] = analyze_text_sentiment(review['content'])
         
         return processed_reviews
         
@@ -623,13 +721,16 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
         print(f"Error scraping Google Play reviews: {str(e)}", file=sys.stderr)
         return []
 
-def scrape_app_store_reviews(app_id='1571096278', count=100):
+def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Apple App Store
+    Scrape reviews from Apple App Store with filtering
     
     Args:
         app_id: Apple App Store app ID
         count: Number of reviews to fetch (limited by RSS feed)
+        service_keywords: List of service-related keywords for filtering
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
         
     Returns:
         List of review dictionaries
@@ -649,7 +750,7 @@ def scrape_app_store_reviews(app_id='1571096278', count=100):
         processed_reviews = []
         entries = root.findall('.//{http://www.w3.org/2005/Atom}entry')[1:]
         
-        for entry in entries[:count]:  # Limit to requested count
+        for entry in entries:  # Process all available entries
             try:
                 # Extract review data
                 author_elem = entry.find('{http://www.w3.org/2005/Atom}author')
@@ -667,15 +768,15 @@ def scrape_app_store_reviews(app_id='1571096278', count=100):
                 updated_elem = entry.find('{http://www.w3.org/2005/Atom}updated')
                 created_at = updated_elem.text if updated_elem is not None else datetime.now().isoformat()
                 
-                # Text-based sentiment analysis - ignore star ratings completely
-                sentiment = analyze_text_sentiment(content)
+                # First check if review is relevant to the service
+                if service_keywords and not is_relevant_review(content, service_keywords):
+                    continue
                 
                 processed_review = {
                     'userId': author,
                     'source': 'app_store',
                     'rating': rating,
                     'content': content,
-                    'sentiment': sentiment,
                     'createdAt': created_at
                 }
                 processed_reviews.append(processed_review)
@@ -684,26 +785,40 @@ def scrape_app_store_reviews(app_id='1571096278', count=100):
                 print(f"Error processing App Store review entry: {entry_error}", file=sys.stderr)
                 continue
         
+        # Filter by date range
+        if start_date or end_date:
+            processed_reviews = filter_reviews_by_date_range(processed_reviews, start_date, end_date)
+        
+        # Limit to requested count
+        processed_reviews = processed_reviews[:count]
+        
+        # Now apply GPT sentiment analysis only to filtered reviews
+        for review in processed_reviews:
+            review['sentiment'] = analyze_text_sentiment(review['content'])
+        
         return processed_reviews
         
     except Exception as e:
         print(f"Error scraping App Store reviews: {str(e)}", file=sys.stderr)
         return []
 
-def scrape_naver_blog_reviews(service_name='익시오', count=100):
+def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Naver Blog using real API
+    Scrape reviews from Naver Blog using real API with filtering
     
     Args:
         service_name: Service name to search for
         count: Number of reviews to fetch
+        service_keywords: List of service-related keywords for filtering
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
         
     Returns:
         List of review dictionaries
     """
     try:
         # Get service keywords for better search results
-        keywords = get_service_keywords(service_name)
+        keywords = service_keywords or get_service_keywords(service_name)
         processed_reviews = []
         
         # Search with multiple keywords to get diverse results
@@ -713,7 +828,7 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100):
             search_results.extend(results)
         
         # Process blog search results
-        for i, item in enumerate(search_results[:count]):
+        for i, item in enumerate(search_results):
             try:
                 # Filter out non-review content using quality check
                 from naver_api import is_likely_user_review
@@ -851,9 +966,9 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
         print(f"Error scraping Naver Cafe reviews: {str(e)}", file=sys.stderr)
         return []
 
-def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278', count=100, sources=['google_play'], service_name='익시오'):
+def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278', count=100, sources=['google_play'], service_name='익시오', service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from multiple sources
+    Scrape reviews from multiple sources with filtering
     
     Args:
         app_id_google: Google Play Store app ID
@@ -861,31 +976,40 @@ def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278
         count: Number of reviews to fetch per source
         sources: List of sources to scrape from
         service_name: Service name for Naver searches
+        service_keywords: List of service-related keywords for filtering
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
         
     Returns:
         List of review dictionaries
     """
     all_reviews = []
     
+    # Get service keywords if not provided
+    if not service_keywords:
+        service_keywords = get_service_keywords(service_name)
+    
+    print(f"Filtering reviews with keywords: {service_keywords}, date range: {start_date} to {end_date}", file=sys.stderr)
+    
     if 'google_play' in sources:
-        google_reviews = scrape_google_play_reviews(app_id_google, count)
+        google_reviews = scrape_google_play_reviews(app_id_google, count, service_keywords=service_keywords, start_date=start_date, end_date=end_date)
         all_reviews.extend(google_reviews)
-        print(f"Collected {len(google_reviews)} reviews from Google Play", file=sys.stderr)
+        print(f"Collected {len(google_reviews)} filtered reviews from Google Play", file=sys.stderr)
     
     if 'app_store' in sources:
-        apple_reviews = scrape_app_store_reviews(app_id_apple, count)
+        apple_reviews = scrape_app_store_reviews(app_id_apple, count, service_keywords=service_keywords, start_date=start_date, end_date=end_date)
         all_reviews.extend(apple_reviews)
-        print(f"Collected {len(apple_reviews)} reviews from App Store", file=sys.stderr)
+        print(f"Collected {len(apple_reviews)} filtered reviews from App Store", file=sys.stderr)
     
     if 'naver_blog' in sources:
-        blog_reviews = scrape_naver_blog_reviews(service_name, count)
+        blog_reviews = scrape_naver_blog_reviews(service_name, count, service_keywords=service_keywords, start_date=start_date, end_date=end_date)
         all_reviews.extend(blog_reviews)
-        print(f"Collected {len(blog_reviews)} reviews from Naver Blog", file=sys.stderr)
+        print(f"Collected {len(blog_reviews)} filtered reviews from Naver Blog", file=sys.stderr)
     
     if 'naver_cafe' in sources:
-        cafe_reviews = scrape_naver_cafe_reviews(service_name, count)
+        cafe_reviews = scrape_naver_cafe_reviews(service_name, count, service_keywords=service_keywords, start_date=start_date, end_date=end_date)
         all_reviews.extend(cafe_reviews)
-        print(f"Collected {len(cafe_reviews)} reviews from Naver Cafe", file=sys.stderr)
+        print(f"Collected {len(cafe_reviews)} filtered reviews from Naver Cafe", file=sys.stderr)
     
     return all_reviews
 
@@ -1621,29 +1745,47 @@ def main():
                 app_id_apple = args[1]
                 count = int(args[2])
                 sources = args[3].split(',') if len(args) > 3 else ['google_play']
+                service_id = args[4] if len(args) > 4 else ''
+                service_name = args[5] if len(args) > 5 else '익시오'
+                start_date = args[6] if len(args) > 6 else None
+                end_date = args[7] if len(args) > 7 else None
             else:
                 # Legacy format: python scraper.py --analyze app_id count
                 app_id_google = args[0] if len(args) > 0 else 'com.lguplus.sohoapp'
                 app_id_apple = '1571096278'
                 count = int(args[1]) if len(args) > 1 else 100
                 sources = ['google_play']
+                service_id = ''
+                service_name = '익시오'
+                start_date = None
+                end_date = None
         else:
             if len(sys.argv) > 3:
-                # Format: python scraper.py google_app_id apple_app_id count sources
+                # Format: python scraper.py google_app_id apple_app_id count sources service_id service_name start_date end_date
                 app_id_google = sys.argv[1]
                 app_id_apple = sys.argv[2]
                 count = int(sys.argv[3])
                 sources = sys.argv[4].split(',') if len(sys.argv) > 4 else ['google_play']
+                service_id = sys.argv[5] if len(sys.argv) > 5 else ''
+                service_name = sys.argv[6] if len(sys.argv) > 6 else '익시오'
+                start_date = sys.argv[7] if len(sys.argv) > 7 and sys.argv[7] else None
+                end_date = sys.argv[8] if len(sys.argv) > 8 and sys.argv[8] else None
             else:
                 # Legacy format: python scraper.py app_id count
                 app_id_google = sys.argv[1] if len(sys.argv) > 1 else 'com.lguplus.sohoapp'
                 app_id_apple = '1571096278'
                 count = int(sys.argv[2]) if len(sys.argv) > 2 else 100
                 sources = ['google_play']
+                service_id = ''
+                service_name = '익시오'
+                start_date = None
+                end_date = None
         
-        # Get reviews from specified sources
-        service_name = '익시오'  # Default service name
-        reviews_data = scrape_reviews(app_id_google, app_id_apple, count, sources, service_name)
+        # Get service keywords for filtering
+        service_keywords = get_service_keywords(service_name)
+        
+        # Get reviews from specified sources with filtering
+        reviews_data = scrape_reviews(app_id_google, app_id_apple, count, sources, service_name, service_keywords, start_date, end_date)
         
         if analyze_mode:
             # Perform analysis

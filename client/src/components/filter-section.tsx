@@ -72,6 +72,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         sources: localFilters.source,
         serviceId: localFilters.service.id,
         serviceName: localFilters.service.name,
+        startDate: localFilters.dateFrom?.toISOString(),
+        endDate: localFilters.dateTo?.toISOString(),
       };
       const response = await apiRequest("POST", "/api/reviews/collect", payload);
       return response.json();
