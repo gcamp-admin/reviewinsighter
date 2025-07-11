@@ -16,10 +16,15 @@ export default function Dashboard() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasCollectedReviews, setHasCollectedReviews] = useState(false);
 
   const handleFiltersChange = (newFilters: ReviewFilters) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleCollectionSuccess = () => {
+    setHasCollectedReviews(true);
   };
 
   return (
@@ -30,15 +35,18 @@ export default function Dashboard() {
         <FilterSection 
           filters={filters}
           onFiltersChange={handleFiltersChange}
+          onCollectionSuccess={handleCollectionSuccess}
         />
         
-        <StatsOverview filters={filters} />
+        {hasCollectedReviews && <StatsOverview filters={filters} />}
         
-        <ReviewList 
-          filters={filters}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+        {hasCollectedReviews && (
+          <ReviewList 
+            filters={filters}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
+        )}
         
         <AIAnalysisSection filters={filters} />
         

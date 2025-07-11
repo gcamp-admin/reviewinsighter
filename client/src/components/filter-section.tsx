@@ -14,6 +14,7 @@ import type { ReviewFilters, CollectResponse, Service } from "@/types";
 interface FilterSectionProps {
   filters: ReviewFilters;
   onFiltersChange: (filters: ReviewFilters) => void;
+  onCollectionSuccess?: () => void;
 }
 
 const SERVICES: Service[] = [
@@ -40,7 +41,7 @@ const SERVICES: Service[] = [
   }
 ];
 
-export default function FilterSection({ filters, onFiltersChange }: FilterSectionProps) {
+export default function FilterSection({ filters, onFiltersChange, onCollectionSuccess }: FilterSectionProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -94,6 +95,11 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       // Only invalidate reviews and stats, not analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
+      
+      // Call the callback to show reviews after successful collection
+      if (onCollectionSuccess) {
+        onCollectionSuccess();
+      }
     },
     onError: (error: any) => {
       toast({

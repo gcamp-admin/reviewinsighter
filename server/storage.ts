@@ -39,14 +39,11 @@ export class MemStorage implements IStorage {
     this.currentInsightId = 1;
     this.currentWordCloudId = 1;
     
-    // Initialize with sample data
-    this.initializeSampleData();
-  }
-
-  private initializeSampleData() {
-    // No sample data - all data will come from collected reviews
+    // Start with empty data - all data will come from collected reviews
     console.log("Storage initialized - data will be generated from collected reviews");
   }
+
+
 
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
