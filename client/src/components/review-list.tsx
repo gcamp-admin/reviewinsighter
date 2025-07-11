@@ -88,21 +88,39 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString("ko-KR", {
       year: "numeric",
-      month: "2-digit",
+      month: "2-digit", 
       day: "2-digit",
-    });
+    }).replace(/\//g, ".");
   };
 
   const getSourceIcon = (source: string) => {
-    return source === "google_play" ? (
-      <Smartphone className="w-4 h-4 text-green-600" />
-    ) : (
-      <Apple className="w-4 h-4 text-gray-600" />
-    );
+    switch (source) {
+      case "google_play":
+        return "📱";
+      case "apple_store":
+        return "🍎";
+      case "naver_blog":
+        return "📝";
+      case "naver_cafe":
+        return "☕";
+      default:
+        return "📄";
+    }
   };
 
   const getSourceName = (source: string) => {
-    return source === "google_play" ? "Google Play" : "App Store";
+    switch (source) {
+      case "google_play":
+        return "구글플레이스토어";
+      case "apple_store":
+        return "애플앱스토어";
+      case "naver_blog":
+        return "네이버블로그";
+      case "naver_cafe":
+        return "네이버카페";
+      default:
+        return source;
+    }
   };
 
   const getSentimentBadge = (sentiment: string) => {
@@ -270,16 +288,17 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             <div key={review.id} className="p-3 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3 text-sm">
-                  <span className="font-medium text-gray-900">{review.userId}</span>
-                  <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center">
-                    {getSourceIcon(review.source)}
-                  </div>
+                  <span className="text-lg">{getSourceIcon(review.source)}</span>
                   <span className="text-xs text-gray-500">{getSourceName(review.source)}</span>
-                  <div className="flex items-center">
-                    {renderStars(review.rating)}
-                    <span className="text-xs text-gray-500 ml-1">{review.rating}</span>
-                  </div>
+                  <span className="font-medium text-gray-900">{review.userId}</span>
                   <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>
+                  {/* Show rating for app stores only */}
+                  {(review.source === "google_play" || review.source === "apple_store") && (
+                    <div className="flex items-center">
+                      <span className="text-xs text-gray-500 mr-1">⭐</span>
+                      <span className="text-xs text-gray-500">{review.rating}</span>
+                    </div>
+                  )}
                 </div>
                 {getSentimentBadge(review.sentiment)}
               </div>
@@ -319,7 +338,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            {[...Array(Math.min(5, totalPages))].map((_, i) => {
+            {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
               const page = i + 1;
               return (
                 <Button
