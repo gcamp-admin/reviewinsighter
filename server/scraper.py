@@ -71,9 +71,40 @@ except ImportError:
     _sentiment_pipeline = None
     _model_loaded = False
 
+def analyze_sentiment_with_gpt_batch(texts):
+    """
+    Analyze sentiment for multiple texts using GPT API batch processing
+    
+    Args:
+        texts: List of review text content
+        
+    Returns:
+        List: List of sentiment strings ('긍정', '부정', '중립')
+    """
+    try:
+        # Make request to batch GPT sentiment analysis endpoint
+        response = requests.post(
+            'http://localhost:5000/api/gpt-sentiment-batch',
+            json={'texts': texts},
+            headers={'Content-Type': 'application/json'},
+            timeout=120  # Longer timeout for batch processing
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            sentiments = result.get('sentiments', [])
+            print(f"GPT batch sentiment analysis: {len(sentiments)} results processed", file=sys.stderr)
+            return sentiments
+        else:
+            print(f"GPT batch API error: {response.status_code} - {response.text}", file=sys.stderr)
+            return [analyze_text_sentiment_fallback(text) for text in texts]
+    except Exception as e:
+        print(f"GPT batch sentiment analysis error: {e}", file=sys.stderr)
+        return [analyze_text_sentiment_fallback(text) for text in texts]
+
 def analyze_sentiment_with_gpt(text):
     """
-    Analyze sentiment using GPT API via TypeScript endpoint
+    Analyze sentiment using GPT API via TypeScript endpoint (single text)
     
     Args:
         text: Review text content

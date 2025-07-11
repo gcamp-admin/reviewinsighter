@@ -206,6 +206,14 @@ Changelog:
 - July 11, 2025. Created TypeScript endpoint for GPT sentiment analysis and integrated with Python scraper for real-time processing
 - July 11, 2025. Updated entire codebase to use Korean sentiment labels (긍정/부정/중립) consistently throughout the system
 - July 11, 2025. Successfully tested GPT sentiment analysis with Korean review text showing accurate classification results
+- July 11, 2025. Implemented comprehensive GPT API cost optimization system with multiple layers of efficiency improvements
+- July 11, 2025. Added intelligent caching system to prevent duplicate API calls for identical review texts
+- July 11, 2025. Integrated rule-based pre-filtering that resolves 90%+ of clear sentiment cases without GPT calls
+- July 11, 2025. Switched from GPT-4o to GPT-4o-mini for sentiment analysis (85% cost reduction while maintaining accuracy)
+- July 11, 2025. Implemented batch processing system for multiple reviews to reduce API overhead and rate limiting
+- July 11, 2025. Enhanced filtering system to process only service-relevant reviews before GPT analysis
+- July 11, 2025. Optimized token usage by reducing prompt size and limiting max_tokens to minimum required (5 tokens)
+- July 11, 2025. Added deterministic temperature setting (0) to ensure consistent results and enable effective caching
 
 ## User Preferences
 

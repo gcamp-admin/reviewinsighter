@@ -5,7 +5,7 @@ import { z } from "zod";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { analyzeReviewSentimentWithGPT } from "./openai_analysis";
+import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch } from "./openai_analysis";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -277,27 +277,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
             storedReviews.push(review);
           }
           
-          // Update sentiment analysis for each review using GPT
-          for (const review of storedReviews) {
+          // Update sentiment analysis for reviews using optimized batch processing
+          if (storedReviews.length > 0) {
             try {
-              // Call GPT sentiment analysis endpoint
-              const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
+              // Extract review texts for batch processing
+              const reviewTexts = storedReviews.map(review => review.content);
+              
+              // Call GPT batch sentiment analysis endpoint
+              const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment-batch', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  text: review.content
+                  texts: reviewTexts
                 })
               });
               
               if (sentimentResponse.ok) {
                 const sentimentData = await sentimentResponse.json();
-                // Update the review with sentiment analysis result
-                await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
+                // Update reviews with sentiment analysis results
+                for (let i = 0; i < storedReviews.length; i++) {
+                  const sentiment = sentimentData.sentiments[i];
+                  await storage.updateReview(storedReviews[i].id, { sentiment });
+                }
+                console.log(`Batch sentiment analysis completed for ${storedReviews.length} reviews`);
+              } else {
+                console.error('Batch sentiment analysis failed, falling back to individual analysis');
+                // Fallback to individual analysis
+                for (const review of storedReviews) {
+                  try {
+                    const individualResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        text: review.content
+                      })
+                    });
+                    
+                    if (individualResponse.ok) {
+                      const sentimentData = await individualResponse.json();
+                      await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
+                    }
+                  } catch (error) {
+                    console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
+                  }
+                }
               }
             } catch (error) {
-              console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
+              console.error('Batch sentiment analysis error:', error);
             }
           }
           
@@ -473,6 +503,31 @@ print(json.dumps(result, ensure_ascii=False))
     } catch (error) {
       console.error('GPT sentiment analysis error:', error);
       res.status(500).json({ error: "Failed to analyze sentiment" });
+    }
+  });
+
+  // GPT Batch Sentiment Analysis endpoint
+  app.post("/api/gpt-sentiment-batch", async (req, res) => {
+    try {
+      const { texts } = req.body;
+      
+      if (!Array.isArray(texts) || texts.length === 0) {
+        return res.status(400).json({ error: "Texts must be a non-empty array" });
+      }
+      
+      if (texts.some(text => typeof text !== 'string')) {
+        return res.status(400).json({ error: "All texts must be strings" });
+      }
+      
+      const sentiments = await analyzeReviewSentimentBatch(texts);
+      
+      res.json({
+        sentiments: sentiments,
+        count: texts.length
+      });
+    } catch (error) {
+      console.error('GPT batch sentiment analysis error:', error);
+      res.status(500).json({ error: "Failed to analyze sentiments" });
     }
   });
 
