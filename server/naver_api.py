@@ -32,8 +32,9 @@ def search_naver(keyword, search_type="blog", display=10):
     if not base_url:
         raise ValueError("search_type은 'blog' 또는 'cafe' 이어야 합니다")
 
-    enc_query = urllib.parse.quote(keyword)
-    url = f"{base_url}?query={enc_query}&display={display}"
+    # 🔐 키워드를 따옴표로 감싸 정확 검색 유도
+    query = urllib.parse.quote(f'"{keyword}"')  
+    url = f"{base_url}?query={query}&display={display}"
 
     headers = {
         "X-Naver-Client-Id": NAVER_CLIENT_ID,
