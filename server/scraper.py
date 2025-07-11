@@ -142,6 +142,18 @@ def analyze_text_sentiment_fallback(text):
     
     content = text.lower()
     
+    # Priority negative patterns - these override everything else
+    priority_negative_patterns = [
+        '안되', '안돼', '안되어', '안되네', '안되요', '안됨', '안되고', '안되니', '안되는',
+        '안되서', '안되면', '안되겠', '안되잖', '안되다', '안되나', '안되든', '안되었',
+        '안되지', '안되더', '안되는구나', '안되는데', '안되길래', '안되던데'
+    ]
+    
+    # Check for priority negative patterns first
+    has_priority_negative = any(pattern in content for pattern in priority_negative_patterns)
+    if has_priority_negative:
+        return "부정"
+    
     # Priority rule: Any review containing '불편' is automatically negative
     if '불편' in content:
         return "부정"

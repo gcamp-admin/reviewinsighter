@@ -220,9 +220,22 @@ export async function analyzeReviewSentimentWithGPT(reviewText: string): Promise
 function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | null {
   const lowerText = text.toLowerCase();
   
+  // Priority negative patterns - these override everything else
+  const priorityNegativePatterns = [
+    '안되', '안돼', '안되어', '안되네', '안되요', '안됨', '안되고', '안되니', '안되는',
+    '안되서', '안되면', '안되겠', '안되잖', '안되다', '안되나', '안되든', '안되었',
+    '안되지', '안되더', '안되는구나', '안되는데', '안되길래', '안되던데'
+  ];
+  
+  // Check for priority negative patterns first
+  const hasPriorityNegative = priorityNegativePatterns.some(pattern => lowerText.includes(pattern));
+  if (hasPriorityNegative) {
+    return '부정';
+  }
+  
   // Clear negative indicators (95%+ confidence)
   const strongNegativePatterns = [
-    '최악', '형편없', '별로', '짜증', '화남', '실망', '못하겠', '안됨', '안되네',
+    '최악', '형편없', '별로', '짜증', '화남', '실망', '못하겠',
     '에러', '오류', '버그', '문제', '고장', '먹통', '렉', '끊김', '느려', '답답',
     '불편', '단점', '아쉬운', '불만', '싫어', '나쁨', '구려', '삭제'
   ];

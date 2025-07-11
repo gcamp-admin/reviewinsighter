@@ -225,6 +225,9 @@ Changelog:
 - July 11, 2025. Implemented GPT-based HEART analysis that provides authentic user quote analysis and specific UX improvement suggestions
 - July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
 - July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
+- July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis
+- July 11, 2025. Enhanced sentiment analysis with highest priority rule: any review containing '안되' related words is automatically classified as negative
+- July 11, 2025. Updated both GPT-based and fallback sentiment analysis systems to ensure consistent negative classification for specific Korean negative expressions
 
 ## User Preferences
 
