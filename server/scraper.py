@@ -112,6 +112,30 @@ def extract_korean_words_basic(text_list, sentiment='positive', max_words=10):
     
     return result
 
+def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
+    """
+    Check if review is negative based on section analysis
+    
+    Args:
+        text: Review text content
+        negative_keywords: List of negative keywords to check
+        
+    Returns:
+        Boolean indicating if review is negative
+    """
+    lowered = text.lower()
+
+    # 기준: "단점" 이후 부정 키워드 포함 여부
+    if "단점" in lowered:
+        parts = lowered.split("단점", 1)
+        after = parts[1]  # 단점 이후 문장
+        if any(kw in after for kw in negative_keywords):
+            return True
+
+    # 보조: 전체 텍스트에도 부정 키워드가 많은 경우 부정 처리
+    neg_count = sum(lowered.count(kw) for kw in negative_keywords)
+    return neg_count >= 2  # 부정 키워드 2개 이상이면 부정
+
 def analyze_text_sentiment(text):
     """
     Korean text-based sentiment analysis
@@ -164,6 +188,10 @@ def analyze_text_sentiment(text):
         '상대방과 나의 목소리의 싱크가 맞지 않고', '울리지않거나', '부재중', '바로 끊기고',
         '안걸리는', '빈번함', '시끄러워죽겠습니다', '당황스러운', '불편하네요'
     ]
+    
+    # Apply section-based analysis first
+    if is_negative_review_by_sections(text, strong_negative_keywords):
+        return "negative"
     
     # Positive indicators (Korean expressions)
     positive_keywords = [
