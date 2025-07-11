@@ -16,6 +16,9 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Check if end date is before start date
+  const isDateRangeInvalid = filters.dateTo && filters.dateFrom && filters.dateTo < filters.dateFrom;
+
   // Check if there are any reviews to analyze
   const { data: stats } = useQuery({
     queryKey: ["/api/reviews/stats", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
@@ -121,7 +124,7 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         <div className="flex flex-col items-center space-y-4">
           <Button 
             onClick={() => analyzeReviewsMutation.mutate()}
-            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom}
+            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom || isDateRangeInvalid}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold disabled:opacity-50"
             size="lg"
           >
@@ -141,6 +144,12 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
           {!filters.dateFrom && (
             <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
               📅 분석을 위해 시작 날짜를 먼저 입력해주세요
+            </p>
+          )}
+          
+          {isDateRangeInvalid && (
+            <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
+              ⚠️ 종료 날짜가 시작 날짜보다 앞에 있습니다. 날짜 범위를 다시 확인해주세요
             </p>
           )}
           

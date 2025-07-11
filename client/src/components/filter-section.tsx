@@ -156,6 +156,9 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
     onFiltersChange(newFilters);
   };
 
+  // Check if end date is before start date
+  const isDateRangeInvalid = localFilters.dateTo && localFilters.dateFrom && localFilters.dateTo < localFilters.dateFrom;
+
   const formatDateForInput = (date?: Date) => {
     if (!date) return "";
     return date.toISOString().split('T')[0];
@@ -242,7 +245,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
               type="date"
               value={formatDateForInput(localFilters.dateFrom)}
               onChange={(e) => handleDateChange('dateFrom', e.target.value)}
-              className="w-full"
+              className={`w-full ${isDateRangeInvalid ? 'border-red-500' : ''}`}
               placeholder="분석 시작 날짜를 선택하세요"
             />
           </div>
@@ -254,9 +257,14 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
               type="date"
               value={formatDateForInput(localFilters.dateTo)}
               onChange={(e) => handleDateChange('dateTo', e.target.value)}
-              className="w-full"
+              className={`w-full ${isDateRangeInvalid ? 'border-red-500' : ''}`}
               placeholder="분석 종료 날짜를 선택하세요"
             />
+            {isDateRangeInvalid && (
+              <p className="text-xs text-red-500 mt-1">
+                ⚠️ 종료 날짜는 시작 날짜보다 뒤에 있어야 합니다
+              </p>
+            )}
           </div>
 
           {/* Review Collection Button - Moved to rightmost position */}
@@ -264,7 +272,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             <Label className="text-sm font-medium">리뷰 수집</Label>
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo}
+              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || isDateRangeInvalid}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {collectReviewsMutation.isPending ? (
