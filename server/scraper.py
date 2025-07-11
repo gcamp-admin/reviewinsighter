@@ -916,13 +916,16 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
         print(f"Error scraping Naver Blog reviews: {str(e)}", file=sys.stderr)
         return []
 
-def scrape_naver_cafe_reviews(service_name='익시오', count=100):
+def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Naver Cafe using real API
+    Scrape reviews from Naver Cafe using real API with filtering
     
     Args:
         service_name: Service name to search for
         count: Number of reviews to fetch
+        service_keywords: List of service-related keywords for filtering
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
         
     Returns:
         List of review dictionaries
@@ -957,9 +960,6 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
                 if len(content.strip()) < 10:
                     continue
                 
-                # Text-based sentiment analysis
-                sentiment = analyze_text_sentiment(content)
-                
                 # Convert date from YYYYMMDD to ISO format
                 postdate = item.get('postdate', datetime.now().strftime('%Y%m%d'))
                 try:
@@ -973,6 +973,44 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
                         created_at = datetime.now().isoformat()
                 except:
                     created_at = datetime.now().isoformat()
+                
+                # Apply filtering if provided
+                if service_keywords or start_date or end_date:
+                    # Check if content contains service keywords
+                    if service_keywords:
+                        content_lower = content.lower()
+                        if not any(keyword.lower() in content_lower for keyword in service_keywords):
+                            continue
+                    
+                    # Check date range
+                    if start_date or end_date:
+                        try:
+                            review_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                            
+                            if start_date:
+                                try:
+                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                                    if start_dt.tzinfo is None:
+                                        start_dt = start_dt.replace(tzinfo=review_date.tzinfo)
+                                    if review_date < start_dt:
+                                        continue
+                                except Exception:
+                                    continue
+                            
+                            if end_date:
+                                try:
+                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                                    if end_dt.tzinfo is None:
+                                        end_dt = end_dt.replace(tzinfo=review_date.tzinfo)
+                                    if review_date > end_dt:
+                                        continue
+                                except Exception:
+                                    continue
+                        except Exception:
+                            continue
+                
+                # Text-based sentiment analysis
+                sentiment = analyze_text_sentiment(content)
                 
                 processed_review = {
                     'userId': f"카페회원{i+1}",
