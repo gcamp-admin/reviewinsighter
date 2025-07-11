@@ -97,12 +97,12 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
         throw new Error('시작 날짜를 반드시 입력해주세요');
       }
       
-      // 종료 날짜가 없으면 오늘 날짜를 자동으로 설정
-      let endDate = localFilters.dateTo;
-      if (!endDate) {
-        endDate = new Date();
-        endDate.setHours(23, 59, 59, 999); // 오늘 끝 시간으로 설정
+      // 종료 날짜도 필수 입력으로 변경
+      if (!localFilters.dateTo) {
+        throw new Error('종료 날짜를 반드시 입력해주세요');
       }
+      
+      let endDate = localFilters.dateTo;
       
       // 종료 날짜가 시작 날짜보다 앞서지 않도록 검증
       if (endDate < localFilters.dateFrom) {
@@ -251,7 +251,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜</Label>
+            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜 <span className="text-red-500">*</span></Label>
             <Input
               id="date-to"
               type="date"
@@ -295,6 +295,16 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
             {localFilters.service && localFilters.source.length === 0 && (
               <p className="text-xs text-red-500 mt-1">
                 최소 하나의 스토어를 선택해주세요
+              </p>
+            )}
+            {localFilters.service && localFilters.source.length > 0 && !localFilters.dateTo && (
+              <p className="text-xs text-red-500 mt-1">
+                종료 날짜를 선택해주세요
+              </p>
+            )}
+            {isDateRangeInvalid && (
+              <p className="text-xs text-red-500 mt-1">
+                종료 날짜는 시작 날짜보다 뒤에 있어야 합니다
               </p>
             )}
 

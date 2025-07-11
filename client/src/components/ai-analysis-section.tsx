@@ -58,12 +58,12 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         throw new Error('시작 날짜를 반드시 입력해주세요');
       }
       
-      // 종료 날짜가 없으면 오늘 날짜를 자동으로 설정
-      let endDate = filters.dateTo;
-      if (!endDate) {
-        endDate = new Date();
-        endDate.setHours(23, 59, 59, 999); // 오늘 끝 시간으로 설정
+      // 종료 날짜도 필수 입력으로 변경
+      if (!filters.dateTo) {
+        throw new Error('종료 날짜를 반드시 입력해주세요');
       }
+      
+      let endDate = filters.dateTo;
       
       // 종료 날짜가 시작 날짜보다 앞서지 않도록 검증
       if (endDate < filters.dateFrom) {
@@ -124,7 +124,7 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         <div className="flex flex-col items-center space-y-4">
           <Button 
             onClick={() => analyzeReviewsMutation.mutate()}
-            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom || isDateRangeInvalid}
+            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom || !filters.dateTo || isDateRangeInvalid}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold disabled:opacity-50"
             size="lg"
           >
@@ -144,6 +144,12 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
           {!filters.dateFrom && (
             <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
               📅 분석을 위해 시작 날짜를 먼저 입력해주세요
+            </p>
+          )}
+          
+          {filters.dateFrom && !filters.dateTo && (
+            <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
+              📅 분석을 위해 종료 날짜를 입력해주세요
             </p>
           )}
           
