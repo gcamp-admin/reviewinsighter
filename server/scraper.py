@@ -12,6 +12,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import re
 from service_data import get_service_keywords, get_service_info
+from naver_api import search_naver, extract_text_from_html
 
 # Enhanced Korean text processing
 try:
@@ -347,7 +348,7 @@ def scrape_app_store_reviews(app_id='1571096278', count=100):
 
 def scrape_naver_blog_reviews(service_name='익시오', count=100):
     """
-    Scrape reviews from Naver Blog
+    Scrape reviews from Naver Blog using real API
     
     Args:
         service_name: Service name to search for
@@ -361,31 +362,45 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100):
         keywords = get_service_keywords(service_name)
         processed_reviews = []
         
-        # Enhanced sample blog content using actual service keywords
-        sample_blog_content = [
-            f"{service_name} 사용해봤는데 정말 편리해요. 보이스피싱 차단 기능이 좋네요.",
-            f"{service_name} 앱 통화 품질이 아직 불안정한 것 같아요. 개선이 필요해보입니다.",
-            f"{service_name} AI 통화 요약 기능 덕분에 중요한 내용을 놓치지 않아서 좋아요.",
-            f"{service_name} 사용 중인데 가끔 끊김 현상이 있어서 아쉬워요.",
-            f"{keywords[0] if keywords else service_name} 블로그 후기 - 사용하기 편하고 기능도 많아요!",
-            f"{service_name} 설치하고 나서 업무 효율이 많이 올라갔어요.",
-            f"{service_name} 인터페이스가 좀 복잡해서 익숙해지는데 시간이 걸렸어요.",
-            f"{service_name} 고객지원팀이 친절하게 도와주셔서 감사해요."
-        ]
+        # Search with multiple keywords to get diverse results
+        search_results = []
+        for keyword in keywords[:3]:  # Use top 3 keywords to avoid API rate limits
+            results = search_naver(keyword, search_type="blog", display=min(count // len(keywords[:3]) + 5, 30))
+            search_results.extend(results)
         
-        for i, content in enumerate(sample_blog_content[:count]):
-            sentiment = analyze_text_sentiment(content)
-            processed_review = {
-                'userId': f'블로거{i+1}',
-                'source': 'naver_blog',
-                'rating': 4 if sentiment == 'positive' else 2,
-                'content': content,
-                'sentiment': sentiment,
-                'createdAt': datetime.now().isoformat()
-            }
-            processed_reviews.append(processed_review)
+        # Process blog search results
+        for i, item in enumerate(search_results[:count]):
+            try:
+                # Extract clean text from description
+                description = extract_text_from_html(item.get('description', ''))
+                title = extract_text_from_html(item.get('title', ''))
+                
+                # Combine title and description for content
+                content = f"{title}. {description}" if title and description else (title or description)
+                
+                # Skip if content is too short
+                if len(content.strip()) < 10:
+                    continue
+                
+                # Text-based sentiment analysis
+                sentiment = analyze_text_sentiment(content)
+                
+                processed_review = {
+                    'userId': f"블로거{i+1}",
+                    'source': 'naver_blog',
+                    'rating': 4 if sentiment == 'positive' else 2,
+                    'content': content[:500],  # Limit content length
+                    'sentiment': sentiment,
+                    'createdAt': item.get('postdate', datetime.now().strftime('%Y%m%d')),
+                    'url': item.get('link', '')
+                }
+                processed_reviews.append(processed_review)
+                
+            except Exception as item_error:
+                print(f"Error processing blog item {i}: {str(item_error)}", file=sys.stderr)
+                continue
         
-        print(f"Generated {len(processed_reviews)} Naver Blog reviews for {service_name} using keywords: {keywords}", file=sys.stderr)
+        print(f"Collected {len(processed_reviews)} Naver Blog reviews for {service_name} using keywords: {keywords[:3]}", file=sys.stderr)
         return processed_reviews
         
     except Exception as e:
@@ -394,7 +409,7 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100):
 
 def scrape_naver_cafe_reviews(service_name='익시오', count=100):
     """
-    Scrape reviews from Naver Cafe
+    Scrape reviews from Naver Cafe using real API
     
     Args:
         service_name: Service name to search for
@@ -408,31 +423,46 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
         keywords = get_service_keywords(service_name)
         processed_reviews = []
         
-        # Enhanced sample cafe content using actual service keywords
-        sample_cafe_content = [
-            f"{service_name} 카페에서 추천받아서 써봤는데 생각보다 괜찮네요!",
-            f"{service_name} 업데이트 후에 좀 더 안정적이 된 것 같아요.",
-            f"{service_name} 기능은 좋은데 UI가 좀 복잡한 느낌이에요.",
-            f"{service_name} 고객센터 응답이 빨라서 만족해요.",
-            f"{keywords[0] if keywords else service_name} 질문 - 사용법 좀 알려주세요",
-            f"{service_name} 정말 유용한 앱이에요! 추천합니다.",
-            f"{service_name} 가끔 오류가 나는데 해결 방법이 있을까요?",
-            f"{service_name} 사용 후기 공유 - 만족도가 높네요!"
-        ]
+        # Search with multiple keywords to get diverse results
+        search_results = []
+        for keyword in keywords[:3]:  # Use top 3 keywords to avoid API rate limits
+            results = search_naver(keyword, search_type="cafe", display=min(count // len(keywords[:3]) + 5, 30))
+            search_results.extend(results)
         
-        for i, content in enumerate(sample_cafe_content[:count]):
-            sentiment = analyze_text_sentiment(content)
-            processed_review = {
-                'userId': f'카페회원{i+1}',
-                'source': 'naver_cafe',
-                'rating': 4 if sentiment == 'positive' else 2,
-                'content': content,
-                'sentiment': sentiment,
-                'createdAt': datetime.now().isoformat()
-            }
-            processed_reviews.append(processed_review)
+        # Process cafe search results
+        for i, item in enumerate(search_results[:count]):
+            try:
+                # Extract clean text from description
+                description = extract_text_from_html(item.get('description', ''))
+                title = extract_text_from_html(item.get('title', ''))
+                
+                # Combine title and description for content
+                content = f"{title}. {description}" if title and description else (title or description)
+                
+                # Skip if content is too short
+                if len(content.strip()) < 10:
+                    continue
+                
+                # Text-based sentiment analysis
+                sentiment = analyze_text_sentiment(content)
+                
+                processed_review = {
+                    'userId': f"카페회원{i+1}",
+                    'source': 'naver_cafe',
+                    'rating': 4 if sentiment == 'positive' else 2,
+                    'content': content[:500],  # Limit content length
+                    'sentiment': sentiment,
+                    'createdAt': datetime.now().isoformat(),
+                    'url': item.get('link', ''),
+                    'cafe_name': item.get('cafename', '')
+                }
+                processed_reviews.append(processed_review)
+                
+            except Exception as item_error:
+                print(f"Error processing cafe item {i}: {str(item_error)}", file=sys.stderr)
+                continue
         
-        print(f"Generated {len(processed_reviews)} Naver Cafe reviews for {service_name} using keywords: {keywords}", file=sys.stderr)
+        print(f"Collected {len(processed_reviews)} Naver Cafe reviews for {service_name} using keywords: {keywords[:3]}", file=sys.stderr)
         return processed_reviews
         
     except Exception as e:

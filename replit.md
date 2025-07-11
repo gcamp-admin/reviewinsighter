@@ -163,6 +163,9 @@ Changelog:
 - July 11, 2025. Updated backend to handle new JSON payload structure with selectedService and selectedChannels format
 - July 11, 2025. Enhanced Python scraper with Naver Blog and Naver Cafe scraping functions (currently using mock data for demonstration)
 - July 11, 2025. Improved frontend-backend communication with proper JSON structure for multi-source data collection
+- July 11, 2025. Integrated real Naver API for authentic Blog and Cafe review collection using provided API credentials
+- July 11, 2025. Implemented comprehensive HTML text extraction and content processing for Naver search results
+- July 11, 2025. Enhanced keyword-based search strategy using service-specific keywords for better review targeting
 
 ## User Preferences
 
