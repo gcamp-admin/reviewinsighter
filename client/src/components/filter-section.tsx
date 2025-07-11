@@ -134,6 +134,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         throw new Error('날짜 범위가 유효하지 않습니다. 종료 날짜는 시작 날짜보다 앞설 수 없습니다.');
       }
       
+      // 종료 날짜가 미래 날짜가 아닌지 검증
+      if (endDate > new Date()) {
+        throw new Error('종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다.');
+      }
+      
       const payload = {
         serviceId: localFilters.service.id,
         serviceName: localFilters.service.name,
@@ -188,6 +193,17 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
     if (!date) return "";
     return date.toISOString().split('T')[0];
   };
+
+  // Get today's date in YYYY-MM-DD format for max attribute
+  const getTodayDateString = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  // Check if end date is in the future
+  const isEndDateInFuture = localFilters.dateTo && localFilters.dateTo > new Date();
+
+  // Combined validation for date range issues
+  const hasDateRangeError = isDateRangeInvalid || isEndDateInFuture;
 
   return (
     <Card className="mb-8">
@@ -294,7 +310,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                   type="date"
                   value={formatDateForInput(localFilters.dateFrom)}
                   onChange={(e) => handleDateChange('dateFrom', e.target.value)}
-                  className={`w-full min-w-[200px] ${isDateRangeInvalid ? 'border-red-500' : ''}`}
+                  className={`w-full min-w-[200px] ${hasDateRangeError ? 'border-red-500' : ''}`}
                   placeholder="분석 시작 날짜를 선택하세요"
                 />
               </div>
@@ -305,7 +321,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                   type="date"
                   value={formatDateForInput(localFilters.dateTo)}
                   onChange={(e) => handleDateChange('dateTo', e.target.value)}
-                  className={`w-full min-w-[200px] ${isDateRangeInvalid ? 'border-red-500' : ''}`}
+                  max={getTodayDateString()}
+                  className={`w-full min-w-[200px] ${hasDateRangeError ? 'border-red-500' : ''}`}
                   placeholder="분석 종료 날짜를 선택하세요"
                 />
               </div>
@@ -315,13 +332,18 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 ⚠️ 종료 날짜는 시작 날짜보다 뒤에 있어야 합니다
               </p>
             )}
+            {isEndDateInFuture && (
+              <p className="text-xs text-red-500 mt-1">
+                ⚠️ 종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다
+              </p>
+            )}
           </div>
 
           {/* Row 4: Review Collection Button */}
           <div className="pt-2">
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
-              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || isDateRangeInvalid}
+              disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || hasDateRangeError}
               className="w-full bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-md"
             >
               {collectReviewsMutation.isPending ? (

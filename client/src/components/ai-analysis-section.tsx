@@ -18,6 +18,12 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
 
   // Check if end date is before start date
   const isDateRangeInvalid = filters.dateTo && filters.dateFrom && filters.dateTo < filters.dateFrom;
+  
+  // Check if end date is in the future
+  const isEndDateInFuture = filters.dateTo && filters.dateTo > new Date();
+  
+  // Combined validation for date range issues
+  const hasDateRangeError = isDateRangeInvalid || isEndDateInFuture;
 
   // Check if there are any reviews to analyze
   const { data: stats } = useQuery({
@@ -68,6 +74,11 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
       // 종료 날짜가 시작 날짜보다 앞서지 않도록 검증
       if (endDate < filters.dateFrom) {
         throw new Error('날짜 범위가 유효하지 않습니다. 종료 날짜는 시작 날짜보다 앞설 수 없습니다.');
+      }
+      
+      // 종료 날짜가 미래 날짜가 아닌지 검증
+      if (endDate > new Date()) {
+        throw new Error('종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다.');
       }
       
       const payload = {
@@ -124,7 +135,7 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
         <div className="flex flex-col items-center space-y-4">
           <Button 
             onClick={() => analyzeReviewsMutation.mutate()}
-            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom || !filters.dateTo || isDateRangeInvalid}
+            disabled={analyzeReviewsMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg font-semibold disabled:opacity-50"
             size="lg"
           >
@@ -156,6 +167,12 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
           {isDateRangeInvalid && (
             <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
               ⚠️ 종료 날짜가 시작 날짜보다 앞에 있습니다. 날짜 범위를 다시 확인해주세요
+            </p>
+          )}
+          
+          {isEndDateInFuture && (
+            <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
+              ⚠️ 종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다
             </p>
           )}
           
