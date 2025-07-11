@@ -1,6 +1,9 @@
 import logoImg from "/assets/commento_logo_transparent.png";
+import { useState } from "react";
+import { X } from "lucide-react";
 
 export default function Header() {
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   return (
     <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,12 +26,58 @@ export default function Header() {
             </div>
           </div>
           <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-600 transition-colors duration-300 cursor-pointer group">
-              <span className="group-hover:font-medium transition-all duration-300">실시간 리뷰 수집 지원</span>
+            <div 
+              className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-600 transition-colors duration-300 cursor-pointer group"
+              onClick={() => setIsPopupOpen(true)}
+            >
+              <span className="group-hover:font-medium transition-all duration-300">코멘토는 누구?</span>
             </div>
           </div>
         </div>
       </div>
+      
+      {/* 팝업 모달 */}
+      {isPopupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 relative animate-in fade-in-0 zoom-in-95 duration-300">
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setIsPopupOpen(false)}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            {/* 팝업 내용 */}
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-white font-bold text-xl">AI</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">코멘토는 누구?</h2>
+              </div>
+              
+              <div className="text-left space-y-3 text-sm text-gray-600">
+                <p>
+                  <strong className="text-blue-600">코멘토(commento.ai)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
+                </p>
+                <p>
+                  📊 <strong>전문 분야:</strong> 앱 리뷰, 고객 피드백, 감정 분석
+                </p>
+                <p>
+                  🎯 <strong>역할:</strong> 고객의 목소리를 분석하여 실용적인 UX 개선 제안을 제공
+                </p>
+                <p>
+                  💡 <strong>특징:</strong> HEART 프레임워크 기반 심층 분석 및 키워드 추출
+                </p>
+                <p className="text-center text-blue-600 font-medium pt-3 border-t">
+                  "고객은 이미 말했습니다.<br/>이제는 당신이 들을 차례입니다."
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
