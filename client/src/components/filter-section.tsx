@@ -54,6 +54,13 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       }
       
       const payload = {
+        selectedService: localFilters.service.name,
+        selectedChannels: {
+          googlePlay: localFilters.source.includes('google_play'),
+          appleStore: localFilters.source.includes('app_store'),
+          naverBlog: localFilters.source.includes('naver_blog'),
+          naverCafe: localFilters.source.includes('naver_cafe')
+        },
         appId: localFilters.service.googlePlayId,
         appIdApple: localFilters.service.appleStoreId,
         count: 500,
@@ -65,6 +72,8 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       return response.json();
     },
     onSuccess: (data) => {
+      console.log('Collection success data:', data);
+      
       const sourcesText = localFilters.source.map(s => {
         switch(s) {
           case 'google_play': return '구글 플레이';
@@ -77,7 +86,7 @@ export default function FilterSection({ filters, onFiltersChange }: FilterSectio
       
       toast({
         title: "수집 완료",
-        description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
+        description: `${data.selectedService || localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
       });
       // Only invalidate reviews and stats, not analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });

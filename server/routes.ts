@@ -185,15 +185,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Collect reviews endpoint with Python scraper
   app.post("/api/reviews/collect", async (req, res) => {
     try {
-      const { appId, appIdApple, count, sources } = collectReviewsSchema.parse(req.body);
-      const { serviceId, serviceName } = req.body;
+      // Parse the new JSON structure
+      const { selectedService, selectedChannels, appId, appIdApple, count, serviceId, serviceName } = req.body;
+      
+      // Convert selectedChannels to sources array
+      const sources = [];
+      if (selectedChannels?.googlePlay) sources.push('google_play');
+      if (selectedChannels?.appleStore) sources.push('app_store');
+      if (selectedChannels?.naverBlog) sources.push('naver_blog');
+      if (selectedChannels?.naverCafe) sources.push('naver_cafe');
+      
+      // Use the original schema for validation but with converted sources
+      const validatedData = collectReviewsSchema.parse({
+        appId: appId || 'com.lguplus.sohoapp',
+        appIdApple: appIdApple || '1571096278',
+        count: count || 500,
+        sources: sources.length > 0 ? sources : ['google_play']
+      });
       
       // Clear existing analysis data for this service when collecting new reviews
       if (serviceId) {
         await storage.clearAnalysisData(serviceId);
       }
       
-      if (sources.length === 0) {
+      if (validatedData.sources.length === 0) {
         return res.status(400).json({ 
           error: "At least one source must be selected",
           message: "최소 하나의 스토어를 선택해주세요."
@@ -202,8 +217,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Run Python scraper with multiple sources
       const scraperPath = path.join(__dirname, 'scraper.py');
-      const sourcesStr = sources.join(',');
-      const pythonProcess = spawn('python3', [scraperPath, appId, appIdApple, count.toString(), sourcesStr, serviceId || '', serviceName || '']);
+      const sourcesStr = validatedData.sources.join(',');
+      const pythonProcess = spawn('python3', [scraperPath, validatedData.appId, validatedData.appIdApple, validatedData.count.toString(), sourcesStr, serviceId || '', selectedService || serviceName || '']);
       
       let stdout = '';
       let stderr = '';
@@ -251,7 +266,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             success: true,
             message: `${result.reviews.length}개의 리뷰를 성공적으로 수집했습니다.`,
             reviewsCount: result.reviews.length,
-            insightsCount: result.analysis?.insights?.length || 0
+            insightsCount: result.analysis?.insights?.length || 0,
+            selectedService: selectedService,
+            selectedChannels: selectedChannels,
+            sources: validatedData.sources
           });
           
         } catch (parseError) {

@@ -158,6 +158,11 @@ Changelog:
 - July 11, 2025. Optimized collection to gather up to 300 Google Play reviews and 49 App Store reviews (RSS feed limitation)
 - July 11, 2025. Enhanced Korean text processing with advanced libraries (wordcloud, matplotlib, konlpy)
 - July 11, 2025. Improved word cloud generation with morphological analysis for better Korean language understanding
+- July 11, 2025. Implemented complete multi-source review collection system with 4 sources: Google Play Store, Apple App Store, Naver Blog, Naver Cafe
+- July 11, 2025. Added comprehensive store selection interface with checkboxes for all four sources, all selected by default
+- July 11, 2025. Updated backend to handle new JSON payload structure with selectedService and selectedChannels format
+- July 11, 2025. Enhanced Python scraper with Naver Blog and Naver Cafe scraping functions (currently using mock data for demonstration)
+- July 11, 2025. Improved frontend-backend communication with proper JSON structure for multi-source data collection
 
 ## User Preferences
 
