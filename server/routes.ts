@@ -351,27 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
                 
-                // For reviews outside date range, use quick rule-based analysis
-                if (startDate && endDate) {
-                  const remainingReviews = storedReviews.filter(review => !reviewsToAnalyze.includes(review));
-                  if (remainingReviews.length > 0) {
-                    console.log(`Using rule-based analysis for ${remainingReviews.length} reviews outside date range`);
-                    for (const review of remainingReviews) {
-                      // Simple rule-based sentiment for reviews outside date range
-                      const content = review.content.toLowerCase();
-                      let sentiment = '중립';
-                      
-                      // Quick positive/negative detection
-                      if (content.includes('좋') || content.includes('만족') || content.includes('편리')) {
-                        sentiment = '긍정';
-                      } else if (content.includes('불편') || content.includes('안되') || content.includes('문제')) {
-                        sentiment = '부정';
-                      }
-                      
-                      await storage.updateReview(review.id, { sentiment });
-                    }
-                  }
-                }
+                // No need to process reviews outside date range since they are not collected
               } catch (error) {
                 console.error('Batch sentiment analysis error:', error);
               }

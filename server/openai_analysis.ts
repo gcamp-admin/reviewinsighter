@@ -441,26 +441,6 @@ function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | nu
   
   // If no clear indicators, return null to trigger GPT analysis
   return null;
-  
-  const negativeCount = strongNegativePatterns.filter(pattern => lowerText.includes(pattern)).length;
-  const positiveCount = strongPositivePatterns.filter(pattern => lowerText.includes(pattern)).length;
-  
-  // High confidence rules
-  if (negativeCount >= 2 || (negativeCount === 1 && positiveCount === 0)) {
-    return '부정';
-  }
-  
-  if (positiveCount >= 2 || (positiveCount === 1 && negativeCount === 0)) {
-    return '긍정';
-  }
-  
-  // Neutral patterns
-  if (lowerText.includes('보통') || lowerText.includes('그냥') || lowerText.includes('평범')) {
-    return '중립';
-  }
-  
-  // Return null for ambiguous cases that need GPT
-  return null;
 }
 
 function analyzeReviewSentimentFallback(text: string): '긍정' | '부정' | '중립' {

@@ -232,6 +232,11 @@ Changelog:
 - July 11, 2025. Enhanced TypeScript and Python sentiment analysis with intelligent caching and batch processing
 - July 11, 2025. Optimized GPT API usage with smaller batch sizes (15 reviews) and reduced token consumption
 - July 11, 2025. Implemented comprehensive Korean sentiment pattern matching with priority-based classification rules
+- July 11, 2025. Completely restructured review collection to only crawl reviews within specified date range
+- July 11, 2025. Eliminated out-of-period review collection and analysis for maximum efficiency and accuracy
+- July 11, 2025. Modified all scrapers (Google Play, App Store, Naver Blog, Naver Cafe) to apply date filtering during crawling phase
+- July 11, 2025. Removed post-processing date filtering and sentiment analysis of irrelevant reviews
+- July 11, 2025. System now only collects and analyzes reviews within the user-specified collection period
 - July 11, 2025. Added gradient text effects, scale animations, and interactive hover states throughout the application
 - July 11, 2025. Enhanced header with backdrop blur, gradient backgrounds, and smooth transitions
 - July 11, 2025. Modernized stats cards with hover scaling, color transitions, and professional styling

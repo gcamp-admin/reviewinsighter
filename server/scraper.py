@@ -793,7 +793,7 @@ def analyze_text_sentiment_original(text):
 
 def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko', country='kr', service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Google Play Store with filtering
+    Scrape reviews from Google Play Store with filtering - only collect reviews within date range
     
     Args:
         app_id: Google Play Store app ID
@@ -808,23 +808,39 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
         List of review dictionaries
     """
     try:
-        # Fetch reviews from Google Play Store
+        # Parse date range for filtering
+        start_dt = None
+        end_dt = None
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        # Fetch reviews from Google Play Store with extra count for filtering
         result, _ = reviews(
             app_id,
             lang=lang,
             country=country,
             sort=Sort.NEWEST,
-            count=count * 2  # Fetch extra to account for filtering
+            count=count * 3  # Fetch extra to account for date filtering
         )
         
-        # Process and filter the data
+        # Process and filter the data - only collect reviews within date range
         processed_reviews = []
         for review in result:
-            # First check if review is relevant to the service
+            # Check date range first - skip if outside range
+            if start_dt or end_dt:
+                review_date = review['at'] if review['at'] else datetime.now()
+                if start_dt and review_date < start_dt:
+                    continue
+                if end_dt and review_date > end_dt:
+                    continue
+            
+            # Check if review is relevant to the service
             if service_keywords and not is_relevant_review(review['content'], service_keywords):
                 continue
                 
-            # Create review object with date
+            # Create review object
             review_obj = {
                 'userId': review['userName'] if review['userName'] else '익명',
                 'source': 'google_play',
@@ -834,18 +850,16 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
             }
             
             processed_reviews.append(review_obj)
+            
+            # Stop when we have enough reviews
+            if len(processed_reviews) >= count:
+                break
         
-        # Filter by date range
-        if start_date or end_date:
-            processed_reviews = filter_reviews_by_date_range(processed_reviews, start_date, end_date)
-        
-        # Limit to requested count
-        processed_reviews = processed_reviews[:count]
-        
-        # Now apply GPT sentiment analysis only to filtered reviews
+        # Apply sentiment analysis only to collected reviews
         for review in processed_reviews:
             review['sentiment'] = analyze_text_sentiment(review['content'])
         
+        print(f"Collected {len(processed_reviews)} Google Play reviews within date range", file=sys.stderr)
         return processed_reviews
         
     except Exception as e:
@@ -854,7 +868,7 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
 
 def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Apple App Store with filtering
+    Scrape reviews from Apple App Store with filtering - only collect reviews within date range
     
     Args:
         app_id: Apple App Store app ID
@@ -867,6 +881,14 @@ def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=No
         List of review dictionaries
     """
     try:
+        # Parse date range for filtering
+        start_dt = None
+        end_dt = None
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
         # Construct RSS URL for App Store reviews
         rss_url = f'https://itunes.apple.com/kr/rss/customerreviews/id={app_id}/sortBy=mostRecent/xml'
         
@@ -897,9 +919,22 @@ def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=No
                 rating = int(rating_elem.text) if rating_elem is not None else 3
                 
                 updated_elem = entry.find('{http://www.w3.org/2005/Atom}updated')
-                created_at = updated_elem.text if updated_elem is not None else datetime.now().isoformat()
+                updated_text = updated_elem.text if updated_elem is not None else ''
+                try:
+                    # Parse the date format: 2024-07-08T12:34:56-07:00
+                    review_date = datetime.fromisoformat(updated_text.replace('Z', '+00:00'))
+                    created_at = review_date.isoformat()
+                except:
+                    review_date = datetime.now()
+                    created_at = review_date.isoformat()
                 
-                # First check if review is relevant to the service
+                # Check date range first - skip if outside range
+                if start_dt and review_date < start_dt:
+                    continue
+                if end_dt and review_date > end_dt:
+                    continue
+                
+                # Check if review is relevant to the service
                 if service_keywords and not is_relevant_review(content, service_keywords):
                     continue
                 
@@ -912,21 +947,19 @@ def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=No
                 }
                 processed_reviews.append(processed_review)
                 
+                # Stop when we have enough reviews
+                if len(processed_reviews) >= count:
+                    break
+                
             except Exception as entry_error:
                 print(f"Error processing App Store review entry: {entry_error}", file=sys.stderr)
                 continue
         
-        # Filter by date range
-        if start_date or end_date:
-            processed_reviews = filter_reviews_by_date_range(processed_reviews, start_date, end_date)
-        
-        # Limit to requested count
-        processed_reviews = processed_reviews[:count]
-        
-        # Now apply GPT sentiment analysis only to filtered reviews
+        # Apply sentiment analysis only to collected reviews
         for review in processed_reviews:
             review['sentiment'] = analyze_text_sentiment(review['content'])
         
+        print(f"Collected {len(processed_reviews)} App Store reviews within date range", file=sys.stderr)
         return processed_reviews
         
     except Exception as e:
@@ -935,7 +968,7 @@ def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=No
 
 def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Naver Blog using real API with filtering
+    Scrape reviews from Naver Blog using real API with filtering - only collect reviews within date range
     
     Args:
         service_name: Service name to search for
@@ -948,6 +981,14 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
         List of review dictionaries
     """
     try:
+        # Parse date range for filtering
+        start_dt = None
+        end_dt = None
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
         # Get service keywords for better search results
         keywords = service_keywords or get_service_keywords(service_name)
         processed_reviews = []
@@ -977,9 +1018,6 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
                 if len(content.strip()) < 10:
                     continue
                 
-                # Text-based sentiment analysis
-                sentiment = analyze_text_sentiment(content)
-                
                 # Convert date from YYYYMMDD to ISO format
                 postdate = item.get('postdate', datetime.now().strftime('%Y%m%d'))
                 try:
@@ -988,11 +1026,23 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
                         year = int(postdate[:4])
                         month = int(postdate[4:6])
                         day = int(postdate[6:8])
-                        created_at = datetime(year, month, day).isoformat()
+                        review_date = datetime(year, month, day)
+                        created_at = review_date.isoformat()
                     else:
-                        created_at = datetime.now().isoformat()
+                        review_date = datetime.now()
+                        created_at = review_date.isoformat()
                 except:
-                    created_at = datetime.now().isoformat()
+                    review_date = datetime.now()
+                    created_at = review_date.isoformat()
+                
+                # Check date range first - skip if outside range
+                if start_dt and review_date < start_dt:
+                    continue
+                if end_dt and review_date > end_dt:
+                    continue
+                
+                # Text-based sentiment analysis
+                sentiment = analyze_text_sentiment(content)
                 
                 # Extract actual user ID from the item
                 user_id = item.get('extracted_user_id') or item.get('bloggername', f"블로거{i+1}")
@@ -1011,6 +1061,10 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
                 }
                 processed_reviews.append(processed_review)
                 
+                # Stop when we have enough reviews
+                if len(processed_reviews) >= count:
+                    break
+                
             except Exception as item_error:
                 print(f"Error processing blog item {i}: {str(item_error)}", file=sys.stderr)
                 continue
@@ -1024,7 +1078,7 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
 
 def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywords=None, start_date=None, end_date=None):
     """
-    Scrape reviews from Naver Cafe using real API with filtering
+    Scrape reviews from Naver Cafe using real API with filtering - only collect reviews within date range
     
     Args:
         service_name: Service name to search for
@@ -1037,6 +1091,14 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
         List of review dictionaries
     """
     try:
+        # Parse date range for filtering
+        start_dt = None
+        end_dt = None
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
         # Get service keywords for better search results
         keywords = get_service_keywords(service_name)
         processed_reviews = []
@@ -1074,46 +1136,20 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                         year = int(postdate[:4])
                         month = int(postdate[4:6])
                         day = int(postdate[6:8])
-                        created_at = datetime(year, month, day).isoformat()
+                        review_date = datetime(year, month, day)
+                        created_at = review_date.isoformat()
                     else:
-                        created_at = datetime.now().isoformat()
+                        review_date = datetime.now()
+                        created_at = review_date.isoformat()
                 except:
-                    created_at = datetime.now().isoformat()
+                    review_date = datetime.now()
+                    created_at = review_date.isoformat()
                 
-                # Apply filtering if provided
-                if service_keywords or start_date or end_date:
-                    # Check if content contains service keywords
-                    if service_keywords:
-                        content_lower = content.lower()
-                        if not any(keyword.lower() in content_lower for keyword in service_keywords):
-                            continue
-                    
-                    # Check date range
-                    if start_date or end_date:
-                        try:
-                            review_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-                            
-                            if start_date:
-                                try:
-                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-                                    if start_dt.tzinfo is None:
-                                        start_dt = start_dt.replace(tzinfo=review_date.tzinfo)
-                                    if review_date < start_dt:
-                                        continue
-                                except Exception:
-                                    continue
-                            
-                            if end_date:
-                                try:
-                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-                                    if end_dt.tzinfo is None:
-                                        end_dt = end_dt.replace(tzinfo=review_date.tzinfo)
-                                    if review_date > end_dt:
-                                        continue
-                                except Exception:
-                                    continue
-                        except Exception:
-                            continue
+                # Check date range first - skip if outside range
+                if start_dt and review_date < start_dt:
+                    continue
+                if end_dt and review_date > end_dt:
+                    continue
                 
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
@@ -1135,6 +1171,10 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                     'cafe_name': item.get('cafename', '')
                 }
                 processed_reviews.append(processed_review)
+                
+                # Stop when we have enough reviews
+                if len(processed_reviews) >= count:
+                    break
                 
             except Exception as item_error:
                 print(f"Error processing cafe item {i}: {str(item_error)}", file=sys.stderr)
