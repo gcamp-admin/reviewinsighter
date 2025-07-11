@@ -49,8 +49,8 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
   appId: true,
   rating: true,
   content: true,
-  sentiment: true,
 }).extend({
+  sentiment: z.string().optional().default("중립"),
   createdAt: z.string().optional(),
 });
 

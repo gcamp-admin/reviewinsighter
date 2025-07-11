@@ -42,19 +42,13 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
     if selected_channels.get("googlePlay"):
         result["google_play"] = crawl_google_play(
             info["google_play_id"], 
-            count=review_count,
-            service_keywords=service_keywords,
-            start_date=start_date,
-            end_date=end_date
+            count=review_count
         )
 
     if selected_channels.get("appleStore"):
         result["apple_store"] = crawl_apple_store(
             info["apple_store_id"],
-            count=review_count,
-            service_keywords=service_keywords,
-            start_date=start_date,
-            end_date=end_date
+            count=review_count
         )
 
     if selected_channels.get("naverBlog"):

@@ -6,6 +6,7 @@ import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch } from "./openai_analysis";
+import { insertReviewSchema } from "../shared/schema";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -184,6 +185,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create a new review (for Python crawler)
+  app.post("/api/reviews/create", async (req, res) => {
+    try {
+      const validatedData = insertReviewSchema.parse(req.body);
+      const review = await storage.createReview(validatedData);
+      res.json(review);
+    } catch (error) {
+      console.error('Review creation error:', error);
+      res.status(400).json({ error: "Invalid review data" });
+    }
+  });
+
   // Collect reviews endpoint with Python scraper
   app.post("/api/reviews/collect", async (req, res) => {
     try {
@@ -217,24 +230,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Run Python scraper with multiple sources and filtering
-      const scraperPath = path.join(__dirname, 'scraper.py');
-      const sourcesStr = validatedData.sources.join(',');
+      // Run Python crawler with multiple sources and filtering
+      const crawlerPath = path.join(__dirname, 'run_crawler.py');
       
-      // Build command line arguments with filtering parameters
+      // Build command line arguments with new crawler structure
+      const crawlerArgs = {
+        service_name: selectedService?.name || serviceName || '익시오',
+        selected_channels: {
+          googlePlay: selectedChannels?.googlePlay || false,
+          appleStore: selectedChannels?.appleStore || false,
+          naverBlog: selectedChannels?.naverBlog || false,
+          naverCafe: selectedChannels?.naverCafe || false
+        },
+        start_date: startDate || null,
+        end_date: endDate || null,
+        review_count: count || 100
+      };
+      
       const args = [
-        scraperPath,
-        validatedData.appId,
-        validatedData.appIdApple,
-        validatedData.count.toString(),
-        sourcesStr,
-        serviceId || '',
-        selectedService || serviceName || '',
-        startDate || '',
-        endDate || ''
+        crawlerPath,
+        JSON.stringify(crawlerArgs)
       ];
       
-      console.log(`Running Python scraper with filters: ${args.join(' ')}`);
+      console.log(`Running Python crawler with filters: ${JSON.stringify(crawlerArgs)}`);
       const pythonProcess = spawn('python3', args);
       
       let stdout = '';
@@ -258,24 +276,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         try {
-          const result = JSON.parse(stdout);
-          
-          if (!result.success) {
+          // Check if crawler completed successfully
+          if (stdout.includes('Crawler completed successfully')) {
+            // Get the number of reviews collected from the output
+            const reviewCountMatch = stdout.match(/Successfully processed (\d+) reviews/);
+            const reviewCount = reviewCountMatch ? parseInt(reviewCountMatch[1]) : 0;
+            
+            // Get collected reviews from storage
+            const { reviews: storedReviews } = await storage.getReviews(1, 1000);
+            
+            // Return success response
+            return res.json({
+              success: true,
+              message: `${reviewCount}개의 리뷰를 성공적으로 수집했습니다.`,
+              reviewsCount: reviewCount,
+              insightsCount: 0,
+              selectedService: selectedService || { name: serviceName || '익시오' },
+              selectedChannels: selectedChannels || {},
+              sources: sources
+            });
+          } else {
             return res.status(500).json({
-              error: result.error,
-              message: result.message
+              error: "Crawler did not complete successfully",
+              message: "크롤링이 완료되지 않았습니다."
             });
-          }
-          
-          // Store collected reviews with serviceId
-          const storedReviews = [];
-          for (const reviewData of result.reviews) {
-            const review = await storage.createReview({
-              ...reviewData,
-              serviceId: serviceId || null,
-              appId: reviewData.source === 'google_play' ? appId : appIdApple
-            });
-            storedReviews.push(review);
           }
           
           // Update sentiment analysis for reviews using optimized batch processing
@@ -335,21 +359,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Don't store insights and word cloud data from scraper
           // They will be generated dynamically from the collected reviews
           
-          res.json({
-            success: true,
-            message: `${result.reviews.length}개의 리뷰를 성공적으로 수집했습니다.`,
-            reviewsCount: result.reviews.length,
-            insightsCount: result.analysis?.insights?.length || 0,
-            selectedService: selectedService,
-            selectedChannels: selectedChannels,
-            sources: validatedData.sources
-          });
+          console.log("Crawler completed successfully");
           
         } catch (parseError) {
-          console.error('JSON parse error:', parseError);
+          console.error('Crawler output processing error:', parseError);
           res.status(500).json({
-            error: "Failed to parse scraper output",
-            message: "수집 결과 처리 중 오류가 발생했습니다."
+            error: "Failed to process crawler output",
+            message: "크롤러 출력 처리 중 오류가 발생했습니다."
           });
         }
       });
