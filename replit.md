@@ -189,6 +189,9 @@ Changelog:
 - July 11, 2025. Enhanced sentiment analysis with rule_flagged_negative function for explicit negative indicators ("단점", "아쉬운 점", "불편한 점", "불만", "싫은 점")
 - July 11, 2025. Implemented negative priority rule: when both "단점" and "장점" are present in a review, negative sentiment takes priority
 - July 11, 2025. Added NLTK library for enhanced natural language processing capabilities
+- July 11, 2025. Implemented hybrid sentiment analysis system with transformer-based KcELECTRA model support and rule-based fallback
+- July 11, 2025. Added analyze_review_sentiment_transformer function for advanced sentence-level sentiment analysis
+- July 11, 2025. Configured system to use transformers when available, gracefully falling back to rule-based analysis
 - July 11, 2025. Confirmed complete system functionality: 519 reviews collected successfully, proper date filtering, AI analysis generation, and word cloud display
 
 ## User Preferences

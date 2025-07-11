@@ -27,7 +27,7 @@ except ImportError:
 # NLTK for enhanced sentiment analysis
 try:
     import nltk
-    from nltk.tokenize import word_tokenize
+    from nltk.tokenize import word_tokenize, sent_tokenize
     from nltk.corpus import stopwords
     NLTK_AVAILABLE = True
     
@@ -38,12 +38,37 @@ try:
         nltk.download('punkt', quiet=True)
     
     try:
+        nltk.data.find('tokenizers/punkt_tab')
+    except LookupError:
+        nltk.download('punkt_tab', quiet=True)
+    
+    try:
         nltk.data.find('corpora/stopwords')
     except LookupError:
         nltk.download('stopwords', quiet=True)
         
 except ImportError:
     NLTK_AVAILABLE = False
+
+# Transformer-based sentiment analysis
+try:
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
+    from transformers import pipeline
+    import torch
+    TRANSFORMER_AVAILABLE = True
+    
+    # Initialize Korean sentiment analysis model
+    MODEL_NAME = "beomi/KcELECTRA-base"
+    SENTIMENT_LABELS = {0: "negative", 1: "positive"}
+    
+    # Global variables for model (loaded once)
+    _sentiment_pipeline = None
+    _model_loaded = False
+    
+except ImportError:
+    TRANSFORMER_AVAILABLE = False
+    _sentiment_pipeline = None
+    _model_loaded = False
 
 def extract_korean_words_advanced(text_list, sentiment='positive', max_words=10):
     """
@@ -155,6 +180,94 @@ def rule_flagged_negative(text: str) -> bool:
     
     return has_negative
 
+def load_transformer_model():
+    """
+    Load the transformer model for sentiment analysis
+    """
+    global _sentiment_pipeline, _model_loaded
+    
+    if _model_loaded:
+        return _sentiment_pipeline
+    
+    if not TRANSFORMER_AVAILABLE:
+        return None
+        
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
+        _sentiment_pipeline = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer, return_all_scores=True)
+        _model_loaded = True
+        print(f"Loaded transformer model: {MODEL_NAME}", file=sys.stderr)
+        return _sentiment_pipeline
+    except Exception as e:
+        print(f"Error loading transformer model: {e}", file=sys.stderr)
+        return None
+
+def analyze_review_sentiment_transformer(text):
+    """
+    Advanced transformer-based sentiment analysis using KcELECTRA
+    
+    Args:
+        text: Review text content
+        
+    Returns:
+        Dictionary with sentiment analysis results
+    """
+    sentiment_pipeline = load_transformer_model()
+    
+    if not sentiment_pipeline or not NLTK_AVAILABLE:
+        # Fallback to rule-based analysis
+        sentiment = analyze_text_sentiment(text)
+        return {
+            "final_label": sentiment,
+            "score": {"positive": 1 if sentiment == "positive" else 0, "negative": 1 if sentiment == "negative" else 0},
+            "total_sentences": 1,
+            "method": "rule_based"
+        }
+    
+    try:
+        # Split text into sentences
+        sentences = sent_tokenize(text)
+        scores = {"positive": 0, "negative": 0}
+        
+        for sentence in sentences:
+            if len(sentence.strip()) < 3:  # Skip very short sentences
+                continue
+                
+            preds = sentiment_pipeline(sentence)[0]
+            label_idx = int(torch.argmax(torch.tensor([p['score'] for p in preds])))
+            label = SENTIMENT_LABELS[label_idx]
+            scores[label] += 1
+        
+        total = scores["positive"] + scores["negative"]
+        if total == 0:
+            return {
+                "final_label": "positive",
+                "score": {"positive": 1, "negative": 0},
+                "total_sentences": 0,
+                "method": "transformer_default"
+            }
+        
+        negative_ratio = scores["negative"] / total
+        
+        return {
+            "final_label": "negative" if negative_ratio >= 0.4 else "positive",
+            "score": scores,
+            "total_sentences": total,
+            "method": "transformer"
+        }
+        
+    except Exception as e:
+        print(f"Error in transformer analysis: {e}", file=sys.stderr)
+        # Fallback to rule-based analysis
+        sentiment = analyze_text_sentiment(text)
+        return {
+            "final_label": sentiment,
+            "score": {"positive": 1 if sentiment == "positive" else 0, "negative": 1 if sentiment == "negative" else 0},
+            "total_sentences": 1,
+            "method": "rule_based_fallback"
+        }
+
 def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
     """
     Check if review is negative based on section analysis
@@ -181,8 +294,8 @@ def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
 
 def analyze_text_sentiment(text):
     """
-    Korean text-based sentiment analysis
-    Analyzes review content to determine sentiment regardless of star ratings
+    Hybrid Korean text-based sentiment analysis
+    Uses transformer-based analysis when available, falls back to rule-based analysis
     
     Args:
         text: Review text content
@@ -203,6 +316,15 @@ def analyze_text_sentiment(text):
     # Rule-based negative detection for explicit negative sections
     if rule_flagged_negative(text):
         return "negative"
+    
+    # Try transformer-based analysis first
+    if TRANSFORMER_AVAILABLE and len(text) > 10:
+        try:
+            transformer_result = analyze_review_sentiment_transformer(text)
+            return transformer_result["final_label"]
+        except Exception as e:
+            print(f"Transformer analysis failed, using rule-based: {e}", file=sys.stderr)
+            # Continue to rule-based analysis
     
     # Refined negative keywords focusing on specific app issues
     strong_negative_keywords = [
