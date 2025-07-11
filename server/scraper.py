@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 import re
 from service_data import get_service_keywords, get_service_info
 from naver_api import search_naver, extract_text_from_html
+import os
 
 # Enhanced Korean text processing
 try:
@@ -69,6 +70,72 @@ except ImportError:
     TRANSFORMER_AVAILABLE = False
     _sentiment_pipeline = None
     _model_loaded = False
+
+def analyze_sentiment_with_gpt(text):
+    """
+    Analyze sentiment using GPT API via TypeScript endpoint
+    
+    Args:
+        text: Review text content
+        
+    Returns:
+        String: '긍정', '부정', or '중립'
+    """
+    try:
+        # Make request to local GPT sentiment analysis endpoint
+        response = requests.post(
+            'http://localhost:5000/api/gpt-sentiment',
+            json={'text': text},
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            sentiment = result.get('sentiment', '중립')
+            print(f"GPT sentiment analysis: {sentiment} for text: {text[:50]}...", file=sys.stderr)
+            return sentiment
+        else:
+            print(f"GPT API error: {response.status_code} - {response.text}", file=sys.stderr)
+            return analyze_text_sentiment_fallback(text)
+    except Exception as e:
+        print(f"GPT sentiment analysis error: {e}", file=sys.stderr)
+        return analyze_text_sentiment_fallback(text)
+
+def analyze_text_sentiment_fallback(text):
+    """
+    Fallback sentiment analysis using keyword-based approach
+    """
+    if not text or not isinstance(text, str):
+        return "중립"
+    
+    content = text.lower()
+    
+    # Priority rule: Any review containing '불편' is automatically negative
+    if '불편' in content:
+        return "부정"
+    
+    # Enhanced negative keywords
+    negative_keywords = [
+        '안됨', '안되네', '못하', '안해', '실패', '에러', '오류', '버그', '문제', '고장',
+        '느려', '느림', '답답', '짜증', '화남', '실망', '최악', '별로', '구려', '형편없'
+    ]
+    
+    # Positive keywords  
+    positive_keywords = [
+        '좋아', '좋네', '좋음', '훌륭', '최고', '대박', '완벽', '멋져', '예쁘', '이쁘',
+        '편리', '편해', '쉬워', '간단', '빠름', '빨라', '만족', '추천', '감사', '고마워'
+    ]
+    
+    negative_count = sum(1 for keyword in negative_keywords if keyword in content)
+    positive_count = sum(1 for keyword in positive_keywords if keyword in content)
+    
+    if negative_count > positive_count:
+        return "부정"
+    elif positive_count > negative_count:
+        return "긍정"
+    else:
+        return "중립"
 
 def extract_korean_words_advanced(text_list, sentiment='positive', max_words=10):
     """
@@ -310,7 +377,33 @@ def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
 
 def analyze_text_sentiment(text):
     """
-    Enhanced three-way Korean sentiment analysis (positive, negative, neutral)
+    Enhanced three-way Korean sentiment analysis (긍정, 부정, 중립)
+    Uses GPT-based analysis as primary method with fallback to rule-based analysis
+    
+    Args:
+        text: Review text content
+        
+    Returns:
+        String: '긍정', '부정', or '중립'
+    """
+    if not text or not isinstance(text, str):
+        return "중립"  # Default to neutral for empty/invalid text
+    
+    # Use GPT as primary sentiment analysis method
+    try:
+        gpt_result = analyze_sentiment_with_gpt(text)
+        if gpt_result in ['긍정', '부정', '중립']:
+            return gpt_result
+        else:
+            print(f"GPT returned unexpected result: {gpt_result}, using fallback", file=sys.stderr)
+            return analyze_text_sentiment_fallback(text)
+    except Exception as e:
+        print(f"GPT analysis failed: {e}, using fallback", file=sys.stderr)
+        return analyze_text_sentiment_fallback(text)
+
+def analyze_text_sentiment_original(text):
+    """
+    Original enhanced three-way Korean sentiment analysis (positive, negative, neutral)
     Uses transformer-based analysis when available, falls back to rule-based analysis
     
     Args:
@@ -658,7 +751,7 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100):
                 processed_review = {
                     'userId': f"블로거{i+1}",
                     'source': 'naver_blog',
-                    'rating': 4 if sentiment == 'positive' else 2,
+                    'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length
                     'sentiment': sentiment,
                     'createdAt': created_at,
@@ -738,7 +831,7 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
                 processed_review = {
                     'userId': f"카페회원{i+1}",
                     'source': 'naver_cafe',
-                    'rating': 4 if sentiment == 'positive' else 2,
+                    'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length
                     'sentiment': sentiment,
                     'createdAt': created_at,
@@ -817,9 +910,10 @@ def analyze_sentiments(reviews):
         review['sentiment'] = analyze_text_sentiment(review['content'])
     
     # Debug: Print text-based sentiment analysis results
-    text_based_negative = sum(1 for r in reviews if r['sentiment'] == 'negative')
-    text_based_positive = sum(1 for r in reviews if r['sentiment'] == 'positive')
-    print(f"Text-based sentiment analysis: {text_based_positive} positive, {text_based_negative} negative", file=sys.stderr)
+    text_based_negative = sum(1 for r in reviews if r['sentiment'] == '부정')
+    text_based_positive = sum(1 for r in reviews if r['sentiment'] == '긍정')
+    text_based_neutral = sum(1 for r in reviews if r['sentiment'] == '중립')
+    print(f"GPT-based sentiment analysis: {text_based_positive} 긍정, {text_based_negative} 부정, {text_based_neutral} 중립", file=sys.stderr)
     
     # HEART framework analysis with detailed issue tracking
     heart_analysis = {
@@ -1097,8 +1191,8 @@ def analyze_sentiments(reviews):
     insights = insights[:5]
     
     # Enhanced Korean word frequency analysis using advanced processing
-    positive_texts = [r['content'] for r in reviews if r.get('sentiment') == 'positive']
-    negative_texts = [r['content'] for r in reviews if r.get('sentiment') == 'negative']
+    positive_texts = [r['content'] for r in reviews if r.get('sentiment') == '긍정']
+    negative_texts = [r['content'] for r in reviews if r.get('sentiment') == '부정']
     
     # Use advanced Korean processing to extract meaningful words
     positive_cloud = extract_korean_words_advanced(positive_texts, 'positive', 10)

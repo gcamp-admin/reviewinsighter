@@ -5,6 +5,7 @@ import { z } from "zod";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { analyzeReviewSentimentWithGPT } from "./openai_analysis";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -410,6 +411,27 @@ print(json.dumps(result, ensure_ascii=False))
     } catch (error) {
       console.error("Error in analyze endpoint:", error);
       res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  // GPT Sentiment Analysis endpoint
+  app.post("/api/gpt-sentiment", async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text || typeof text !== 'string') {
+        return res.status(400).json({ error: "Text is required" });
+      }
+      
+      const sentiment = await analyzeReviewSentimentWithGPT(text);
+      
+      res.json({
+        sentiment: sentiment,
+        text: text
+      });
+    } catch (error) {
+      console.error('GPT sentiment analysis error:', error);
+      res.status(500).json({ error: "Failed to analyze sentiment" });
     }
   });
 

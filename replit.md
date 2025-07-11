@@ -202,6 +202,10 @@ Changelog:
 - July 11, 2025. Added future date validation for end date selection - users cannot select dates after today for analysis
 - July 11, 2025. Implemented comprehensive date validation with visual indicators (red borders) and error messages
 - July 11, 2025. Enhanced both frontend and backend validation to prevent future date selection with appropriate user feedback
+- July 11, 2025. Completed GPT-based sentiment analysis implementation replacing keyword-based approach with OpenAI GPT-4 integration
+- July 11, 2025. Created TypeScript endpoint for GPT sentiment analysis and integrated with Python scraper for real-time processing
+- July 11, 2025. Updated entire codebase to use Korean sentiment labels (긍정/부정/중립) consistently throughout the system
+- July 11, 2025. Successfully tested GPT sentiment analysis with Korean review text showing accurate classification results
 
 ## User Preferences
 
