@@ -184,6 +184,10 @@ Changelog:
 - July 11, 2025. Refined negative keywords list to focus on specific app issues including "뜨거움", "방해", "없음", "차단 안", "과열", "거슬림" for more targeted sentiment detection
 - July 11, 2025. Replaced emoji icons with professional React Font Awesome icons in statistics overview and review list components for better visual consistency
 - July 11, 2025. Redesigned review filter UI layout into clean, responsive 4-row structure with proper mobile responsiveness and professional icon integration
+- July 11, 2025. Fixed critical date parsing issue in Naver API results (YYYYMMDD format converted to proper ISO Date objects)
+- July 11, 2025. Restored AI analysis sections (워드클라우드, HEART 분석) with proper conditional display based on review collection status
+- July 11, 2025. Enhanced sentiment analysis with rule_flagged_negative function for explicit negative indicators ("단점", "아쉬운 점", "불편한 점", "불만", "싫은 점")
+- July 11, 2025. Confirmed complete system functionality: 519 reviews collected successfully, proper date filtering, AI analysis generation, and word cloud display
 
 ## User Preferences
 

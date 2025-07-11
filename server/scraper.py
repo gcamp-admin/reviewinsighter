@@ -112,6 +112,18 @@ def extract_korean_words_basic(text_list, sentiment='positive', max_words=10):
     
     return result
 
+def rule_flagged_negative(text: str) -> bool:
+    """
+    Rule-based negative review detection for explicit negative sections
+    
+    Args:
+        text: Review text content
+        
+    Returns:
+        Boolean indicating if review contains explicit negative indicators
+    """
+    return any(term in text.lower() for term in ["단점", "아쉬운 점", "불편한 점", "불만", "싫은 점"])
+
 def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
     """
     Check if review is negative based on section analysis
@@ -155,6 +167,10 @@ def analyze_text_sentiment(text):
     
     # Priority rule: Any review containing '불편' is automatically negative
     if '불편' in content:
+        return "negative"
+    
+    # Rule-based negative detection for explicit negative sections
+    if rule_flagged_negative(text):
         return "negative"
     
     # Refined negative keywords focusing on specific app issues
