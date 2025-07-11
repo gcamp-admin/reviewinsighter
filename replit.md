@@ -237,6 +237,11 @@ Changelog:
 - July 11, 2025. Implemented user ID extraction system for Naver Blog and Cafe reviews to capture actual blogger IDs and cafe names
 - July 11, 2025. Enhanced Naver API integration to extract user IDs from blog URLs (blog.naver.com/USERNAME) and cafe URLs (cafe.naver.com/CAFENAME)
 - July 11, 2025. Added debugging logs to track extracted user IDs during review collection for better monitoring
+- July 11, 2025. Completely replaced word cloud with interactive keyword bubble chart featuring center line separation
+- July 11, 2025. Implemented three-tier sentiment visualization: positive keywords above center line, negative below, neutral on center line
+- July 11, 2025. Added keyword network graph showing co-occurrence relationships between keywords with force-directed layout
+- July 11, 2025. Enhanced backend API to support neutral sentiment classification (중립) for comprehensive three-way analysis
+- July 11, 2025. Created KeywordNetwork component displaying keyword relationships with edge-node visualization and sentiment-based coloring
 
 ## User Preferences
 

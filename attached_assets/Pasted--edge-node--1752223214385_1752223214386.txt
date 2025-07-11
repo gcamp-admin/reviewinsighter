@@ -1,0 +1,88 @@
+감정워드 클라우드 아래 블럭에
+공동 언급 관계(네트워크) 를 보여주고싶어
+
+키워드 간 동시 언급되는 관계를 간단한 네트워크 그래프(edge–node)로 보여주면, 어떤 키워드들이 서로 연관이 깊은지 한눈에 드러납니다.
+
+# ─── 설치 ───────────────────────────────────────
+!pip install networkx plotly
+
+# ─── 임포트 ─────────────────────────────────────
+import networkx as nx
+import plotly.graph_objects as go
+
+# ─── 공동 언급 데이터 (엣지 목록) ───────────────
+edges = [
+    ("Great UX", "Fast"),
+    ("Fast", "Reliable"),
+    ("Fast", "Intuitive"),
+    ("Reliable", "Intuitive"),
+    ("Loved It", "Great UX"),
+    ("Slow", "Bugs"),
+    ("Bugs", "Crashes"),
+    ("Confusing", "Slow"),
+    ("Poor UI", "Confusing")
+]
+
+# ─── 네트워크 그래프 생성 ──────────────────────
+G = nx.Graph()
+G.add_edges_from(edges)
+
+# 위치 계산 (spring layout: 연결 강도 기반)
+pos = nx.spring_layout(G, seed=42)
+
+# ─── 노드와 엣지 정보 추출 ─────────────────────
+edge_x = []
+edge_y = []
+for edge in G.edges():
+    x0, y0 = pos[edge[0]]
+    x1, y1 = pos[edge[1]]
+    edge_x += [x0, x1, None]
+    edge_y += [y0, y1, None]
+
+# 엣지 그리기
+edge_trace = go.Scatter(
+    x=edge_x, y=edge_y,
+    line=dict(width=1, color="#888"),
+    hoverinfo='none',
+    mode='lines'
+)
+
+# 노드 그리기
+node_x = []
+node_y = []
+node_text = []
+for node in G.nodes():
+    x, y = pos[node]
+    node_x.append(x)
+    node_y.append(y)
+    node_text.append(node)
+
+node_trace = go.Scatter(
+    x=node_x, y=node_y,
+    text=node_text,
+    mode='markers+text',
+    textposition="top center",
+    hoverinfo='text',
+    marker=dict(
+        showscale=False,
+        size=30,
+        color="#FF6F61",  # 전체 노드 컬러 설정
+        line_width=2
+    )
+)
+
+# ─── 레이아웃 설정 및 출력 ──────────────────────
+fig = go.Figure(data=[edge_trace, node_trace],
+    layout=go.Layout(
+        title='Keyword Co-occurrence Network',
+        titlefont_size=20,
+        showlegend=False,
+        hovermode='closest',
+        margin=dict(b=20,l=5,r=5,t=40),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        plot_bgcolor="white"
+    )
+)
+
+fig.show()

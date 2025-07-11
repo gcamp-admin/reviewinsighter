@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import type { WordCloudData, ReviewFilters } from "@/types";
 import { useEffect, useRef } from "react";
+import KeywordNetwork from "./keyword-network";
 
 interface WordCloudProps {
   filters: ReviewFilters;
@@ -308,24 +309,36 @@ export default function WordCloud({ filters }: WordCloudProps) {
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>키워드 버블차트</CardTitle>
-        <CardDescription>
-          긍정 키워드({positiveWords?.length || 0}개) • 부정 키워드({negativeWords?.length || 0}개) • 중립 키워드({neutralWords?.length || 0}개)
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {positiveLoading || negativeLoading || neutralLoading ? (
-          <div className="bg-gray-50 p-8 rounded-lg min-h-[400px] flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
-            <p className="text-lg text-blue-600 font-semibold mb-2">키워드 분석 중...</p>
-            <p className="text-sm text-gray-600">리뷰에서 핵심 키워드를 추출하고 있습니다</p>
-          </div>
-        ) : (
-          renderBubbleChart(positiveWords || [], negativeWords || [], neutralWords || [])
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>키워드 버블차트</CardTitle>
+          <CardDescription>
+            긍정 키워드({positiveWords?.length || 0}개) • 부정 키워드({negativeWords?.length || 0}개) • 중립 키워드({neutralWords?.length || 0}개)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {positiveLoading || negativeLoading || neutralLoading ? (
+            <div className="bg-gray-50 p-8 rounded-lg min-h-[400px] flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+              <p className="text-lg text-blue-600 font-semibold mb-2">키워드 분석 중...</p>
+              <p className="text-sm text-gray-600">리뷰에서 핵심 키워드를 추출하고 있습니다</p>
+            </div>
+          ) : (
+            renderBubbleChart(positiveWords || [], negativeWords || [], neutralWords || [])
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* 키워드 네트워크 섹션 */}
+      {!positiveLoading && !negativeLoading && !neutralLoading && hasData && (
+        <KeywordNetwork 
+          positiveWords={positiveWords || []}
+          negativeWords={negativeWords || []}
+          neutralWords={neutralWords || []}
+          filters={filters}
+        />
+      )}
+    </div>
   );
 }
