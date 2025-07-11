@@ -132,26 +132,26 @@ export default function WordCloud({ filters }: WordCloudProps) {
     
     const maxFreq = Math.max(...words.map(w => w.frequency));
     const svgWidth = 800;
-    const svgHeight = 400;
+    const svgHeight = 500;
     const centerY = svgHeight / 2;
     
     return words.slice(0, 10).map((word, index) => {
       const size = getBubbleSize(word.frequency, maxFreq);
       
-      // Random horizontal position with some spacing
-      const x = Math.random() * (svgWidth - size.width) + size.width / 2;
+      // Better horizontal positioning with spacing
+      const x = 100 + (index * 1.5) * (svgWidth - 200) / Math.max(words.length - 1, 1);
       
-      // Position based on sentiment
+      // Position based on sentiment (similar to Plotly example)
       let y;
       if (sentiment === "positive") {
-        // Above center line (top half)
-        y = Math.random() * (centerY - size.height - 20) + size.height / 2 + 20;
+        // Above center line, higher frequency words go higher
+        y = centerY - 80 - (word.frequency / maxFreq) * 80;
       } else if (sentiment === "negative") {
-        // Below center line (bottom half)
-        y = Math.random() * (centerY - size.height - 20) + centerY + 20 + size.height / 2;
+        // Below center line, higher frequency words go lower
+        y = centerY + 80 + (word.frequency / maxFreq) * 80;
       } else {
-        // Neutral - on the center line
-        y = centerY + (Math.random() - 0.5) * 20; // Small variation around center line
+        // Neutral - near center line with slight variation
+        y = centerY + (word.frequency / maxFreq) * 20 - 10;
       }
       
       return {
@@ -177,61 +177,93 @@ export default function WordCloud({ filters }: WordCloudProps) {
     const neutralBubbles = generateBubblePositions(neutralWords || [], "neutral");
     
     const svgWidth = 800;
-    const svgHeight = 400;
+    const svgHeight = 500;
     const centerY = svgHeight / 2;
 
     return (
       <div className="w-full overflow-x-auto">
-        <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="border border-gray-200 rounded-lg bg-gray-50">
+        <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="border border-gray-200 rounded-lg" style={{ backgroundColor: '#2C3E50' }}>
+          {/* Gradient definitions */}
+          <defs>
+            <linearGradient id="positiveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: '#4ECDC4', stopOpacity: 0.9 }} />
+              <stop offset="100%" style={{ stopColor: '#44A08D', stopOpacity: 0.9 }} />
+            </linearGradient>
+            <linearGradient id="negativeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: '#FF6B6B', stopOpacity: 0.9 }} />
+              <stop offset="100%" style={{ stopColor: '#EE5A6F', stopOpacity: 0.9 }} />
+            </linearGradient>
+            <linearGradient id="neutralGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: '#95A5A6', stopOpacity: 0.9 }} />
+              <stop offset="100%" style={{ stopColor: '#7F8C8D', stopOpacity: 0.9 }} />
+            </linearGradient>
+          </defs>
+          
+          {/* Title */}
+          <text x={svgWidth / 2} y={30} textAnchor="middle" className="fill-white text-xl font-bold" style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}>
+            감정 기반 키워드 버블 차트
+          </text>
+          
           {/* Center dividing line */}
           <line
-            x1={0}
+            x1={50}
             y1={centerY}
-            x2={svgWidth}
+            x2={svgWidth - 50}
             y2={centerY}
-            stroke="#6B7280"
+            stroke="rgba(52, 152, 219, 0.7)"
             strokeWidth="2"
-            strokeDasharray="5,5"
+            strokeDasharray="8,4"
           />
           
           {/* Positive label */}
-          <text x={20} y={30} className="text-sm font-medium fill-green-600">
+          <text x={60} y={centerY - 100} className="fill-white text-sm font-medium" style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}>
             긍정 키워드
           </text>
           
           {/* Neutral label */}
-          <text x={20} y={centerY - 5} className="text-sm font-medium fill-gray-600">
+          <text x={60} y={centerY - 10} className="fill-white text-sm font-medium" style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}>
             중립 키워드
           </text>
           
           {/* Negative label */}
-          <text x={20} y={svgHeight - 10} className="text-sm font-medium fill-red-600">
+          <text x={60} y={centerY + 120} className="fill-white text-sm font-medium" style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}>
             부정 키워드
           </text>
           
           {/* Positive bubbles */}
           {positiveBubbles.map((bubble, index) => (
             <g key={`positive-${bubble.id}`}>
-              <ellipse
+              <circle
                 cx={bubble.x}
                 cy={bubble.y}
-                rx={bubble.width / 2}
-                ry={bubble.height / 2}
-                fill="#10B981"
-                fillOpacity="0.2"
-                stroke="#10B981"
+                r={Math.max(bubble.width, bubble.height) / 2}
+                fill="url(#positiveGradient)"
+                stroke="rgba(255,255,255,0.4)"
                 strokeWidth="2"
-                className="hover:fill-opacity-30 transition-all cursor-pointer"
+                className="hover:stroke-white transition-all cursor-pointer"
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
               />
               <text
                 x={bubble.x}
-                y={bubble.y}
+                y={bubble.y - 5}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fontSize={bubble.fontSize}
-                className="fill-green-700 font-medium pointer-events-none"
+                className="fill-white font-medium pointer-events-none"
+                style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}
               >
                 {bubble.word}
+              </text>
+              <text
+                x={bubble.x}
+                y={bubble.y + 10}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={10}
+                className="fill-white pointer-events-none"
+                style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}
+              >
+                {bubble.frequency}회
               </text>
             </g>
           ))}
@@ -239,26 +271,37 @@ export default function WordCloud({ filters }: WordCloudProps) {
           {/* Neutral bubbles */}
           {neutralBubbles.map((bubble, index) => (
             <g key={`neutral-${bubble.id}`}>
-              <ellipse
+              <circle
                 cx={bubble.x}
                 cy={bubble.y}
-                rx={bubble.width / 2}
-                ry={bubble.height / 2}
-                fill="#6B7280"
-                fillOpacity="0.2"
-                stroke="#6B7280"
+                r={Math.max(bubble.width, bubble.height) / 2}
+                fill="url(#neutralGradient)"
+                stroke="rgba(255,255,255,0.4)"
                 strokeWidth="2"
-                className="hover:fill-opacity-30 transition-all cursor-pointer"
+                className="hover:stroke-white transition-all cursor-pointer"
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
               />
               <text
                 x={bubble.x}
-                y={bubble.y}
+                y={bubble.y - 5}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fontSize={bubble.fontSize}
-                className="fill-gray-700 font-medium pointer-events-none"
+                className="fill-white font-medium pointer-events-none"
+                style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}
               >
                 {bubble.word}
+              </text>
+              <text
+                x={bubble.x}
+                y={bubble.y + 10}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={10}
+                className="fill-white pointer-events-none"
+                style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}
+              >
+                {bubble.frequency}회
               </text>
             </g>
           ))}
@@ -266,26 +309,37 @@ export default function WordCloud({ filters }: WordCloudProps) {
           {/* Negative bubbles */}
           {negativeBubbles.map((bubble, index) => (
             <g key={`negative-${bubble.id}`}>
-              <ellipse
+              <circle
                 cx={bubble.x}
                 cy={bubble.y}
-                rx={bubble.width / 2}
-                ry={bubble.height / 2}
-                fill="#EF4444"
-                fillOpacity="0.2"
-                stroke="#EF4444"
+                r={Math.max(bubble.width, bubble.height) / 2}
+                fill="url(#negativeGradient)"
+                stroke="rgba(255,255,255,0.4)"
                 strokeWidth="2"
-                className="hover:fill-opacity-30 transition-all cursor-pointer"
+                className="hover:stroke-white transition-all cursor-pointer"
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
               />
               <text
                 x={bubble.x}
-                y={bubble.y}
+                y={bubble.y - 5}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fontSize={bubble.fontSize}
-                className="fill-red-700 font-medium pointer-events-none"
+                className="fill-white font-medium pointer-events-none"
+                style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}
               >
                 {bubble.word}
+              </text>
+              <text
+                x={bubble.x}
+                y={bubble.y + 10}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={10}
+                className="fill-white pointer-events-none"
+                style={{ fontFamily: 'Arial, Malgun Gothic, sans-serif' }}
+              >
+                {bubble.frequency}회
               </text>
             </g>
           ))}

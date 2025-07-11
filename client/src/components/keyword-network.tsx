@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useRef, useState } from "react";
 import type { WordCloudData, ReviewFilters } from "@/types";
+import { Badge } from "@/components/ui/badge";
 
 interface KeywordNetworkProps {
   positiveWords: WordCloudData[];
@@ -24,22 +25,33 @@ interface NetworkEdge {
   weight: number;
 }
 
+interface ClusterInsight {
+  cluster: string[];
+  theme: string;
+  actionPoint: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
 export default function KeywordNetwork({ positiveWords, negativeWords, neutralWords, filters }: KeywordNetworkProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [nodes, setNodes] = useState<NetworkNode[]>([]);
   const [edges, setEdges] = useState<NetworkEdge[]>([]);
+  const [clusterInsights, setClusterInsights] = useState<ClusterInsight[]>([]);
 
-  // 키워드 간 공동 언급 관계를 계산하는 함수
-  const calculateCooccurrence = (allWords: WordCloudData[]) => {
-    // 실제로는 리뷰 데이터에서 키워드 공동 언급을 분석해야 하지만,
-    // 현재는 키워드 빈도를 기반으로 연관성을 추정합니다.
+  // 부정 키워드 중심 네트워크 분석
+  const analyzeNegativeKeywordNetwork = (negativeWords: WordCloudData[], positiveWords: WordCloudData[], neutralWords: WordCloudData[]) => {
     const networkNodes: NetworkNode[] = [];
     const networkEdges: NetworkEdge[] = [];
     
-    // 상위 빈도 키워드만 네트워크에 포함
-    const topWords = allWords.slice(0, 8);
+    // 1. 부정 키워드 우선 추출 (상위 6개)
+    const topNegative = negativeWords.slice(0, 6);
+    // 2. 관련성 높은 긍정/중립 키워드 추가 (상위 2개씩)
+    const topPositive = positiveWords.slice(0, 2);
+    const topNeutral = neutralWords.slice(0, 2);
     
-    topWords.forEach((word, index) => {
+    const allWords = [...topNegative, ...topPositive, ...topNeutral];
+    
+    allWords.forEach((word, index) => {
       networkNodes.push({
         id: word.word,
         word: word.word,
@@ -50,20 +62,24 @@ export default function KeywordNetwork({ positiveWords, negativeWords, neutralWo
       });
     });
 
-    // 키워드 간 연결 생성 (빈도 기반 연관성)
-    for (let i = 0; i < topWords.length; i++) {
-      for (let j = i + 1; j < topWords.length; j++) {
-        const word1 = topWords[i];
-        const word2 = topWords[j];
+    // 3. 네트워크 구조 분석 - 부정 키워드 간 연결 우선
+    for (let i = 0; i < allWords.length; i++) {
+      for (let j = i + 1; j < allWords.length; j++) {
+        const word1 = allWords[i];
+        const word2 = allWords[j];
         
-        // 같은 감정 카테고리의 키워드들은 더 강한 연결을 가짐
         let weight = Math.min(word1.frequency, word2.frequency);
         
-        if (word1.sentiment === word2.sentiment) {
-          weight *= 1.5; // 같은 감정 카테고리 보너스
+        // 부정-부정 연결 강화
+        if (word1.sentiment === '부정' && word2.sentiment === '부정') {
+          weight *= 2.0;
+        }
+        // 부정-긍정/중립 연결 (대조 분석)
+        else if ((word1.sentiment === '부정' && word2.sentiment !== '부정') || 
+                 (word1.sentiment !== '부정' && word2.sentiment === '부정')) {
+          weight *= 1.2;
         }
         
-        // 최소 연결 강도를 가진 경우만 엣지 생성
         if (weight >= 1) {
           networkEdges.push({
             source: word1.word,
@@ -147,15 +163,82 @@ export default function KeywordNetwork({ positiveWords, negativeWords, neutralWo
     return nodes;
   };
 
-  useEffect(() => {
-    const allWords = [...(positiveWords || []), ...(negativeWords || []), ...(neutralWords || [])];
+  // 4. 클러스터별 인사이트 생성
+  const generateClusterInsights = (nodes: NetworkNode[], edges: NetworkEdge[]) => {
+    const insights: ClusterInsight[] = [];
     
-    if (allWords.length > 0) {
-      const { nodes: networkNodes, edges: networkEdges } = calculateCooccurrence(allWords);
+    // 부정 키워드 클러스터 분석
+    const negativeNodes = nodes.filter(n => n.sentiment === '부정');
+    const negativeConnections = edges.filter(e => 
+      negativeNodes.some(n => n.id === e.source) && 
+      negativeNodes.some(n => n.id === e.target)
+    );
+    
+    if (negativeNodes.length >= 2) {
+      const negativeCluster = negativeNodes.map(n => n.word);
+      let theme = "";
+      let actionPoint = "";
+      let priority: 'high' | 'medium' | 'low' = 'medium';
+      
+      // 클러스터 테마 분석
+      if (negativeCluster.some(w => ['통화', '전화', '연결'].includes(w))) {
+        theme = "통화 기능 문제";
+        actionPoint = "통화 연결 안정성 개선 및 VoIP 서버 최적화 필요";
+        priority = 'high';
+      } else if (negativeCluster.some(w => ['어플', '앱', '기능'].includes(w))) {
+        theme = "앱 기능 이슈";
+        actionPoint = "핵심 기능 안정성 강화 및 사용성 개선 요구됨";
+        priority = 'high';
+      } else if (negativeCluster.some(w => ['블루투스', '연결', '호환'].includes(w))) {
+        theme = "호환성 문제";
+        actionPoint = "외부 기기 연동 호환성 테스트 및 개선 필요";
+        priority = 'medium';
+      } else {
+        theme = "사용자 경험 개선";
+        actionPoint = "사용자 피드백 기반 UX 개선 및 기능 최적화";
+        priority = 'medium';
+      }
+      
+      insights.push({
+        cluster: negativeCluster,
+        theme,
+        actionPoint,
+        priority
+      });
+    }
+    
+    // 혼합 클러스터 분석 (부정-긍정 대조)
+    const mixedEdges = edges.filter(e => {
+      const sourceNode = nodes.find(n => n.id === e.source);
+      const targetNode = nodes.find(n => n.id === e.target);
+      return sourceNode && targetNode && sourceNode.sentiment !== targetNode.sentiment;
+    });
+    
+    if (mixedEdges.length > 0) {
+      insights.push({
+        cluster: mixedEdges.map(e => `${e.source}-${e.target}`),
+        theme: "감정 대조 분석",
+        actionPoint: "긍정 요소 강화하여 부정 요소 상쇄 전략 수립",
+        priority: 'medium'
+      });
+    }
+    
+    return insights;
+  };
+
+  useEffect(() => {
+    if (negativeWords.length > 0) {
+      const { nodes: networkNodes, edges: networkEdges } = analyzeNegativeKeywordNetwork(
+        negativeWords, 
+        positiveWords || [], 
+        neutralWords || []
+      );
       const layoutNodes = calculateLayout(networkNodes, networkEdges);
+      const insights = generateClusterInsights(layoutNodes, networkEdges);
       
       setNodes(layoutNodes);
       setEdges(networkEdges);
+      setClusterInsights(insights);
     }
   }, [positiveWords, negativeWords, neutralWords]);
 
@@ -193,99 +276,133 @@ export default function KeywordNetwork({ positiveWords, negativeWords, neutralWo
   const svgHeight = 400;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>키워드 연관성 네트워크</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full overflow-x-auto">
-          <svg 
-            ref={svgRef}
-            width={svgWidth} 
-            height={svgHeight} 
-            viewBox={`0 0 ${svgWidth} ${svgHeight}`} 
-            className="border border-gray-200 rounded-lg bg-white"
-          >
-            {/* 엣지 그리기 */}
-            {edges.map((edge, index) => {
-              const sourceNode = nodes.find(n => n.id === edge.source);
-              const targetNode = nodes.find(n => n.id === edge.target);
-              
-              if (!sourceNode || !targetNode) return null;
-              
-              return (
-                <line
-                  key={`edge-${index}`}
-                  x1={sourceNode.x}
-                  y1={sourceNode.y}
-                  x2={targetNode.x}
-                  y2={targetNode.y}
-                  stroke="#CBD5E0"
-                  strokeWidth={Math.max(1, edge.weight / 2)}
-                  strokeOpacity={0.6}
-                />
-              );
-            })}
-            
-            {/* 노드 그리기 */}
-            {nodes.map((node, index) => {
-              const nodeSize = getNodeSize(node.frequency, maxFreq);
-              const color = getSentimentColor(node.sentiment);
-              
-              return (
-                <g key={`node-${index}`}>
-                  <circle
-                    cx={node.x}
-                    cy={node.y}
-                    r={nodeSize}
-                    fill={color}
-                    fillOpacity={0.8}
-                    stroke={color}
-                    strokeWidth={2}
-                    className="hover:fill-opacity-90 transition-all cursor-pointer"
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>키워드 연관성 네트워크</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full overflow-x-auto">
+            <svg 
+              ref={svgRef}
+              width={svgWidth} 
+              height={svgHeight} 
+              viewBox={`0 0 ${svgWidth} ${svgHeight}`} 
+              className="border border-gray-200 rounded-lg bg-white"
+            >
+              {/* 엣지 그리기 */}
+              {edges.map((edge, index) => {
+                const sourceNode = nodes.find(n => n.id === edge.source);
+                const targetNode = nodes.find(n => n.id === edge.target);
+                
+                if (!sourceNode || !targetNode) return null;
+                
+                // 부정-부정 연결 강조
+                const isNegativeConnection = sourceNode.sentiment === '부정' && targetNode.sentiment === '부정';
+                
+                return (
+                  <line
+                    key={`edge-${index}`}
+                    x1={sourceNode.x}
+                    y1={sourceNode.y}
+                    x2={targetNode.x}
+                    y2={targetNode.y}
+                    stroke={isNegativeConnection ? "#EF4444" : "#CBD5E0"}
+                    strokeWidth={Math.max(1, edge.weight / 2)}
+                    strokeOpacity={isNegativeConnection ? 0.8 : 0.6}
                   />
-                  <text
-                    x={node.x}
-                    y={node.y - nodeSize - 5}
-                    textAnchor="middle"
-                    fontSize={12}
-                    className="fill-gray-700 font-medium pointer-events-none"
-                  >
-                    {node.word}
-                  </text>
-                  <text
-                    x={node.x}
-                    y={node.y + 3}
-                    textAnchor="middle"
-                    fontSize={10}
-                    className="fill-white font-medium pointer-events-none"
-                  >
-                    {node.frequency}
-                  </text>
-                </g>
-              );
-            })}
-            
-            {/* 범례 */}
-            <g transform="translate(20, 20)">
-              <text x={0} y={0} fontSize={12} className="fill-gray-600 font-medium">
-                키워드 연관성
-              </text>
-              <circle cx={0} cy={20} r={8} fill="#10B981" />
-              <text x={15} y={25} fontSize={10} className="fill-gray-600">긍정</text>
-              <circle cx={60} cy={20} r={8} fill="#EF4444" />
-              <text x={75} y={25} fontSize={10} className="fill-gray-600">부정</text>
-              <circle cx={120} cy={20} r={8} fill="#6B7280" />
-              <text x={135} y={25} fontSize={10} className="fill-gray-600">중립</text>
-            </g>
-          </svg>
-        </div>
-        <div className="mt-4 text-sm text-gray-600">
-          <p>• 노드 크기: 키워드 언급 빈도</p>
-          <p>• 연결선 굵기: 키워드 간 연관성 강도</p>
-          <p>• 색상: 감정 분류 (긍정, 부정, 중립)</p>
-        </div>
-      </CardContent>
-    </Card>
+                );
+              })}
+              
+              {/* 노드 그리기 */}
+              {nodes.map((node, index) => {
+                const nodeSize = getNodeSize(node.frequency, maxFreq);
+                const color = getSentimentColor(node.sentiment);
+                
+                return (
+                  <g key={`node-${index}`}>
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeSize}
+                      fill={color}
+                      fillOpacity={0.8}
+                      stroke={color}
+                      strokeWidth={2}
+                      className="hover:fill-opacity-90 transition-all cursor-pointer"
+                    />
+                    <text
+                      x={node.x}
+                      y={node.y - nodeSize - 5}
+                      textAnchor="middle"
+                      fontSize={12}
+                      className="fill-gray-700 font-medium pointer-events-none"
+                    >
+                      {node.word}
+                    </text>
+                    <text
+                      x={node.x}
+                      y={node.y + 3}
+                      textAnchor="middle"
+                      fontSize={10}
+                      className="fill-white font-medium pointer-events-none"
+                    >
+                      {node.frequency}
+                    </text>
+                  </g>
+                );
+              })}
+              
+              {/* 범례 */}
+              <g transform="translate(20, 20)">
+                <text x={0} y={0} fontSize={12} className="fill-gray-600 font-medium">
+                  부정 키워드 중심 분석
+                </text>
+                <circle cx={0} cy={20} r={8} fill="#10B981" />
+                <text x={15} y={25} fontSize={10} className="fill-gray-600">긍정</text>
+                <circle cx={60} cy={20} r={8} fill="#EF4444" />
+                <text x={75} y={25} fontSize={10} className="fill-gray-600">부정</text>
+                <circle cx={120} cy={20} r={8} fill="#6B7280" />
+                <text x={135} y={25} fontSize={10} className="fill-gray-600">중립</text>
+              </g>
+            </svg>
+          </div>
+          <div className="mt-4 text-sm text-gray-600">
+            <p>• 부정 키워드 간 연결 강조 (빨간 선)</p>
+            <p>• 노드 크기: 키워드 언급 빈도</p>
+            <p>• 연결선 굵기: 키워드 간 연관성 강도</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 5. 액션포인트 요약 */}
+      {clusterInsights.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>클러스터 인사이트 & 액션포인트</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {clusterInsights.map((insight, index) => (
+                <div key={index} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">{insight.theme}</h4>
+                    <Badge variant={insight.priority === 'high' ? 'destructive' : 'secondary'}>
+                      {insight.priority === 'high' ? '높음' : '보통'}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    <strong>관련 키워드:</strong> {insight.cluster.join(', ')}
+                  </p>
+                  <p className="text-sm text-gray-700 font-medium">
+                    {insight.actionPoint}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

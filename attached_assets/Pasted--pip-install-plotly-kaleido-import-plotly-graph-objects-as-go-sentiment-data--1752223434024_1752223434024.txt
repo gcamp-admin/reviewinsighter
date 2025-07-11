@@ -1,0 +1,86 @@
+!pip install plotly kaleido
+
+import plotly.graph_objects as go
+
+# 키워드 데이터 (예시)
+sentiment_data = [
+    {"word": "짜증", "count": 5, "type": "negative"},
+    {"word": "삭제", "count": 3, "type": "negative"},
+    {"word": "추천", "count": 4, "type": "positive"},
+    {"word": "좋아요", "count": 4, "type": "positive"},
+    {"word": "보통", "count": 2, "type": "neutral"},
+]
+
+# 위치 설정: 긍정은 위, 부정은 아래, 중립은 중앙 근처
+def get_position(item, idx, total):
+    x = (idx + 1) * 1.5
+    if item["type"] == "positive":
+        y = 3 + (item["count"] * 0.2)
+    elif item["type"] == "negative":
+        y = -3 - (item["count"] * 0.2)
+    else:
+        y = 0 + (item["count"] * 0.1)
+    return x, y
+
+# 컬러 매핑 (HTML 스타일 그라데이션 느낌 반영)
+def get_color(sentiment):
+    if sentiment == "positive":
+        return "rgba(78,205,196,0.9)"  # #4ECDC4
+    elif sentiment == "negative":
+        return "rgba(255,107,107,0.9)"  # #FF6B6B
+    else:
+        return "rgba(149,165,166,0.9)"  # #95a5a6
+
+# 버블 그리기
+bubbles = []
+for i, item in enumerate(sentiment_data):
+    x, y = get_position(item, i, len(sentiment_data))
+    size = 30 + item["count"] * 10
+    color = get_color(item["type"])
+    
+    bubbles.append(go.Scatter(
+        x=[x], y=[y],
+        mode='markers+text',
+        text=[f"{item['word']}<br>{item['count']}회"],
+        textposition='middle center',
+        marker=dict(
+            size=size,
+            color=color,
+            line=dict(color='rgba(255,255,255,0.4)', width=2),
+            sizemode='diameter',
+            opacity=0.9
+        ),
+        textfont=dict(
+            size=12,
+            color='white',
+            family='Arial, Malgun Gothic, sans-serif'
+        ),
+        hoverinfo='text'
+    ))
+
+# 중앙선
+center_line = go.Scatter(
+    x=[0, 10],
+    y=[0, 0],
+    mode='lines',
+    line=dict(color='rgba(52, 152, 219, 0.7)', width=2, dash='dot'),
+    hoverinfo='skip',
+    showlegend=False
+)
+
+# 레이아웃
+layout = go.Layout(
+    title='감정 기반 키워드 버블 차트',
+    title_font=dict(size=22, color='white'),
+    plot_bgcolor='#2c3e50',
+    paper_bgcolor='#2c3e50',
+    xaxis=dict(showgrid=False, zeroline=False, visible=False),
+    yaxis=dict(showgrid=False, zeroline=False, visible=False),
+    margin=dict(l=20, r=20, t=50, b=20),
+    height=600
+)
+
+# 최종 시각화
+fig = go.Figure(data=[center_line] + bubbles, layout=layout)
+fig.write_image("bubble_chart.png")
+fig.show()
