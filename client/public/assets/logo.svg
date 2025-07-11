@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 944 273" width="944" height="273">
+  <!-- Green circular background for mascot -->
+  <circle cx="136" cy="136" r="103" fill="#7FE5B8"/>
+  
+  <!-- Mascot glasses -->
+  <g transform="translate(77, 87)">
+    <!-- Left lens -->
+    <circle cx="30" cy="20" r="20" fill="none" stroke="#1A1A1A" stroke-width="8"/>
+    <circle cx="30" cy="20" r="13" fill="none" stroke="#1A1A1A" stroke-width="4"/>
+    
+    <!-- Right lens -->
+    <circle cx="90" cy="20" r="20" fill="none" stroke="#1A1A1A" stroke-width="8"/>
+    <circle cx="90" cy="20" r="13" fill="none" stroke="#1A1A1A" stroke-width="4"/>
+    
+    <!-- Bridge -->
+    <path d="M50 15 L70 15" stroke="#1A1A1A" stroke-width="6" fill="none"/>
+    
+    <!-- Left temple -->
+    <path d="M10 20 L5 18" stroke="#1A1A1A" stroke-width="6" fill="none"/>
+    
+    <!-- Right temple -->
+    <path d="M110 20 L115 18" stroke="#1A1A1A" stroke-width="6" fill="none"/>
+  </g>
+  
+  <!-- Mascot smile -->
+  <path d="M106 165 Q136 185 166 165" fill="none" stroke="#1A1A1A" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Speech bubble tail -->
+  <path d="M70 200 L50 230 L90 220 Z" fill="#7FE5B8"/>
+  
+  <!-- Text: commento.ai -->
+  <text x="280" y="170" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="#1A1A1A">
+    commento.ai
+  </text>
+</svg>
