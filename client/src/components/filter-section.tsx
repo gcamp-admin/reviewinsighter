@@ -250,19 +250,16 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           <CardTitle className="text-lg bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             리뷰 수집 필터
           </CardTitle>
-          <div className="flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-600 transition-colors duration-300 cursor-pointer group">
-            <Filter className="w-4 h-4 group-hover:scale-110 transform transition-transform duration-300" />
-            <span className="group-hover:font-medium transition-all duration-300">필터 설정</span>
-          </div>
+
         </div>
         <CardDescription className="text-gray-600">
           스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Row 1: Service Selection */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label className="text-sm font-medium">서비스 선택 <span className="text-red-500">*</span></Label>
             <Select
               value={localFilters.service?.id || ""}
@@ -291,9 +288,9 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           </div>
 
           {/* Row 2: Store Selection (Checkboxes) */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label className="text-sm font-medium">수집 채널 선택 <span className="text-red-500">*</span></Label>
-            <div className="flex flex-wrap gap-4 sm:gap-6">
+            <div className="flex flex-wrap gap-3 sm:gap-4">
               <div className="flex items-center space-x-2 group">
                 <Checkbox 
                   id="google-play"
@@ -342,13 +339,13 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           </div>
 
           {/* Row 3: Date Range */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Label className="text-sm font-medium">수집 기간 선택</Label>
               <span className="text-xs text-amber-600">(최대 31일)</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
                 <Label htmlFor="date-from" className="text-sm text-gray-600">시작 날짜 <span className="text-red-500">*</span></Label>
                 <Input
                   id="date-from"
@@ -359,7 +356,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                   placeholder="분석 시작 날짜를 선택하세요"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="date-to" className="text-sm text-gray-600">종료 날짜 <span className="text-red-500">*</span></Label>
                 <Input
                   id="date-to"
@@ -394,7 +391,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || hasDateRangeError}
-              className="w-full bg-gradient-to-r from-[#7CF3C4] to-[#5DE3A8] hover:from-[#6BE3B5] hover:to-[#4CD499] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+              className="w-full bg-gradient-to-r from-[#7CF3C4] to-[#5DE3A8] hover:from-[#6BE3B5] hover:to-[#4CD499] text-black px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {collectReviewsMutation.isPending ? (

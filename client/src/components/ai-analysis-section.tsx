@@ -157,12 +157,12 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center space-y-3">
           <div className="flex gap-4 w-full max-w-2xl">
             <Button 
               onClick={() => handleComprehensiveAnalysis()}
               disabled={comprehensiveAnalysisMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
-              className="flex-1 bg-gradient-to-r from-[#7CF3C4] to-[#5DE3A8] hover:from-[#6BE3B5] hover:to-[#4CD499] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+              className="flex-1 bg-gradient-to-r from-[#7CF3C4] to-[#5DE3A8] hover:from-[#6BE3B5] hover:to-[#4CD499] text-black px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {comprehensiveAnalysisMutation.isPending ? (
