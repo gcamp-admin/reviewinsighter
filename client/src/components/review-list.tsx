@@ -349,6 +349,11 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
           ))}
         </div>
         
+        {/* AI Analysis Disclaimer */}
+        <div className="mt-4 mb-6 px-4 py-2 text-xs text-gray-500 bg-gray-50 rounded-md">
+          ※ 본 리뷰의 감정 분석은 HuggingFace 기반 AI 모델로 자동 처리되며, 일부 결과에는 오차가 포함될 수 있습니다.
+        </div>
+
         {/* Pagination */}
         <div className="flex items-center justify-between mt-6 pt-4 border-t">
           <div className="text-sm text-gray-500">
