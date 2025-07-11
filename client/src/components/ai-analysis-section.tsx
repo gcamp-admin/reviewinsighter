@@ -272,7 +272,7 @@ export default function AIAnalysisSection({ filters }: AIAnalysisSectionProps) {
             </div>
           )}
           
-          {hasAnalyzed && analyzeReviewsMutation.isSuccess && (
+          {(hasAnalyzedWordCloud || hasAnalyzedHeart) && (analyzeWordCloudMutation.isSuccess || analyzeHeartMutation.isSuccess) && (
             <p className="text-center text-sm text-green-600 font-medium">
               ✅ AI 분석이 완료되었습니다. 아래에서 결과를 확인하세요.
             </p>

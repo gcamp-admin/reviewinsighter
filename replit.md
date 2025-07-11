@@ -214,6 +214,10 @@ Changelog:
 - July 11, 2025. Enhanced filtering system to process only service-relevant reviews before GPT analysis
 - July 11, 2025. Optimized token usage by reducing prompt size and limiting max_tokens to minimum required (5 tokens)
 - July 11, 2025. Added deterministic temperature setting (0) to ensure consistent results and enable effective caching
+- July 11, 2025. Separated AI analysis into two distinct buttons: "감정 워드클라우드" and "HEART 프레임워크 분석"
+- July 11, 2025. Each button now performs independent analysis - wordcloud generates only word frequency data, HEART generates only UX insights
+- July 11, 2025. Enhanced backend API to handle analysisType parameter and execute targeted analysis based on button selection
+- July 11, 2025. Added visual differentiation with green gradient for wordcloud button and purple gradient for HEART button
 
 ## User Preferences
 
