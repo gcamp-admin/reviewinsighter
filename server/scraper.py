@@ -135,7 +135,7 @@ def analyze_sentiment_with_gpt(text):
 
 def analyze_text_sentiment_fallback(text):
     """
-    Fallback sentiment analysis using keyword-based approach
+    Enhanced rule-based sentiment analysis with comprehensive Korean patterns
     """
     if not text or not isinstance(text, str):
         return "중립"
@@ -158,25 +158,50 @@ def analyze_text_sentiment_fallback(text):
     if '불편' in content:
         return "부정"
     
-    # Enhanced negative keywords
-    negative_keywords = [
-        '안됨', '안되네', '못하', '안해', '실패', '에러', '오류', '버그', '문제', '고장',
-        '느려', '느림', '답답', '짜증', '화남', '실망', '최악', '별로', '구려', '형편없'
+    # Strong negative keywords (high confidence)
+    strong_negative_keywords = [
+        '최악', '형편없', '별로', '짜증', '화남', '실망', '못하겠', '삭제',
+        '에러', '오류', '버그', '문제', '고장', '먹통', '렉', '끊김', '느려', '답답',
+        '구려', '나쁨', '싫어', '불만', '아쉬운', '단점', '불편', '거슬림', '과열'
     ]
     
-    # Positive keywords  
-    positive_keywords = [
-        '좋아', '좋네', '좋음', '훌륭', '최고', '대박', '완벽', '멋져', '예쁘', '이쁘',
-        '편리', '편해', '쉬워', '간단', '빠름', '빨라', '만족', '추천', '감사', '고마워'
+    # Strong positive keywords (high confidence)
+    strong_positive_keywords = [
+        '최고', '대박', '완벽', '훌륭', '멋져', '좋아', '좋네', '좋음', '편리', '편해',
+        '만족', '추천', '감사', '고마워', '유용', '도움', '빠름', '빨라', '쉬워', '간단',
+        '훌륭', '예쁘', '이쁘', '굿', '베스트', '최고급', '뛰어난', '인상적'
     ]
     
-    negative_count = sum(1 for keyword in negative_keywords if keyword in content)
-    positive_count = sum(1 for keyword in positive_keywords if keyword in content)
+    # Moderate keywords (medium confidence)
+    moderate_negative_keywords = [
+        '못하', '안해', '실패', '느림', '복잡', '어렵', '힘들', '귀찮', '스트레스',
+        '렉', '튕김', '멈춤', '종료', '재시작', '작동안함', '실행안됨'
+    ]
     
-    if negative_count > positive_count:
+    moderate_positive_keywords = [
+        '괜찮', '나쁘지않', '적당', '쓸만', '보통이상', '해볼만', '괜찮네', '나름',
+        '쓸만해', '적당해', '보통', '평범', '무난'
+    ]
+    
+    # Count occurrences
+    strong_negative_count = sum(1 for keyword in strong_negative_keywords if keyword in content)
+    strong_positive_count = sum(1 for keyword in strong_positive_keywords if keyword in content)
+    moderate_negative_count = sum(1 for keyword in moderate_negative_keywords if keyword in content)
+    moderate_positive_count = sum(1 for keyword in moderate_positive_keywords if keyword in content)
+    
+    # Calculate weighted scores
+    negative_score = strong_negative_count * 3 + moderate_negative_count * 1
+    positive_score = strong_positive_count * 3 + moderate_positive_count * 1
+    
+    # Determine sentiment based on weighted scores
+    if negative_score >= 3 or (negative_score >= 1 and positive_score == 0):
         return "부정"
-    elif positive_count > negative_count:
+    elif positive_score >= 3 or (positive_score >= 1 and negative_score == 0):
         return "긍정"
+    elif positive_score > negative_score:
+        return "긍정"
+    elif negative_score > positive_score:
+        return "부정"
     else:
         return "중립"
 
@@ -503,7 +528,7 @@ def is_negative_review_by_sections(text: str, negative_keywords: list) -> bool:
 def analyze_text_sentiment(text):
     """
     Enhanced three-way Korean sentiment analysis (긍정, 부정, 중립)
-    Uses GPT-based analysis as primary method with fallback to rule-based analysis
+    Uses rule-based analysis as primary method for faster and more reliable results
     
     Args:
         text: Review text content
@@ -514,17 +539,14 @@ def analyze_text_sentiment(text):
     if not text or not isinstance(text, str):
         return "중립"  # Default to neutral for empty/invalid text
     
-    # Use GPT as primary sentiment analysis method
+    # Use rule-based analysis as primary method for speed and reliability
     try:
-        gpt_result = analyze_sentiment_with_gpt(text)
-        if gpt_result in ['긍정', '부정', '중립']:
-            return gpt_result
-        else:
-            print(f"GPT returned unexpected result: {gpt_result}, using fallback", file=sys.stderr)
-            return analyze_text_sentiment_fallback(text)
+        rule_result = analyze_text_sentiment_fallback(text)
+        print(f"Rule-based sentiment: {rule_result} for text: {text[:50]}...", file=sys.stderr)
+        return rule_result
     except Exception as e:
-        print(f"GPT analysis failed: {e}, using fallback", file=sys.stderr)
-        return analyze_text_sentiment_fallback(text)
+        print(f"Rule-based analysis failed: {e}, defaulting to neutral", file=sys.stderr)
+        return "중립"
 
 def analyze_text_sentiment_original(text):
     """

@@ -227,56 +227,32 @@ ${negativeReviews.map((review, index) => `${index + 1}. ${review.content}`).join
 
 export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promise<('긍정' | '부정' | '중립')[]> {
   const results: ('긍정' | '부정' | '중립')[] = [];
-  const needsGPTAnalysis: { text: string; index: number }[] = [];
   
-  // Step 1: Process each review with cache and rule-based analysis
+  console.log(`Processing ${reviewTexts.length} reviews for sentiment analysis`);
+  
+  // Process each review individually for better accuracy
   for (let i = 0; i < reviewTexts.length; i++) {
     const reviewText = reviewTexts[i];
-    const cacheKey = reviewText.trim().toLowerCase();
-    
-    // Check cache first
-    if (sentimentCache.has(cacheKey)) {
-      results[i] = sentimentCache.get(cacheKey)!;
-      continue;
-    }
-    
-    // Try rule-based analysis
-    const ruleBasedResult = tryRuleBasedAnalysis(reviewText);
-    if (ruleBasedResult) {
-      results[i] = ruleBasedResult;
-      sentimentCache.set(cacheKey, ruleBasedResult);
-      continue;
-    }
-    
-    // Add to GPT analysis queue
-    needsGPTAnalysis.push({ text: reviewText, index: i });
-  }
-  
-  // Step 2: Process remaining reviews with GPT in batches
-  if (needsGPTAnalysis.length > 0) {
-    console.log(`Processing ${needsGPTAnalysis.length} reviews with GPT (saved ${reviewTexts.length - needsGPTAnalysis.length} API calls)`);
-    
-    // Process in smaller batches to avoid rate limits
-    const batchSize = 5;
-    for (let i = 0; i < needsGPTAnalysis.length; i += batchSize) {
-      const batch = needsGPTAnalysis.slice(i, i + batchSize);
-      const batchPromises = batch.map(async (item) => {
-        const sentiment = await analyzeReviewSentimentWithGPT(item.text);
-        return { sentiment, index: item.index };
-      });
+    try {
+      const sentiment = await analyzeReviewSentimentWithGPT(reviewText);
+      results[i] = sentiment;
       
-      const batchResults = await Promise.all(batchPromises);
-      batchResults.forEach(({ sentiment, index }) => {
-        results[index] = sentiment;
-      });
-      
-      // Small delay between batches to avoid rate limiting
-      if (i + batchSize < needsGPTAnalysis.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+      // Log progress every 10 reviews
+      if ((i + 1) % 10 === 0) {
+        console.log(`Processed ${i + 1}/${reviewTexts.length} reviews`);
       }
+      
+      // Small delay to avoid rate limiting
+      if (i < reviewTexts.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+    } catch (error) {
+      console.error(`Error analyzing review ${i}: ${error}`);
+      results[i] = '중립'; // Default to neutral on error
     }
   }
   
+  console.log(`Batch sentiment analysis completed: ${results.length} results`);
   return results;
 }
 

@@ -285,7 +285,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get collected reviews from storage
             const { reviews: storedReviews } = await storage.getReviews(1, 1000);
             
-            // Return success response
+            // Update sentiment analysis for reviews using optimized batch processing
+            if (storedReviews.length > 0) {
+              try {
+                // Extract review texts for batch processing
+                const reviewTexts = storedReviews.map(review => review.content);
+                
+                // Call GPT batch sentiment analysis endpoint
+                const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment-batch', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    texts: reviewTexts
+                  })
+                });
+                
+                if (sentimentResponse.ok) {
+                  const sentimentData = await sentimentResponse.json();
+                  // Update reviews with sentiment analysis results
+                  for (let i = 0; i < storedReviews.length; i++) {
+                    const sentiment = sentimentData.sentiments[i];
+                    await storage.updateReview(storedReviews[i].id, { sentiment });
+                  }
+                  console.log(`Batch sentiment analysis completed for ${storedReviews.length} reviews`);
+                } else {
+                  console.error('Batch sentiment analysis failed, falling back to individual analysis');
+                  // Fallback to individual analysis
+                  for (const review of storedReviews) {
+                    try {
+                      const individualResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          text: review.content
+                        })
+                      });
+                      
+                      if (individualResponse.ok) {
+                        const sentimentData = await individualResponse.json();
+                        await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
+                      }
+                    } catch (error) {
+                      console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error('Batch sentiment analysis error:', error);
+              }
+            }
+            
+            // Return success response after sentiment analysis
             return res.json({
               success: true,
               message: `${reviewCount}개의 리뷰를 성공적으로 수집했습니다.`,
@@ -301,63 +355,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               message: "크롤링이 완료되지 않았습니다."
             });
           }
-          
-          // Update sentiment analysis for reviews using optimized batch processing
-          if (storedReviews.length > 0) {
-            try {
-              // Extract review texts for batch processing
-              const reviewTexts = storedReviews.map(review => review.content);
-              
-              // Call GPT batch sentiment analysis endpoint
-              const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment-batch', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  texts: reviewTexts
-                })
-              });
-              
-              if (sentimentResponse.ok) {
-                const sentimentData = await sentimentResponse.json();
-                // Update reviews with sentiment analysis results
-                for (let i = 0; i < storedReviews.length; i++) {
-                  const sentiment = sentimentData.sentiments[i];
-                  await storage.updateReview(storedReviews[i].id, { sentiment });
-                }
-                console.log(`Batch sentiment analysis completed for ${storedReviews.length} reviews`);
-              } else {
-                console.error('Batch sentiment analysis failed, falling back to individual analysis');
-                // Fallback to individual analysis
-                for (const review of storedReviews) {
-                  try {
-                    const individualResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        text: review.content
-                      })
-                    });
-                    
-                    if (individualResponse.ok) {
-                      const sentimentData = await individualResponse.json();
-                      await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
-                    }
-                  } catch (error) {
-                    console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
-                  }
-                }
-              }
-            } catch (error) {
-              console.error('Batch sentiment analysis error:', error);
-            }
-          }
-          
-          // Don't store insights and word cloud data from scraper
-          // They will be generated dynamically from the collected reviews
           
           console.log("Crawler completed successfully");
           
