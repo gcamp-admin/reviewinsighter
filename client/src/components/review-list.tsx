@@ -250,11 +250,11 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const endItem = Math.min(currentPage * limit, data.total);
 
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <span>리뷰 목록</span>
+            <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">리뷰 목록</span>
             <span className="text-sm text-muted-foreground">
               {data?.total ? `총 ${data.total}개` : ""}
             </span>
@@ -309,15 +309,15 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredReviews.map((review) => (
-            <div key={review.id} className="p-3 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
+            <div key={review.id} className="p-4 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md group">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3 text-sm">
-                  <span className="text-lg">{getSourceIcon(review.source)}</span>
-                  <span className="text-xs text-gray-500">{getSourceName(review.source)}</span>
-                  <span className="font-medium text-gray-900">{review.userId}</span>
-                  <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>
+                  <span className="text-lg group-hover:scale-110 transform transition-transform duration-300">{getSourceIcon(review.source)}</span>
+                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{getSourceName(review.source)}</span>
+                  <span className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors">{review.userId}</span>
+                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{formatDate(review.createdAt)}</span>
                   {/* Show rating for app stores only */}
                   {(review.source === "google_play" || review.source === "app_store") && (
                     <div className="flex items-center">
@@ -326,16 +326,18 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                     </div>
                   )}
                 </div>
-                {getSentimentBadge(review.sentiment)}
+                <div className="group-hover:scale-105 transform transition-transform duration-300">
+                  {getSentimentBadge(review.sentiment)}
+                </div>
               </div>
-              <div className="text-gray-700 text-sm leading-relaxed">
+              <div className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors">
                 {/* Check if review has url for external links */}
                 {(review as any).url ? (
                   <a 
                     href={(review as any).url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
+                    className="text-blue-600 hover:text-blue-800 underline hover:bg-blue-50 px-1 py-0.5 rounded transition-all duration-300"
                   >
                     {review.content.length > 100 ? review.content.slice(0, 100) + '...' : review.content}
                   </a>
@@ -350,7 +352,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
         
         {/* AI Analysis Disclaimer */}
-        <div className="mt-4 mb-6 px-4 py-2 text-xs text-gray-500 bg-gray-50 rounded-md">
+        <div className="mt-6 mb-6 px-4 py-3 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200 hover:border-blue-200 transition-all duration-300">
           ※ 본 리뷰의 감정 분석은 HuggingFace 기반 AI 모델로 자동 처리되며, 일부 결과에는 오차가 포함될 수 있습니다.
         </div>
 
@@ -366,6 +368,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              className="hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -377,7 +380,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   variant={currentPage === page ? "default" : "outline"}
                   size="sm"
                   onClick={() => onPageChange(page)}
-                  className={currentPage === page ? "bg-primary hover:bg-primary/90" : ""}
+                  className={currentPage === page ? "bg-primary hover:bg-primary/90" : "hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"}
                 >
                   {page}
                 </Button>
@@ -388,6 +391,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>

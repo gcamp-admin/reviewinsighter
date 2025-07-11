@@ -33,29 +33,45 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-korean">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-korean">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <FilterSection 
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onCollectionSuccess={handleCollectionSuccess}
-        />
-        
-        {hasCollectedReviews && <StatsOverview filters={filters} />}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+          <FilterSection 
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onCollectionSuccess={handleCollectionSuccess}
+          />
+        </div>
         
         {hasCollectedReviews && (
-          <ReviewList 
-            filters={filters}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-          />
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+            <StatsOverview filters={filters} />
+          </div>
         )}
         
-        {hasCollectedReviews && <AIAnalysisSection filters={filters} onAnalysisSuccess={handleAnalysisSuccess} />}
+        {hasCollectedReviews && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+            <ReviewList 
+              filters={filters}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
         
-        {hasCollectedReviews && activeAnalysisSection && <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} />}
+        {hasCollectedReviews && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+            <AIAnalysisSection filters={filters} onAnalysisSuccess={handleAnalysisSuccess} />
+          </div>
+        )}
+        
+        {hasCollectedReviews && activeAnalysisSection && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} />
+          </div>
+        )}
       </main>
     </div>
   );

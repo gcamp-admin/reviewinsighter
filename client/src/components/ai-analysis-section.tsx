@@ -182,13 +182,13 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
   }
 
   return (
-    <Card className="mb-8">
+    <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-lg flex items-center">
-          <Brain className="w-5 h-5 mr-2 text-purple-600" />
-          AI 분석
+          <Brain className="w-5 h-5 mr-2 text-purple-600 group-hover:scale-110 transform transition-transform duration-300" />
+          <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">AI 분석</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-600">
           수집된 {stats.total}개의 리뷰를 바탕으로 감정 워드클라우드 및 HEART 프레임워크 UX 개선 분석을 실행합니다
         </CardDescription>
       </CardHeader>
@@ -198,7 +198,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
             <Button 
               onClick={() => analyzeWordCloudMutation.mutate()}
               disabled={analyzeWordCloudMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
-              className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50"
+              className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {analyzeWordCloudMutation.isPending ? (
@@ -208,7 +208,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
                 </>
               ) : (
                 <>
-                  <MessageCircle className="w-5 h-5 mr-3" />
+                  <MessageCircle className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
                   감정 워드클라우드
                 </>
               )}
@@ -217,7 +217,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
             <Button 
               onClick={() => analyzeHeartMutation.mutate()}
               disabled={analyzeHeartMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {analyzeHeartMutation.isPending ? (
@@ -227,7 +227,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
                 </>
               ) : (
                 <>
-                  <TrendingUp className="w-5 h-5 mr-3" />
+                  <TrendingUp className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
                   HEART 프레임워크 분석
                 </>
               )}

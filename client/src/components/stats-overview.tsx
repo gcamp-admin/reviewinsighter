@@ -72,7 +72,7 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
     return (
       <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         {[...Array(5)].map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="hover:shadow-lg transition-all duration-300 animate-pulse">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
@@ -104,96 +104,96 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-      <Card>
+      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">총 리뷰 수</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total.toLocaleString()}</p>
+              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">총 리뷰 수</p>
+              <p className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{stats.total.toLocaleString()}</p>
               <div className="text-xs text-gray-400 mt-1 space-y-0.5">
                 {stats.countsBySource.googlePlay > 0 && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
                     <StoreIcon source="google_play" />
                     <span>구글플레이 {stats.countsBySource.googlePlay}건</span>
                   </div>
                 )}
                 {stats.countsBySource.appleStore > 0 && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 hover:text-gray-600 transition-colors">
                     <StoreIcon source="app_store" />
                     <span>애플앱스토어 {stats.countsBySource.appleStore}건</span>
                   </div>
                 )}
                 {stats.countsBySource.naverBlog > 0 && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
                     <StoreIcon source="naver_blog" />
                     <span>네이버블로그 {stats.countsBySource.naverBlog}건</span>
                   </div>
                 )}
                 {stats.countsBySource.naverCafe > 0 && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
                     <StoreIcon source="naver_cafe" />
                     <span>네이버카페 {stats.countsBySource.naverCafe}건</span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 group-hover:scale-110 transition-all duration-300">
               <MessageSquare className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">긍정 리뷰</p>
-              <p className="text-2xl font-bold text-green-600">{stats.positive.toLocaleString()}</p>
+              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">긍정 리뷰</p>
+              <p className="text-2xl font-bold text-green-600 group-hover:text-green-700 transition-colors">{stats.positive.toLocaleString()}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 group-hover:scale-110 transition-all duration-300">
               <ThumbsUp className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">부정 리뷰</p>
-              <p className="text-2xl font-bold text-red-600">{stats.negative.toLocaleString()}</p>
+              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">부정 리뷰</p>
+              <p className="text-2xl font-bold text-red-600 group-hover:text-red-700 transition-colors">{stats.negative.toLocaleString()}</p>
             </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 group-hover:scale-110 transition-all duration-300">
               <ThumbsDown className="w-6 h-6 text-red-600" />
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">중립 리뷰</p>
-              <p className="text-2xl font-bold text-gray-600">{stats.neutral?.toLocaleString() || 0}</p>
+              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">중립 리뷰</p>
+              <p className="text-2xl font-bold text-gray-600 group-hover:text-gray-700 transition-colors">{stats.neutral?.toLocaleString() || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 group-hover:scale-110 transition-all duration-300">
               <Minus className="w-6 h-6 text-gray-600" />
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">평균 평점</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.averageRating}</p>
+              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">평균 평점</p>
+              <p className="text-2xl font-bold text-yellow-600 group-hover:text-yellow-700 transition-colors">{stats.averageRating}</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 group-hover:scale-110 transition-all duration-300">
               <Star className="w-6 h-6 text-yellow-600" />
             </div>
           </div>

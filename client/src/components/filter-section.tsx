@@ -208,16 +208,20 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
   const hasDateRangeError = isDateRangeInvalid || isEndDateInFuture;
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
+    <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">리뷰 수집 필터</CardTitle>
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <Filter className="w-4 h-4" />
-            <span>필터 설정</span>
+          <CardTitle className="text-lg bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            리뷰 수집 필터
+          </CardTitle>
+          <div className="flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-600 transition-colors duration-300 cursor-pointer group">
+            <Filter className="w-4 h-4 group-hover:scale-110 transform transition-transform duration-300" />
+            <span className="group-hover:font-medium transition-all duration-300">필터 설정</span>
           </div>
         </div>
-        <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)</CardDescription>
+        <CardDescription className="text-gray-600">
+          스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-6">
@@ -254,47 +258,47 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           <div className="space-y-3">
             <Label className="text-sm font-medium">수집 채널 선택 <span className="text-red-500">*</span></Label>
             <div className="flex flex-wrap gap-4 sm:gap-6">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 group">
                 <Checkbox 
                   id="google-play"
                   checked={localFilters.source.includes("google_play")}
                   onCheckedChange={(checked) => handleSourceChange("google_play", checked as boolean)}
                 />
-                <Label htmlFor="google-play" className="flex items-center space-x-2 cursor-pointer">
-                  <FaGooglePlay className="w-4 h-4 text-green-600" />
+                <Label htmlFor="google-play" className="flex items-center space-x-2 cursor-pointer hover:text-green-600 transition-colors duration-300">
+                  <FaGooglePlay className="w-4 h-4 text-green-600 group-hover:scale-110 transform transition-transform duration-300" />
                   <span className="text-sm">Google Play Store</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 group">
                 <Checkbox 
                   id="app-store"
                   checked={localFilters.source.includes("app_store")}
                   onCheckedChange={(checked) => handleSourceChange("app_store", checked as boolean)}
                 />
-                <Label htmlFor="app-store" className="flex items-center space-x-2 cursor-pointer">
-                  <FaApple className="w-4 h-4 text-gray-600" />
+                <Label htmlFor="app-store" className="flex items-center space-x-2 cursor-pointer hover:text-gray-800 transition-colors duration-300">
+                  <FaApple className="w-4 h-4 text-gray-600 group-hover:scale-110 transform transition-transform duration-300" />
                   <span className="text-sm">Apple App Store</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 group">
                 <Checkbox 
                   id="naver-blog"
                   checked={localFilters.source.includes("naver_blog")}
                   onCheckedChange={(checked) => handleSourceChange("naver_blog", checked as boolean)}
                 />
-                <Label htmlFor="naver-blog" className="flex items-center space-x-2 cursor-pointer">
-                  <FaPenNib className="w-4 h-4 text-green-500" />
+                <Label htmlFor="naver-blog" className="flex items-center space-x-2 cursor-pointer hover:text-green-600 transition-colors duration-300">
+                  <FaPenNib className="w-4 h-4 text-green-500 group-hover:scale-110 transform transition-transform duration-300" />
                   <span className="text-sm">Naver Blog</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 group">
                 <Checkbox 
                   id="naver-cafe"
                   checked={localFilters.source.includes("naver_cafe")}
                   onCheckedChange={(checked) => handleSourceChange("naver_cafe", checked as boolean)}
                 />
-                <Label htmlFor="naver-cafe" className="flex items-center space-x-2 cursor-pointer">
-                  <FaMugHot className="w-4 h-4 text-blue-500" />
+                <Label htmlFor="naver-cafe" className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition-colors duration-300">
+                  <FaMugHot className="w-4 h-4 text-blue-500 group-hover:scale-110 transform transition-transform duration-300" />
                   <span className="text-sm">Naver Cafe</span>
                 </Label>
               </div>
@@ -346,7 +350,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || hasDateRangeError}
-              className="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {collectReviewsMutation.isPending ? (
@@ -356,7 +360,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 </>
               ) : (
                 <>
-                  <Search className="w-5 h-5 mr-3" />
+                  <Search className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
                   리뷰 수집
                 </>
               )}
