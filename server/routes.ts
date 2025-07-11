@@ -148,9 +148,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordcloud/:sentiment", async (req, res) => {
     try {
       const { sentiment } = req.params;
-      const validSentiments = ['positive', 'negative', '긍정', '부정'];
+      const validSentiments = ['positive', 'negative', 'neutral', '긍정', '부정', '중립'];
       if (!validSentiments.includes(sentiment)) {
-        return res.status(400).json({ error: "Invalid sentiment. Must be 'positive', 'negative', '긍정', or '부정'" });
+        return res.status(400).json({ error: "Invalid sentiment. Must be 'positive', 'negative', 'neutral', '긍정', '부정', or '중립'" });
       }
       
       // Handle source parameter (can be string or array)
