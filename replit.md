@@ -285,6 +285,11 @@ Changelog:
 - July 11, 2025. Improved both TypeScript and Python sentiment analysis with enhanced rule-based pre-filtering
 - July 11, 2025. Updated GPT system messages to emphasize careful reading of context, meaning, and user intent
 - July 11, 2025. Strengthened keyword understanding capabilities for more accurate sentiment classification
+- July 11, 2025. Completely restructured UI workflow - removed separate sentiment analysis buttons and created unified "코멘토에게 분석 요청하기" button
+- July 11, 2025. Implemented sequential analysis display - word cloud appears first, followed by HEART framework analysis in same view
+- July 11, 2025. Standardized button styling across application - both collection and analysis buttons now use brand color #7CF3C4
+- July 11, 2025. Enhanced comprehensive analysis system that performs both wordcloud and HEART analysis with single button click
+- July 11, 2025. Improved user experience with unified analysis workflow eliminating separate button confusion
 
 ## User Preferences
 

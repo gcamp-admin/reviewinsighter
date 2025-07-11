@@ -6,9 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 interface WordCloudAndInsightsProps {
   filters: ReviewFilters;
   activeSection: 'wordcloud' | 'heart';
+  showBoth?: boolean;
 }
 
-export default function WordCloudAndInsights({ filters, activeSection }: WordCloudAndInsightsProps) {
+export default function WordCloudAndInsights({ filters, activeSection, showBoth = false }: WordCloudAndInsightsProps) {
   // Check if there's any analysis data to show
   const { data: positiveWords } = useQuery({
     queryKey: ["/api/wordcloud/긍정", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
@@ -101,6 +102,24 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
   const hasInsightsData = insights && insights.length > 0;
 
   // Show content based on active section
+  if (showBoth) {
+    // 종합 분석 결과: 워드클라우드 먼저, 그 다음 HEART 분석
+    return (
+      <div className="grid grid-cols-1 gap-8">
+        {hasWordCloudData && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <WordCloud filters={filters} />
+          </div>
+        )}
+        {hasInsightsData && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+            <UxInsights filters={filters} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (activeSection === 'wordcloud') {
     if (!hasWordCloudData) {
       return null;

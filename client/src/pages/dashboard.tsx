@@ -28,8 +28,12 @@ export default function Dashboard() {
     setHasCollectedReviews(true);
   };
 
-  const handleAnalysisSuccess = (analysisType: 'wordcloud' | 'heart') => {
-    setActiveAnalysisSection(analysisType);
+  const handleAnalysisSuccess = (analysisType: 'wordcloud' | 'heart' | 'comprehensive') => {
+    if (analysisType === 'comprehensive') {
+      setActiveAnalysisSection('wordcloud'); // Show word cloud first, then insights
+    } else {
+      setActiveAnalysisSection(analysisType);
+    }
   };
 
   return (
@@ -69,7 +73,7 @@ export default function Dashboard() {
         
         {hasCollectedReviews && activeAnalysisSection && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} />
+            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} showBoth={true} />
           </div>
         )}
       </main>
