@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle } from "lucide-react";
+import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -200,11 +201,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         </div>
         <CardDescription>스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <div className="space-y-6">
-          {/* Service Selection */}
+          {/* Row 1: Service Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">서비스 선택 <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">Service Selection <span className="text-red-500">*</span></Label>
             <Select
               value={localFilters.service?.id || ""}
               onValueChange={(value) => {
@@ -218,7 +219,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 onFiltersChange(newFilters);
               }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full min-w-[300px]">
                 <SelectValue placeholder="서비스명을 선택하세요" />
               </SelectTrigger>
               <SelectContent>
@@ -231,81 +232,84 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Store Selection */}
+          {/* Row 2: Store Selection (Checkboxes) */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">스토어 선택 <span className="text-red-500">*</span></Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center space-x-3">
+            <Label className="text-sm font-medium">Store Selection <span className="text-red-500">*</span></Label>
+            <div className="flex flex-wrap gap-4 sm:gap-6">
+              <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="google-play"
                   checked={localFilters.source.includes("google_play")}
                   onCheckedChange={(checked) => handleSourceChange("google_play", checked as boolean)}
                 />
                 <Label htmlFor="google-play" className="flex items-center space-x-2 cursor-pointer">
-                  <Smartphone className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">구글 플레이스토어</span>
+                  <FaGooglePlay className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">Google Play Store</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="app-store"
                   checked={localFilters.source.includes("app_store")}
                   onCheckedChange={(checked) => handleSourceChange("app_store", checked as boolean)}
                 />
                 <Label htmlFor="app-store" className="flex items-center space-x-2 cursor-pointer">
-                  <Apple className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm">애플 앱스토어</span>
+                  <FaApple className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm">Apple App Store</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="naver-blog"
                   checked={localFilters.source.includes("naver_blog")}
                   onCheckedChange={(checked) => handleSourceChange("naver_blog", checked as boolean)}
                 />
                 <Label htmlFor="naver-blog" className="flex items-center space-x-2 cursor-pointer">
-                  <Globe className="w-4 h-4 text-green-500" />
-                  <span className="text-sm">네이버 블로그</span>
+                  <FaPenNib className="w-4 h-4 text-green-500" />
+                  <span className="text-sm">Naver Blog</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="naver-cafe"
                   checked={localFilters.source.includes("naver_cafe")}
                   onCheckedChange={(checked) => handleSourceChange("naver_cafe", checked as boolean)}
                 />
                 <Label htmlFor="naver-cafe" className="flex items-center space-x-2 cursor-pointer">
-                  <MessageCircle className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm">네이버 카페</span>
+                  <FaMugHot className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm">Naver Cafe</span>
                 </Label>
               </div>
             </div>
           </div>
 
-          {/* Date Range */}
+          {/* Row 3: Date Range */}
           <div className="space-y-3">
-            <Label htmlFor="date-from" className="text-sm font-medium">시작 날짜 <span className="text-red-500">*</span></Label>
-            <Input
-              id="date-from"
-              type="date"
-              value={formatDateForInput(localFilters.dateFrom)}
-              onChange={(e) => handleDateChange('dateFrom', e.target.value)}
-              className={`w-full ${isDateRangeInvalid ? 'border-red-500' : ''}`}
-              placeholder="분석 시작 날짜를 선택하세요"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="date-to" className="text-sm font-medium">종료 날짜 <span className="text-red-500">*</span></Label>
-            <Input
-              id="date-to"
-              type="date"
-              value={formatDateForInput(localFilters.dateTo)}
-              onChange={(e) => handleDateChange('dateTo', e.target.value)}
-              className={`w-full ${isDateRangeInvalid ? 'border-red-500' : ''}`}
-              placeholder="분석 종료 날짜를 선택하세요"
-            />
+            <Label className="text-sm font-medium">Date Range</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date-from" className="text-sm text-gray-600">Start Date <span className="text-red-500">*</span></Label>
+                <Input
+                  id="date-from"
+                  type="date"
+                  value={formatDateForInput(localFilters.dateFrom)}
+                  onChange={(e) => handleDateChange('dateFrom', e.target.value)}
+                  className={`w-full min-w-[200px] ${isDateRangeInvalid ? 'border-red-500' : ''}`}
+                  placeholder="분석 시작 날짜를 선택하세요"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date-to" className="text-sm text-gray-600">End Date <span className="text-red-500">*</span></Label>
+                <Input
+                  id="date-to"
+                  type="date"
+                  value={formatDateForInput(localFilters.dateTo)}
+                  onChange={(e) => handleDateChange('dateTo', e.target.value)}
+                  className={`w-full min-w-[200px] ${isDateRangeInvalid ? 'border-red-500' : ''}`}
+                  placeholder="분석 종료 날짜를 선택하세요"
+                />
+              </div>
+            </div>
             {isDateRangeInvalid && (
               <p className="text-xs text-red-500 mt-1">
                 ⚠️ 종료 날짜는 시작 날짜보다 뒤에 있어야 합니다
@@ -313,13 +317,12 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             )}
           </div>
 
-          {/* Review Collection Button - Moved to rightmost position */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">리뷰 수집</Label>
+          {/* Row 4: Review Collection Button */}
+          <div className="flex justify-end pt-2">
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || isDateRangeInvalid}
-              className="w-full bg-primary hover:bg-primary/90"
+              className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-md min-w-[120px]"
             >
               {collectReviewsMutation.isPending ? (
                 <>
@@ -333,30 +336,31 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 </>
               )}
             </Button>
+          </div>
+
+          {/* Error Messages */}
+          <div className="space-y-1">
             {!localFilters.service && (
-              <p className="text-xs text-red-500 mt-1">
+              <p className="text-xs text-red-500">
                 서비스를 먼저 선택해주세요
               </p>
             )}
             {localFilters.service && localFilters.source.length === 0 && (
-              <p className="text-xs text-red-500 mt-1">
+              <p className="text-xs text-red-500">
                 최소 하나의 스토어를 선택해주세요
               </p>
             )}
             {localFilters.service && localFilters.source.length > 0 && !localFilters.dateTo && (
-              <p className="text-xs text-red-500 mt-1">
+              <p className="text-xs text-red-500">
                 종료 날짜를 선택해주세요
               </p>
             )}
             {isDateRangeInvalid && (
-              <p className="text-xs text-red-500 mt-1">
+              <p className="text-xs text-red-500">
                 종료 날짜는 시작 날짜보다 뒤에 있어야 합니다
               </p>
             )}
-
           </div>
-        </div>
-
         </div>
       </CardContent>
     </Card>
