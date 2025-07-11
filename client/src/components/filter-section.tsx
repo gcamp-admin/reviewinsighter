@@ -205,7 +205,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         <div className="space-y-6">
           {/* Row 1: Service Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Service Selection <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">서비스 선택 <span className="text-red-500">*</span></Label>
             <Select
               value={localFilters.service?.id || ""}
               onValueChange={(value) => {
@@ -234,7 +234,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
 
           {/* Row 2: Store Selection (Checkboxes) */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Store Selection <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">수집 채널 선택 <span className="text-red-500">*</span></Label>
             <div className="flex flex-wrap gap-4 sm:gap-6">
               <div className="flex items-center space-x-2">
                 <Checkbox 
@@ -285,10 +285,10 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
 
           {/* Row 3: Date Range */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Date Range</Label>
+            <Label className="text-sm font-medium">수집 기간 선택</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date-from" className="text-sm text-gray-600">Start Date <span className="text-red-500">*</span></Label>
+                <Label htmlFor="date-from" className="text-sm text-gray-600">시작 날짜 <span className="text-red-500">*</span></Label>
                 <Input
                   id="date-from"
                   type="date"
@@ -299,7 +299,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="date-to" className="text-sm text-gray-600">End Date <span className="text-red-500">*</span></Label>
+                <Label htmlFor="date-to" className="text-sm text-gray-600">종료 날짜 <span className="text-red-500">*</span></Label>
                 <Input
                   id="date-to"
                   type="date"
