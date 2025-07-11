@@ -232,6 +232,8 @@ Changelog:
 - July 11, 2025. Updated AI analysis buttons with scale animations, enhanced gradients, and modern styling
 - July 11, 2025. Added comprehensive CSS framework with custom animations, shadows, and design utilities
 - July 11, 2025. Implemented professional Korean font (Noto Sans KR) and enhanced typography system
+- July 11, 2025. Replaced Noto Sans KR with LG Smart UI Font for better brand consistency and professional appearance
+- July 11, 2025. Applied LG Smart UI Font globally across all components and updated HTML meta tags for Korean language support
 - July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
 - July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
 - July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis
