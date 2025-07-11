@@ -319,7 +319,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   <span className="font-medium text-gray-900">{review.userId}</span>
                   <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>
                   {/* Show rating for app stores only */}
-                  {(review.source === "google_play" || review.source === "apple_store") && (
+                  {(review.source === "google_play" || review.source === "app_store") && (
                     <div className="flex items-center">
                       <span className="text-xs text-gray-500 mr-1">⭐</span>
                       <span className="text-xs text-gray-500">{review.rating}</span>
