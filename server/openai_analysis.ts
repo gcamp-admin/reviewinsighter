@@ -266,15 +266,25 @@ export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promis
       const batch = needsGPTAnalysis.slice(i, i + batchSize);
       
       try {
-        const prompt = `감정 분석: ${batch.map((item, idx) => `${idx + 1}. ${item.text}`).join('\n')}
-        
-응답 형식: {"sentiments": ["긍정", "부정", "중립"]}
-규칙: 안되/불편/문제→부정, 좋/만족/편리→긍정, 애매→중립`;
+        const prompt = `다음 리뷰들을 세심하게 분석하여 각각의 감정을 정확히 판단해주세요. 문맥과 맥락, 뉘앙스를 꼼꼼히 파악하여 분류하세요.
+
+분석 기준:
+- 문맥과 맥락을 종합적으로 고려하여 판단
+- 다음 키워드가 포함된 경우 반드시 부정으로 분류: 거절, 못하는, 안하는, 안돼는, 조치
+- 사용자의 실제 감정과 의도를 신중히 파악
+- 단순한 키워드 매칭이 아닌 전체적인 의미 해석
+- 단어와 키워드의 의미를 정확히 이해하여 분류
+
+리뷰 텍스트들:
+${batch.map((item, idx) => `${idx + 1}. ${item.text}`).join('\n')}
+
+각 리뷰를 천천히 읽고 분석한 후 JSON 형식으로 응답해주세요:
+{"sentiments": ["긍정", "부정", "중립", ...]}`;
 
         const response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "한국어 감정 분석 전문가. 빠르고 정확한 분류." },
+            { role: "system", content: "당신은 한국어 리뷰 감정 분석 전문가입니다. 리뷰의 문맥과 맥락을 세심하게 분석하여 사용자의 진짜 감정을 파악해주세요. 단순한 키워드 매칭이 아닌 전체적인 의미와 뉘앙스를 고려하여 정확히 분류해주세요." },
             { role: "user", content: prompt }
           ],
           max_tokens: 100,
@@ -381,7 +391,8 @@ function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | nu
   const priorityNegativePatterns = [
     '안되', '안돼', '안되어', '안되네', '안되요', '안됨', '안되고', '안되니', '안되는',
     '안되서', '안되면', '안되겠', '안되잖', '안되다', '안되나', '안되든', '안되었',
-    '안되지', '안되더', '안되는구나', '안되는데', '안되길래', '안되던데'
+    '안되지', '안되더', '안되는구나', '안되는데', '안되길래', '안되던데',
+    '거절', '못하는', '안하는', '안돼는', '조치' // 사용자 요청 키워드 추가
   ];
   
   // Check for priority negative patterns first

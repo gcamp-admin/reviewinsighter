@@ -280,6 +280,11 @@ Changelog:
 - July 11, 2025. Added keyword network graph showing co-occurrence relationships between keywords with force-directed layout
 - July 11, 2025. Enhanced backend API to support neutral sentiment classification (중립) for comprehensive three-way analysis
 - July 11, 2025. Created KeywordNetwork component displaying keyword relationships with edge-node visualization and sentiment-based coloring
+- July 11, 2025. Enhanced GPT sentiment analysis prompts with detailed contextual understanding and nuanced text analysis
+- July 11, 2025. Added comprehensive negative keyword detection including user-specified terms: 거절, 못하는, 안하는, 안돼는, 조치
+- July 11, 2025. Improved both TypeScript and Python sentiment analysis with enhanced rule-based pre-filtering
+- July 11, 2025. Updated GPT system messages to emphasize careful reading of context, meaning, and user intent
+- July 11, 2025. Strengthened keyword understanding capabilities for more accurate sentiment classification
 
 ## User Preferences
 

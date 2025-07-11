@@ -84,12 +84,12 @@ def analyze_text_sentiment_fast(text):
     content = text.lower()
     
     # Priority negative patterns
-    priority_negative = ['안되', '안돼', '안되어', '안되네', '안되요', '안됨']
+    priority_negative = ['안되', '안돼', '안되어', '안되네', '안되요', '안됨', '거절', '못하는', '안하는', '안돼는', '조치']
     if any(pattern in content for pattern in priority_negative):
         return '부정'
     
     # Strong negative indicators
-    strong_negative = ['최악', '형편없', '별로', '짜증', '실망', '불편', '문제', '오류', '버그', '끊김']
+    strong_negative = ['최악', '형편없', '별로', '짜증', '실망', '불편', '문제', '오류', '버그', '끊김', '귀찮', '스트레스', '힘들', '어렵', '복잡']
     # Strong positive indicators  
     strong_positive = ['최고', '좋아', '만족', '편리', '감사', '추천', '대박', '완벽', '훌륭']
     
