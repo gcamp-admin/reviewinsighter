@@ -11,7 +11,7 @@ interface WordCloudAndInsightsProps {
 export default function WordCloudAndInsights({ filters, activeSection }: WordCloudAndInsightsProps) {
   // Check if there's any analysis data to show
   const { data: positiveWords } = useQuery({
-    queryKey: ["/api/wordcloud/positive", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
+    queryKey: ["/api/wordcloud/긍정", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -28,7 +28,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/wordcloud/positive?${params}`);
+      const response = await fetch(`/api/wordcloud/긍정?${params}`);
       if (!response.ok) {
         throw new Error("Failed to fetch positive word cloud");
       }
@@ -38,7 +38,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
   });
 
   const { data: negativeWords } = useQuery({
-    queryKey: ["/api/wordcloud/negative", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
+    queryKey: ["/api/wordcloud/부정", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -55,7 +55,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/wordcloud/negative?${params}`);
+      const response = await fetch(`/api/wordcloud/부정?${params}`);
       if (!response.ok) {
         throw new Error("Failed to fetch negative word cloud");
       }

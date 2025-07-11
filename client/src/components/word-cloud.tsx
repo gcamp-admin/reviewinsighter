@@ -10,7 +10,7 @@ interface WordCloudProps {
 
 export default function WordCloud({ filters }: WordCloudProps) {
   const { data: positiveWords, isLoading: positiveLoading, error: positiveError } = useQuery<WordCloudData[]>({
-    queryKey: ["/api/wordcloud/positive", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryKey: ["/api/wordcloud/긍정", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -27,7 +27,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const url = `/api/wordcloud/positive?${params}`;
+      const url = `/api/wordcloud/긍정?${params}`;
       console.log("Fetching positive word cloud from:", url);
       
       const response = await fetch(url);
@@ -46,7 +46,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
   });
 
   const { data: negativeWords, isLoading: negativeLoading, error: negativeError } = useQuery<WordCloudData[]>({
-    queryKey: ["/api/wordcloud/negative", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
+    queryKey: ["/api/wordcloud/부정", filters?.service?.id, filters?.source, filters?.dateFrom, filters?.dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -63,7 +63,7 @@ export default function WordCloud({ filters }: WordCloudProps) {
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const url = `/api/wordcloud/negative?${params}`;
+      const url = `/api/wordcloud/부정?${params}`;
       console.log("Fetching negative word cloud from:", url);
       
       const response = await fetch(url);

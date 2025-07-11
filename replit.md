@@ -228,6 +228,10 @@ Changelog:
 - July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis
 - July 11, 2025. Enhanced sentiment analysis with highest priority rule: any review containing '안되' related words is automatically classified as negative
 - July 11, 2025. Updated both GPT-based and fallback sentiment analysis systems to ensure consistent negative classification for specific Korean negative expressions
+- July 11, 2025. Implemented GPT-4o-mini powered word cloud analysis replacing pattern matching with AI-based keyword extraction
+- July 11, 2025. Fixed frontend word cloud display issue by updating API calls to use Korean sentiment labels (긍정/부정) instead of English (positive/negative)
+- July 11, 2025. Successfully tested GPT word cloud analysis generating 10 positive and 10 negative keywords from actual review content
+- July 11, 2025. Word cloud analysis now provides contextually relevant Korean keywords extracted through AI analysis of user review text
 
 ## User Preferences
 
