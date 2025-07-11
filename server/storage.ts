@@ -8,6 +8,7 @@ export interface IStorage {
   getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }>;
   getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, neutral: number, averageRating: number }>;
   createReview(review: InsertReview): Promise<Review>;
+  updateReview(id: number, update: Partial<Review>): Promise<Review | undefined>;
   
   getInsights(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]>;
   createInsight(insight: InsertInsight): Promise<Insight>;
@@ -160,9 +161,9 @@ export class MemStorage implements IStorage {
       return { total: 0, positive: 0, negative: 0, neutral: 0, averageRating: 0, countsBySource };
     }
     
-    const positive = filteredReviews.filter(r => r.sentiment === "positive").length;
-    const negative = filteredReviews.filter(r => r.sentiment === "negative").length;
-    const neutral = filteredReviews.filter(r => r.sentiment === "neutral").length;
+    const positive = filteredReviews.filter(r => r.sentiment === "긍정").length;
+    const negative = filteredReviews.filter(r => r.sentiment === "부정").length;
+    const neutral = filteredReviews.filter(r => r.sentiment === "중립").length;
     const averageRating = filteredReviews.reduce((sum, r) => sum + r.rating, 0) / total;
 
     return { total, positive, negative, neutral, averageRating: Math.round(averageRating * 10) / 10, countsBySource };
@@ -192,6 +193,18 @@ export class MemStorage implements IStorage {
     this.reviews.set(id, review);
     console.log(`Created review ${id}: ${review.userId} - ${review.content.substring(0, 50)}...`);
     return review;
+  }
+
+  async updateReview(id: number, update: Partial<Review>): Promise<Review | undefined> {
+    const review = this.reviews.get(id);
+    if (!review) {
+      return undefined;
+    }
+    
+    const updatedReview = { ...review, ...update };
+    this.reviews.set(id, updatedReview);
+    console.log(`Updated review ${id} sentiment: ${updatedReview.sentiment}`);
+    return updatedReview;
   }
 
   async getInsights(filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<Insight[]> {

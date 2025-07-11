@@ -252,12 +252,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Store collected reviews with serviceId
+          const storedReviews = [];
           for (const reviewData of result.reviews) {
-            await storage.createReview({
+            const review = await storage.createReview({
               ...reviewData,
               serviceId: serviceId || null,
               appId: reviewData.source === 'google_play' ? appId : appIdApple
             });
+            storedReviews.push(review);
+          }
+          
+          // Update sentiment analysis for each review using GPT
+          for (const review of storedReviews) {
+            try {
+              // Call GPT sentiment analysis endpoint
+              const sentimentResponse = await fetch('http://localhost:5000/api/gpt-sentiment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  text: review.content
+                })
+              });
+              
+              if (sentimentResponse.ok) {
+                const sentimentData = await sentimentResponse.json();
+                // Update the review with sentiment analysis result
+                await storage.updateReview(review.id, { sentiment: sentimentData.sentiment });
+              }
+            } catch (error) {
+              console.error(`Failed to analyze sentiment for review ${review.id}:`, error);
+            }
           }
           
           // Don't store insights and word cloud data from scraper
