@@ -156,6 +156,8 @@ Changelog:
 - July 11, 2025. Enhanced form validation to prevent submission when date range is invalid or required dates are missing
 - July 11, 2025. Increased review collection limit from 100 to 500 reviews per source to capture more comprehensive data
 - July 11, 2025. Optimized collection to gather up to 300 Google Play reviews and 49 App Store reviews (RSS feed limitation)
+- July 11, 2025. Enhanced Korean text processing with advanced libraries (wordcloud, matplotlib, konlpy)
+- July 11, 2025. Improved word cloud generation with morphological analysis for better Korean language understanding
 
 ## User Preferences
 
