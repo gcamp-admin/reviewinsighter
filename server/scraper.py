@@ -371,6 +371,11 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100):
         # Process blog search results
         for i, item in enumerate(search_results[:count]):
             try:
+                # Filter out non-review content using quality check
+                from naver_api import is_likely_user_review
+                if not is_likely_user_review(item, keywords):
+                    continue
+                
                 # Extract clean text from description
                 description = extract_text_from_html(item.get('description', ''))
                 title = extract_text_from_html(item.get('title', ''))
@@ -432,6 +437,11 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100):
         # Process cafe search results
         for i, item in enumerate(search_results[:count]):
             try:
+                # Filter out non-review content using quality check
+                from naver_api import is_likely_user_review
+                if not is_likely_user_review(item, keywords):
+                    continue
+                
                 # Extract clean text from description
                 description = extract_text_from_html(item.get('description', ''))
                 title = extract_text_from_html(item.get('title', ''))
