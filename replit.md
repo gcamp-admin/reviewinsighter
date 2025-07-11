@@ -238,6 +238,7 @@ Changelog:
 - July 11, 2025. Configured @font-face declaration for local LG Smart UI font with proper file path and font-display optimization
 - July 11, 2025. Rebranded application from "우리가게 패키지" to "commento.ai" - AI 기반 리뷰 분석 플랫폼
 - July 11, 2025. Updated page title, header component, and documentation to reflect new brand identity
+- July 11, 2025. Updated brand tagline to "고객은 이미 말했습니다. 이제는 당신이 들을 차례입니다." and "당신의 AI UX 멘토, 코멘토!"
 - July 11, 2025. Added fallback mechanism from GPT analysis to Python pattern matching for reliability
 - July 11, 2025. HEART framework now uses advanced AI analysis instead of simple keyword matching for deeper insights
 - July 11, 2025. Implemented priority negative keyword detection for '안되', '안돼', '안되어' variants in both TypeScript and Python sentiment analysis
