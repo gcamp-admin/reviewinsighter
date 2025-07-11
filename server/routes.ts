@@ -365,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Analysis endpoint - separate from collection
   app.post("/api/analyze", async (req, res) => {
     try {
-      const { serviceId, serviceName, source, dateFrom, dateTo } = req.body;
+      const { serviceId, serviceName, source, dateFrom, dateTo, analysisType } = req.body;
       
       // Get existing reviews for analysis
       const existingReviews = await storage.getReviews(1, 1000, { 
@@ -389,18 +389,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: review.createdAt.toISOString(),
       }));
       
-      // Run analysis on existing reviews
+      // Run analysis on existing reviews based on analysis type
+      const analysisFunction = analysisType === 'wordcloud' ? 'extract_korean_words_advanced' : 'analyze_sentiments';
       const pythonProcess = spawn("python", ["-c", `
 import sys
 import json
 sys.path.append('server')
-from scraper import analyze_sentiments
+from scraper import analyze_sentiments, extract_korean_words_advanced
 
-# Read reviews from input
+# Read reviews and analysis type from input
 reviews_data = json.loads(sys.argv[1])
-result = analyze_sentiments(reviews_data)
+analysis_type = sys.argv[2] if len(sys.argv) > 2 else 'full'
+
+if analysis_type == 'wordcloud':
+    # Extract word cloud data only
+    positive_reviews = [r for r in reviews_data if r.get('sentiment') == '긍정']
+    negative_reviews = [r for r in reviews_data if r.get('sentiment') == '부정']
+    
+    positive_words = extract_korean_words_advanced([r['content'] for r in positive_reviews], 'positive', 10) if positive_reviews else []
+    negative_words = extract_korean_words_advanced([r['content'] for r in negative_reviews], 'negative', 10) if negative_reviews else []
+    
+    result = {
+        'wordCloud': {
+            'positive': positive_words,
+            'negative': negative_words
+        }
+    }
+elif analysis_type == 'heart':
+    # Generate HEART insights only
+    result = analyze_sentiments(reviews_data)
+    # Remove word cloud data from result
+    if 'wordCloud' in result:
+        del result['wordCloud']
+else:
+    # Full analysis (backward compatibility)
+    result = analyze_sentiments(reviews_data)
+
 print(json.dumps(result, ensure_ascii=False))
-      `, JSON.stringify(reviewsForAnalysis)]);
+      `, JSON.stringify(reviewsForAnalysis), analysisType || 'full']);
       
       let output = "";
       let error = "";
@@ -425,8 +451,8 @@ print(json.dumps(result, ensure_ascii=False))
           let insightsStored = 0;
           let wordCloudStored = 0;
           
-          // Store insights
-          if (result.insights && result.insights.length > 0) {
+          // Store insights (only for heart analysis or full analysis)
+          if (result.insights && result.insights.length > 0 && (analysisType === 'heart' || !analysisType)) {
             for (const insight of result.insights) {
               try {
                 await storage.createInsight({
@@ -445,8 +471,8 @@ print(json.dumps(result, ensure_ascii=False))
             }
           }
           
-          // Store word cloud data
-          if (result.wordCloud) {
+          // Store word cloud data (only for wordcloud analysis or full analysis)
+          if (result.wordCloud && (analysisType === 'wordcloud' || !analysisType)) {
             // Handle both positive and negative word clouds
             const allWordCloudData = [
               ...(result.wordCloud.positive || []),
@@ -468,11 +494,22 @@ print(json.dumps(result, ensure_ascii=False))
             }
           }
           
+          // Generate appropriate response message based on analysis type
+          let responseMessage = '';
+          if (analysisType === 'wordcloud') {
+            responseMessage = `${wordCloudStored}개의 감정 워드를 생성했습니다.`;
+          } else if (analysisType === 'heart') {
+            responseMessage = `${insightsStored}개의 UX 개선 제안을 생성했습니다.`;
+          } else {
+            responseMessage = `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`;
+          }
+          
           res.json({
             success: true,
-            message: `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`,
+            message: responseMessage,
             insightsCount: insightsStored,
-            wordCloudCount: wordCloudStored
+            wordCloudCount: wordCloudStored,
+            analysisType: analysisType
           });
         } catch (parseError) {
           console.error("Error parsing Python analysis output:", parseError);
