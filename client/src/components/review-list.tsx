@@ -283,7 +283,23 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 </div>
                 {getSentimentBadge(review.sentiment)}
               </div>
-              <p className="text-gray-700 text-sm leading-relaxed">{review.content}</p>
+              <div className="text-gray-700 text-sm leading-relaxed">
+                {/* Check if review has url for external links */}
+                {(review as any).url ? (
+                  <a 
+                    href={(review as any).url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {review.content.length > 100 ? review.content.slice(0, 100) + '...' : review.content}
+                  </a>
+                ) : (
+                  <span>
+                    {review.content.length > 200 ? review.content.slice(0, 200) + '...' : review.content}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
