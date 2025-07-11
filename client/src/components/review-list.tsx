@@ -26,6 +26,7 @@ function StoreIcon({ source }: { source: string }) {
   switch (source) {
     case 'google_play':
       return storeIcons.googlePlay;
+    case 'app_store':
     case 'apple_store':
       return storeIcons.appleStore;
     case 'naver_blog':
@@ -43,7 +44,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const limit = 10;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
-    queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo],
+    queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo, sentimentFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -53,14 +54,25 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       if (filters?.service?.id) {
         params.append("serviceId", filters.service.id);
       }
-      if (filters.source.length > 0) {
-        filters.source.forEach(source => params.append("source", source));
+      if (filters.source && filters.source.length > 0) {
+        filters.source.forEach(source => {
+          // Handle both naming conventions
+          if (source === "app_store") {
+            params.append("source", "app_store");
+            params.append("source", "apple_store");
+          } else {
+            params.append("source", source);
+          }
+        });
       }
       if (filters.dateFrom) {
         params.append("dateFrom", filters.dateFrom.toISOString());
       }
       if (filters.dateTo) {
         params.append("dateTo", filters.dateTo.toISOString());
+      }
+      if (sentimentFilter && sentimentFilter !== "all") {
+        params.append("sentiment", sentimentFilter);
       }
 
       const url = `/api/reviews?${params}`;

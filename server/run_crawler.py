@@ -52,11 +52,20 @@ def main():
                 for review in reviews:
                     try:
                         # Prepare review data for API
+                        # Map source names to match frontend expectations
+                        source_mapping = {
+                            'apple_store': 'app_store',
+                            'google_play': 'google_play',
+                            'naver_blog': 'naver_blog',
+                            'naver_cafe': 'naver_cafe'
+                        }
+                        mapped_source = source_mapping.get(source, source)
+                        
                         review_data = {
                             'userId': review.get('userName', review.get('title', '익명')),
                             'content': review.get('content', review.get('description', '')),
                             'rating': review.get('score', 0),
-                            'source': source,
+                            'source': mapped_source,
                             'createdAt': review.get('at', review.get('pubDate', datetime.now().isoformat())),
                             'serviceId': 'ixio',
                             'appId': review.get('reviewId', str(total_reviews))

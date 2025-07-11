@@ -73,9 +73,13 @@ export class MemStorage implements IStorage {
         );
       }
       if (filters.source && filters.source.length > 0) {
-        filteredReviews = filteredReviews.filter(review => 
-          filters.source!.includes(review.source)
-        );
+        filteredReviews = filteredReviews.filter(review => {
+          // Handle both naming conventions for app store
+          if (filters.source!.includes("app_store") && (review.source === "app_store" || review.source === "apple_store")) {
+            return true;
+          }
+          return filters.source!.includes(review.source);
+        });
       }
       if (filters.dateFrom) {
         const dateFrom = new Date(filters.dateFrom);
@@ -122,9 +126,13 @@ export class MemStorage implements IStorage {
         );
       }
       if (filters.source && filters.source.length > 0) {
-        filteredReviews = filteredReviews.filter(review => 
-          filters.source!.includes(review.source)
-        );
+        filteredReviews = filteredReviews.filter(review => {
+          // Handle both naming conventions for app store
+          if (filters.source!.includes("app_store") && (review.source === "app_store" || review.source === "apple_store")) {
+            return true;
+          }
+          return filters.source!.includes(review.source);
+        });
       }
       if (filters.dateFrom) {
         const dateFrom = new Date(filters.dateFrom);
@@ -149,10 +157,10 @@ export class MemStorage implements IStorage {
 
     const total = filteredReviews.length;
     
-    // Count by source
+    // Count by source - handle both naming conventions
     const countsBySource = {
       googlePlay: filteredReviews.filter(r => r.source === "google_play").length,
-      appleStore: filteredReviews.filter(r => r.source === "app_store").length,
+      appleStore: filteredReviews.filter(r => r.source === "app_store" || r.source === "apple_store").length,
       naverBlog: filteredReviews.filter(r => r.source === "naver_blog").length,
       naverCafe: filteredReviews.filter(r => r.source === "naver_cafe").length
     };
@@ -218,9 +226,13 @@ export class MemStorage implements IStorage {
         );
       }
       if (filters.source && filters.source.length > 0) {
-        filteredReviews = filteredReviews.filter(review => 
-          filters.source!.includes(review.source)
-        );
+        filteredReviews = filteredReviews.filter(review => {
+          // Handle both naming conventions for app store
+          if (filters.source!.includes("app_store") && (review.source === "app_store" || review.source === "apple_store")) {
+            return true;
+          }
+          return filters.source!.includes(review.source);
+        });
       }
       if (filters.dateFrom) {
         filteredReviews = filteredReviews.filter(review => 
