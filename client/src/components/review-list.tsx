@@ -41,16 +41,24 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
 
       const url = `/api/reviews?${params}`;
+      console.log('Fetching reviews from:', url);
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch reviews");
       }
-      return response.json();
+      const result = await response.json();
+      console.log('Reviews result:', result);
+      return result;
     },
     enabled: !!filters?.service?.id, // Only fetch when service is selected
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

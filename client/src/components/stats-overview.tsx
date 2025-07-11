@@ -35,7 +35,7 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
     },
     enabled: !!filters?.service?.id, // Only fetch when service is selected
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
