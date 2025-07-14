@@ -292,6 +292,46 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
     }
   }, [dateFrom, dateTo]);
 
+  // 에러 및 빈 데이터 상태 렌더링
+  const renderErrorState = () => {
+    if (error) {
+      return (
+        <div className="bg-red-50 border border-red-200 p-6 rounded-lg text-center">
+          <div className="text-red-600 text-lg font-semibold mb-2">⚠️ 분석 중 문제가 발생했습니다</div>
+          <p className="text-red-700 mb-4">{error}</p>
+          <Button 
+            onClick={analyzeKeywordNetwork}
+            disabled={loading}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            다시 시도하기
+          </Button>
+        </div>
+      );
+    }
+    
+    if (!loading && !networkData) {
+      return (
+        <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center">
+          <div className="text-gray-600 text-lg font-semibold mb-2">📭 키워드 네트워크를 생성할 수 없습니다</div>
+          <p className="text-gray-700 mb-4">
+            리뷰 수가 부족하거나 키워드 간 연관성이 충분하지 않습니다.<br/>
+            더 많은 리뷰를 수집하거나 다른 날짜 범위를 선택해 주세요.
+          </p>
+          <Button 
+            onClick={analyzeKeywordNetwork}
+            disabled={loading}
+            className="bg-[#7CF3C4] hover:bg-[#6CE3B4] text-black font-medium"
+          >
+            다시 분석하기
+          </Button>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -303,34 +343,21 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col space-y-4">
-            {!networkData && (
+            {loading && (
               <div className="text-center py-8">
-                <p className="text-sm text-gray-500 mb-4">
-                  리뷰 데이터의 키워드 관계를 네트워크로 시각화합니다.
-                </p>
-                <Button 
-                  onClick={analyzeKeywordNetwork}
-                  disabled={loading || !dateFrom || !dateTo}
-                  className="bg-[#7CF3C4] hover:bg-[#6CE3B4] text-black font-medium"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      분석 중...
-                    </>
-                  ) : (
-                    <>
-                      <Network className="mr-2 h-4 w-4" />
-                      키워드 네트워크 분석
-                    </>
-                  )}
-                </Button>
+                <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600 mb-4" />
+                <p className="text-lg text-blue-600 font-semibold mb-2">키워드 네트워크 분석 중...</p>
+                <p className="text-sm text-gray-600">리뷰에서 키워드 간 관계를 분석하고 있습니다</p>
               </div>
             )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="text-sm text-red-600">{error}</p>
+            
+            {!loading && (error || !networkData) && renderErrorState()}
+            
+            {!loading && !error && networkData && (
+              <div className="text-center py-2 mb-4">
+                <div className="text-sm text-gray-600">
+                  {networkData.stats?.total_nodes || networkData.nodes?.length || 0}개 키워드, {networkData.stats?.total_edges || networkData.edges?.length || 0}개 연결, {networkData.stats?.total_clusters || networkData.clusters?.length || 0}개 클러스터
+                </div>
               </div>
             )}
 

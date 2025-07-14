@@ -125,21 +125,29 @@ export default function UxInsights({ filters }: UxInsightsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-[#ff0066]" />
-          HEART 프레임워크 UX 개선 제안
+          코멘토의 HEART 프레임워크 UX 분석
         </CardTitle>
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            HEART 프레임워크 기반으로 실제 사용자 리뷰를 분석한 UX 개선 제안입니다
-          </p>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 bg-gradient-to-r from-[#7CF3C4]/10 to-blue-50 p-4 rounded-lg">
+            <div className="bg-[#7CF3C4] rounded-full p-2 flex-shrink-0">
+              <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">🧠</span>
+              </div>
+            </div>
+            <div className="bg-white p-3 rounded-lg shadow-sm border-l-4 border-[#7CF3C4] flex-1">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                안녕하세요! 코멘토입니다. 📊 실제 사용자 리뷰를 HEART 프레임워크로 분석했어요. 
+                각 이슈별로 우선순위와 구체적인 UX 개선 방안을 제안드릴게요!
+              </p>
+            </div>
+          </div>
+          
           <div className="bg-gray-50 p-3 rounded-lg">
             <h4 className="text-sm font-medium text-gray-700 mb-2">🎯 우선순위 결정 기준</h4>
             <div className="text-xs text-gray-600 space-y-1">
               <div><strong className="text-red-600">Critical:</strong> 앱 크래시, 핵심 기능 완전 실패 - 앱 사용 불가 상황</div>
               <div><strong className="text-orange-500">Major:</strong> 주요 기능 부분 실패, 성능 저하 - 사용자 경험 크게 저하</div>
               <div><strong className="text-yellow-600">Minor:</strong> UI 버그, 사용성 개선사항 - 기능은 작동하나 개선 필요</div>
-              <div className="mt-2 text-xs text-gray-500">
-                * 언급 횟수와 심각도를 종합하여 우선순위를 결정합니다
-              </div>
             </div>
           </div>
         </div>
@@ -153,48 +161,67 @@ export default function UxInsights({ filters }: UxInsightsProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-6">
             {insights?.map((insight) => {
               const parsedInsight = parseInsightDescription(insight);
               return (
                 <div
                   key={insight.id}
-                  className="space-y-2 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                  className="space-y-4 p-6 rounded-lg border bg-card hover:shadow-md transition-shadow"
                 >
-                  {/* Title with Priority Badge and HEART Category */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge className={getPriorityColor(insight.priority)}>
-                      {insight.priority === "critical" ? "🔴 Critical" : 
-                       insight.priority === "major" ? "🟡 Major" : "🟢 Minor"}
+                  {/* 코멘토 캐릭터 - 문제 요약 */}
+                  <div className="flex items-start gap-3">
+                    <div className="bg-red-100 rounded-full p-2 flex-shrink-0">
+                      <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">🧠</span>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-400 flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className={getPriorityColor(insight.priority)}>
+                          {insight.priority === "critical" ? "🔴 Critical" : 
+                           insight.priority === "major" ? "🟡 Major" : "🟢 Minor"}
+                        </Badge>
+                        <div className="text-sm font-medium text-gray-600">
+                          📊 {parsedInsight.heartCategory}
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        <strong>문제 발견:</strong> {parsedInsight.problemSummary}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 코멘토 캐릭터 - UX 개선 제안 */}
+                  <div className="flex items-start gap-3">
+                    <div className="bg-[#7CF3C4] rounded-full p-2 flex-shrink-0">
+                      <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">💡</span>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#7CF3C4] flex-1">
+                      <p className="text-sm text-gray-700 leading-relaxed mb-2">
+                        <strong>UX 개선 제안:</strong>
+                      </p>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        {parsedInsight.uxImprovementPoints.split(',').map((point: string, index: number) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <span className="text-[#7CF3C4] mt-1">•</span>
+                            <span className="flex-1">{point.trim()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 통계 정보 */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                    <Badge variant="outline" className="text-xs">
+                      📊 언급 {insight.mentionCount}회
                     </Badge>
-                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      📊 HEART 항목: {parsedInsight.heartCategory}
-                    </div>
-                  </div>
-                  
-                  {/* Problem Summary with User Quotes */}
-                  <div className="mb-3">
-                    <div className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">
-                      📢 문제 요약
-                    </div>
-                    <div className="text-sm text-muted-foreground italic bg-red-50 dark:bg-red-900/10 p-2 rounded border-l-2 border-red-200 dark:border-red-800">
-                      {parsedInsight.problemSummary}
-                    </div>
-                  </div>
-                  
-                  {/* UX Improvement Points */}
-                  <div className="mb-2">
-                    <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
-                      🎯 UX 개선 제안
-                    </div>
-                    <div className="text-sm text-muted-foreground bg-purple-50 dark:bg-purple-900/10 p-2 rounded border-l-2 border-purple-200 dark:border-purple-800 whitespace-pre-line">
-                      {parsedInsight.uxImprovementPoints}
-                    </div>
-                  </div>
-                  
-                  {/* Mention Count */}
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <span>📈 언급 횟수: {insight.mentionCount}건</span>
+                    <Badge variant="outline" className="text-xs">
+                      {insight.trend === "increasing" ? "📈 증가" : insight.trend === "decreasing" ? "📉 감소" : "📊 안정"}
+                    </Badge>
                   </div>
                 </div>
               );
