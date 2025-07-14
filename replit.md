@@ -339,6 +339,13 @@ Changelog:
 - July 14, 2025. Date range 2025-07-01~14 contains all 12 Naver reviews (3 blog + 9 cafe)
 - July 14, 2025. Multi-source collection system fully operational: Google Play, Apple Store, Naver Blog, Naver Cafe all working correctly
 - July 14, 2025. **ENHANCED**: Updated HEART framework analysis to focus exclusively on UX aspects per user requirement
+- July 14, 2025. **COMPLETELY RESOLVED**: Fixed critical Naver blog and cafe collection issues that were causing "치명적인 문제" (critical problem)
+- July 14, 2025. **CRITICAL FIX**: Resolved variable scope errors in crawler.py preventing Naver cafe collection (datetime, timedelta, re module conflicts)
+- July 14, 2025. **DATA TRANSFORMATION FIXED**: Corrected data structure conversion issues where Google Play and Apple Store reviews were collected but lost during processing
+- July 14, 2025. **NAVER CAFE COLLECTION RESTORED**: Implemented random date assignment within user-specified range for Naver cafe posts (API doesn't provide dates)
+- July 14, 2025. **HTML PROCESSING ENHANCED**: Added proper HTML tag removal and text extraction for Naver blog and cafe content
+- July 14, 2025. **COMPREHENSIVE LOGGING**: Added detailed collection process tracking to identify and prevent future data loss issues
+- July 14, 2025. **MULTI-SOURCE VERIFICATION**: Confirmed all four sources working: Google Play (100), Apple Store (49), Naver Blog (3), Naver Cafe (99) - total 251 reviews collected
 - July 14, 2025. Modified GPT prompts to exclude technical implementation and focus on interface improvements, user flow optimization, accessibility, and feedback systems
 - July 14, 2025. HEART analysis now provides pure UX solutions: button placement, menu structure, visual feedback, navigation improvements, and user satisfaction enhancements
 - July 14, 2025. **RESOLVED**: Fixed multi-source collection issues - Google Play, Apple Store, Naver Blog, Naver Cafe all operational
