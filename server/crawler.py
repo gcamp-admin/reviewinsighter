@@ -99,17 +99,21 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         # Convert Apple Store reviews to standardized format
         apple_results = []
         for i, review in enumerate(apple_reviews):
-            # Fix date format - ensure Z suffix for ISO format
+            # Fix date format - ensure proper ISO format
             created_at = review.get("at", "")
-            if created_at and not created_at.endswith('Z'):
-                if '+' not in created_at and '-' not in created_at[-6:]:
-                    created_at += 'Z'
-                elif created_at.endswith('-07:00'):
-                    # Convert PST to UTC
+            if created_at:
+                try:
                     from datetime import datetime, timedelta
-                    dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-                    dt = dt + timedelta(hours=7)  # Convert PST to UTC
-                    created_at = dt.isoformat() + 'Z'
+                    if '-07:00' in created_at:
+                        # Convert PST to UTC
+                        dt = datetime.fromisoformat(created_at.replace('-07:00', ''))
+                        dt = dt + timedelta(hours=7)  # Convert PST to UTC
+                        created_at = dt.isoformat() + 'Z'
+                    elif not created_at.endswith('Z') and '+' not in created_at:
+                        created_at += 'Z'
+                except:
+                    # If parsing fails, use current time
+                    created_at = datetime.now().isoformat() + 'Z'
                     
             apple_review = {
                 "userId": review.get("userName", "익명"),

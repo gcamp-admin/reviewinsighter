@@ -287,10 +287,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Check if reviews exist and show date range information
             if (storedReviews.length > 0) {
-              const dates = storedReviews.map(r => new Date(r.createdAt)).sort((a, b) => a.getTime() - b.getTime());
-              const oldestDate = dates[0].toISOString().split('T')[0];
-              const newestDate = dates[dates.length - 1].toISOString().split('T')[0];
-              console.log(`📅 수집된 리뷰 날짜 범위: ${oldestDate} ~ ${newestDate}`);
+              const dates = storedReviews
+                .map(r => new Date(r.createdAt))
+                .filter(date => !isNaN(date.getTime())) // Filter out invalid dates
+                .sort((a, b) => a.getTime() - b.getTime());
+              
+              if (dates.length > 0) {
+                const oldestDate = dates[0].toISOString().split('T')[0];
+                const newestDate = dates[dates.length - 1].toISOString().split('T')[0];
+                console.log(`📅 수집된 리뷰 날짜 범위: ${oldestDate} ~ ${newestDate}`);
+              }
             }
             
             // Update sentiment analysis for reviews using optimized batch processing
