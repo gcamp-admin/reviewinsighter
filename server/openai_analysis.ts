@@ -124,10 +124,45 @@ UX 개선 제안 작성 가이드라인:
       console.error('Failed to parse GPT HEART analysis response:', parseError);
       return [];
     }
-    
   } catch (error) {
-    console.error('OpenAI API error in HEART analysis:', error);
+    console.error('GPT HEART analysis error:', error);
     return [];
+  }
+}
+
+export async function generateClusterLabel(keywords: string[]): Promise<string> {
+  try {
+    const prompt = `다음 키워드들을 분석하여 UX 관점에서 적절한 클러스터 이름을 생성해주세요.
+
+키워드: ${keywords.join(', ')}
+
+클러스터 이름은 다음 조건을 만족해야 합니다:
+1. UX/사용성 관점에서 의미 있는 이름
+2. 사용자 경험의 특정 영역을 나타내는 이름
+3. 한국어로 2-6글자 내외
+4. 구체적이고 직관적인 이름
+
+예시:
+- ["끊김", "튕김", "멈춤"] → "앱 안정성"
+- ["복잡", "어려움", "헷갈림"] → "사용 편의성"
+- ["느림", "로딩", "대기"] → "성능 반응성"
+- ["버튼", "메뉴", "화면"] → "인터페이스"
+- ["통화", "연결", "음성"] → "통화 기능"
+
+클러스터 이름만 반환하세요:`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 20,
+      temperature: 0.3,
+    });
+
+    const label = response.choices[0].message.content?.trim() || `키워드 그룹`;
+    return label;
+  } catch (error) {
+    console.error('클러스터 라벨 생성 실패:', error);
+    return `키워드 그룹`;
   }
 }
 

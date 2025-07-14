@@ -5,7 +5,7 @@ import { z } from "zod";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateKeywordNetworkWithGPT } from "./openai_analysis";
+import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateKeywordNetworkWithGPT, generateClusterLabel } from "./openai_analysis";
 import { insertReviewSchema } from "../shared/schema";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -724,7 +724,99 @@ print(json.dumps(result, ensure_ascii=False))
     }
   });
 
-  // Get keyword network data
+  // Keyword Network Analysis endpoint
+  app.post("/api/keyword-network", async (req, res) => {
+    try {
+      const { serviceId, dateFrom, dateTo, method = 'cooccurrence' } = req.body;
+      
+      // Get reviews for the specified period
+      const filters = {
+        serviceId: serviceId || undefined,
+        dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+        dateTo: dateTo ? new Date(dateTo) : undefined
+      };
+      
+      const reviews = await storage.getReviews(undefined, undefined, filters);
+      
+      if (reviews.length < 10) {
+        return res.json({
+          error: '데이터 부족',
+          message: '키워드 네트워크 분석을 위해서는 최소 10개 이상의 리뷰가 필요합니다.'
+        });
+      }
+
+      // Use Python-based keyword network analysis
+      const analysisPath = path.join(__dirname, 'keyword_network.py');
+      const args = [
+        analysisPath,
+        JSON.stringify({
+          reviews: reviews.map(r => ({
+            content: r.content,
+            sentiment: r.sentiment,
+            source: r.source
+          })),
+          method: method
+        })
+      ];
+      
+      console.log(`Running keyword network analysis for ${reviews.length} reviews`);
+      const pythonProcess = spawn('python3', args);
+      
+      let stdout = '';
+      let stderr = '';
+      
+      pythonProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+      
+      pythonProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+      
+      pythonProcess.on('close', async (code) => {
+        if (code !== 0) {
+          console.error('Keyword network analysis error:', stderr);
+          return res.status(500).json({ 
+            error: "분석 실행 실패",
+            message: "키워드 네트워크 분석 중 오류가 발생했습니다."
+          });
+        }
+        
+        try {
+          const result = JSON.parse(stdout);
+          res.json(result);
+        } catch (parseError) {
+          console.error('Failed to parse keyword network result:', parseError);
+          res.status(500).json({ 
+            error: "결과 파싱 실패",
+            message: "분석 결과를 처리하는 중 오류가 발생했습니다."
+          });
+        }
+      });
+      
+    } catch (error) {
+      console.error('Keyword network analysis error:', error);
+      res.status(500).json({ error: "Failed to analyze keyword network" });
+    }
+  });
+
+  // Generate cluster label endpoint
+  app.post("/api/generate-cluster-label", async (req, res) => {
+    try {
+      const { keywords } = req.body;
+      if (!keywords || !Array.isArray(keywords)) {
+        return res.status(400).json({ error: "keywords array is required" });
+      }
+
+      const label = await generateClusterLabel(keywords);
+      res.json({ label });
+    } catch (error) {
+      console.error('Cluster label generation error:', error);
+      res.status(500).json({ error: "Failed to generate cluster label" });
+    }
+  });
+
+  // Get keyword network data (legacy endpoint)
   app.get("/api/keyword-network/:serviceId", async (req, res) => {
     try {
       const { serviceId } = req.params;

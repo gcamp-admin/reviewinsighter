@@ -1,245 +1,397 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Network, ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
 
 interface KeywordNode {
   id: string;
-  text: string;
-  sentiment: string;
+  label: string;
+  size: number;
   frequency: number;
+  cluster?: number;
   x?: number;
   y?: number;
-  vx?: number;
-  vy?: number;
 }
 
-interface KeywordLink {
+interface KeywordEdge {
+  id: number;
   source: string;
   target: string;
-  strength: number;
+  weight: number;
+  pmi: number;
+}
+
+interface KeywordCluster {
+  id: number;
+  keywords: string[];
+  size: number;
+  label: string;
+}
+
+interface KeywordNetworkData {
+  nodes: KeywordNode[];
+  edges: KeywordEdge[];
+  clusters: KeywordCluster[];
+  statistics: {
+    total_nodes: number;
+    total_edges: number;
+    total_clusters: number;
+  };
 }
 
 interface KeywordNetworkProps {
-  serviceId: string;
-  className?: string;
+  serviceId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  onAnalysisComplete?: (data: KeywordNetworkData) => void;
 }
 
-export function KeywordNetwork({ serviceId, className = "" }: KeywordNetworkProps) {
+const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
+  serviceId = 'ixio',
+  dateFrom,
+  dateTo,
+  onAnalysisComplete
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [nodes, setNodes] = useState<KeywordNode[]>([]);
-  const [links, setLinks] = useState<KeywordLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const animationRef = useRef<number>();
+  const [networkData, setNetworkData] = useState<KeywordNetworkData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const fetchKeywordNetwork = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(`/api/keyword-network/${serviceId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setNodes(data.nodes || []);
-          setLinks(data.links || []);
-        }
-      } catch (error) {
-        console.error('Error fetching keyword network:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const clusterColors = [
+    '#7CF3C4', // 브랜드 색상
+    '#FF6B6B', // 빨간색
+    '#4ECDC4', // 청록색
+    '#45B7D1', // 파란색
+    '#96CEB4', // 민트색
+    '#FFEAA7', // 노란색
+    '#DDA0DD', // 보라색
+    '#98D8C8', // 연두색
+    '#F7DC6F', // 금색
+    '#BB8FCE'  // 라벤더색
+  ];
 
-    if (serviceId) {
-      fetchKeywordNetwork();
+  const analyzeKeywordNetwork = async () => {
+    if (!dateFrom || !dateTo) {
+      setError('날짜 범위를 선택해주세요.');
+      return;
     }
-  }, [serviceId]);
 
-  useEffect(() => {
-    if (!nodes.length || !canvasRef.current) return;
+    setLoading(true);
+    setError(null);
 
+    try {
+      const response = await fetch('/api/keyword-network', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          serviceId,
+          dateFrom,
+          dateTo,
+          method: 'cooccurrence'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('키워드 네트워크 분석 실패');
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        setError(data.message || '분석 중 오류가 발생했습니다.');
+        return;
+      }
+
+      setNetworkData(data);
+      onAnalysisComplete?.(data);
+      
+      // 캔버스 초기화
+      setTimeout(() => {
+        initializeCanvas();
+      }, 100);
+
+    } catch (err) {
+      setError('네트워크 분석 중 오류가 발생했습니다.');
+      console.error('Keyword network analysis error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initializeCanvas = () => {
+    if (!canvasRef.current || !networkData) return;
+    
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    // 캔버스 크기 설정
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
-    const width = rect.width;
-    const height = rect.height;
+    // 노드 위치 초기화 (원형 배치)
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(canvas.width, canvas.height) / 3;
 
-    // Initialize node positions if not set
-    const workingNodes = nodes.map(node => ({
-      ...node,
-      x: node.x || Math.random() * width,
-      y: node.y || Math.random() * height,
-      vx: node.vx || 0,
-      vy: node.vy || 0
-    }));
+    networkData.nodes.forEach((node, index) => {
+      const angle = (index / networkData.nodes.length) * 2 * Math.PI;
+      node.x = centerX + Math.cos(angle) * radius;
+      node.y = centerY + Math.sin(angle) * radius;
+    });
 
-    // Simple force simulation
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
+    drawNetwork();
+  };
 
-      // Apply forces
-      workingNodes.forEach(node => {
-        // Center force
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const dx = centerX - node.x!;
-        const dy = centerY - node.y!;
-        node.vx! += dx * 0.001;
-        node.vy! += dy * 0.001;
+  const drawNetwork = () => {
+    if (!canvasRef.current || !networkData) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-        // Repulsion between nodes
-        workingNodes.forEach(other => {
-          if (node !== other) {
-            const dx = node.x! - other.x!;
-            const dy = node.y! - other.y!;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 0) {
-              const force = 50 / distance;
-              node.vx! += dx * force * 0.01;
-              node.vy! += dy * force * 0.01;
-            }
-          }
-        });
+    // 캔버스 초기화
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 변환 적용
+    ctx.save();
+    ctx.translate(pan.x, pan.y);
+    ctx.scale(zoom, zoom);
 
-        // Apply velocity
-        node.x! += node.vx!;
-        node.y! += node.vy!;
-
-        // Friction
-        node.vx! *= 0.9;
-        node.vy! *= 0.9;
-
-        // Boundary
-        if (node.x! < 20) node.x! = 20;
-        if (node.x! > width - 20) node.x! = width - 20;
-        if (node.y! < 20) node.y! = 20;
-        if (node.y! > height - 20) node.y! = height - 20;
-      });
-
-      // Draw links
-      links.forEach(link => {
-        const sourceNode = workingNodes.find(n => n.id === link.source);
-        const targetNode = workingNodes.find(n => n.id === link.target);
-        
-        if (sourceNode && targetNode) {
-          ctx.beginPath();
-          ctx.moveTo(sourceNode.x!, sourceNode.y!);
-          ctx.lineTo(targetNode.x!, targetNode.y!);
-          ctx.strokeStyle = `rgba(148, 163, 184, ${link.strength})`;
-          ctx.lineWidth = Math.max(1, link.strength * 3);
-          ctx.stroke();
-        }
-      });
-
-      // Draw nodes
-      workingNodes.forEach(node => {
-        const radius = Math.max(15, Math.sqrt(node.frequency) * 3);
-        
-        // Node circle
+    // 엣지 그리기
+    ctx.strokeStyle = '#E0E0E0';
+    ctx.lineWidth = 1;
+    networkData.edges.forEach(edge => {
+      const sourceNode = networkData.nodes.find(n => n.id === edge.source);
+      const targetNode = networkData.nodes.find(n => n.id === edge.target);
+      
+      if (sourceNode && targetNode && sourceNode.x && sourceNode.y && targetNode.x && targetNode.y) {
         ctx.beginPath();
-        ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI);
-        
-        // Color based on sentiment
-        if (node.sentiment === '긍정') {
-          ctx.fillStyle = '#10b981';
-        } else if (node.sentiment === '부정') {
-          ctx.fillStyle = '#ef4444';
-        } else {
-          ctx.fillStyle = '#6b7280';
-        }
-        
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
+        ctx.moveTo(sourceNode.x, sourceNode.y);
+        ctx.lineTo(targetNode.x, targetNode.y);
         ctx.stroke();
-
-        // Text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `${Math.max(10, radius * 0.6)}px "LG Smart UI", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(node.text, node.x!, node.y!);
-      });
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
       }
+    });
+
+    // 노드 그리기
+    networkData.nodes.forEach(node => {
+      if (!node.x || !node.y) return;
+      
+      const nodeSize = Math.max(8, Math.min(30, node.frequency * 3));
+      const clusterColor = clusterColors[node.cluster || 0];
+      
+      // 노드 원
+      ctx.fillStyle = clusterColor;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // 노드 테두리
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // 노드 라벨
+      ctx.fillStyle = '#333333';
+      ctx.font = '12px "LG Smart UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.label, node.x, node.y + nodeSize + 15);
+    });
+
+    ctx.restore();
+  };
+
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    setIsDragging(true);
+    setDragStart({ 
+      x: e.clientX - rect.left - pan.x, 
+      y: e.clientY - rect.top - pan.y 
+    });
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging) return;
+    
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const newPan = {
+      x: e.clientX - rect.left - dragStart.x,
+      y: e.clientY - rect.top - dragStart.y
     };
-  }, [nodes, links]);
+    
+    setPan(newPan);
+    drawNetwork();
+  };
 
-  if (isLoading) {
-    return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">키워드 관계 네트워크</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center h-96">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-            <span className="ml-2 text-gray-500">네트워크 분석 중...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleCanvasMouseUp = () => {
+    setIsDragging(false);
+  };
 
-  if (!nodes.length) {
-    return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">키워드 관계 네트워크</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center h-96 text-gray-500">
-            분석할 키워드가 없습니다.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev * 1.2, 3));
+    setTimeout(drawNetwork, 0);
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev / 1.2, 0.3));
+    setTimeout(drawNetwork, 0);
+  };
+
+  const handleReset = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    setTimeout(drawNetwork, 0);
+  };
+
+  useEffect(() => {
+    if (networkData) {
+      drawNetwork();
+    }
+  }, [zoom, pan, networkData]);
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">키워드 관계 네트워크</CardTitle>
-        <div className="flex gap-2 mt-2">
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            긍정
-          </Badge>
-          <Badge variant="secondary" className="bg-red-100 text-red-800">
-            부정
-          </Badge>
-          <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-            중립
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-96 border border-gray-200 rounded-lg"
-            style={{ touchAction: 'none' }}
-          />
-          <div className="mt-4 text-sm text-gray-600">
-            • 원의 크기는 언급 빈도를 나타냅니다
-            • 선의 굵기는 키워드 간 연관성을 나타냅니다
-            • 색상은 감정 분류를 나타냅니다
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Network className="w-5 h-5" />
+            키워드 네트워크 분석
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col space-y-4">
+            {!networkData && (
+              <div className="text-center py-8">
+                <p className="text-sm text-gray-500 mb-4">
+                  리뷰 데이터의 키워드 관계를 네트워크로 시각화합니다.
+                </p>
+                <Button 
+                  onClick={analyzeKeywordNetwork}
+                  disabled={loading || !dateFrom || !dateTo}
+                  className="bg-[#7CF3C4] hover:bg-[#6CE3B4] text-black font-medium"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      분석 중...
+                    </>
+                  ) : (
+                    <>
+                      <Network className="mr-2 h-4 w-4" />
+                      키워드 네트워크 분석
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            {networkData && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm text-gray-600">
+                      노드: {networkData.statistics.total_nodes}개 | 
+                      엣지: {networkData.statistics.total_edges}개 | 
+                      클러스터: {networkData.statistics.total_clusters}개
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleZoomOut}
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleReset}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleZoomIn}
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-lg">
+                  <canvas
+                    ref={canvasRef}
+                    className="w-full h-96 cursor-move"
+                    onMouseDown={handleCanvasMouseDown}
+                    onMouseMove={handleCanvasMouseMove}
+                    onMouseUp={handleCanvasMouseUp}
+                    onMouseLeave={handleCanvasMouseUp}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-medium">키워드 클러스터</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {networkData.clusters.map((cluster, index) => (
+                      <div 
+                        key={cluster.id}
+                        className="p-3 border border-gray-200 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div 
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: clusterColors[index] }}
+                          />
+                          <span className="font-medium text-sm">{cluster.label}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {cluster.keywords.slice(0, 8).map((keyword, keyIndex) => (
+                            <Badge 
+                              key={keyIndex} 
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {keyword}
+                            </Badge>
+                          ))}
+                          {cluster.keywords.length > 8 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{cluster.keywords.length - 8}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};
+
+export default KeywordNetwork;
+export { KeywordNetwork };
