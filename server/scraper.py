@@ -822,7 +822,7 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
             lang=lang,
             country=country,
             sort=Sort.NEWEST,
-            count=count * 3  # Fetch extra to account for date filtering
+            count=count * 5  # Fetch extra to account for date filtering
         )
         
         # Process and filter the data - only collect reviews within date range
@@ -862,7 +862,7 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
         for review in processed_reviews:
             review['sentiment'] = analyze_text_sentiment(review['content'])
         
-        print(f"Collected {len(processed_reviews)} Google Play reviews within date range", file=sys.stderr)
+        print(f"Collected {len(processed_reviews)} Google Play reviews within date range {start_date} ~ {end_date}", file=sys.stderr)
         return processed_reviews
         
     except Exception as e:
@@ -962,7 +962,7 @@ def scrape_app_store_reviews(app_id='1571096278', count=100, service_keywords=No
         for review in processed_reviews:
             review['sentiment'] = analyze_text_sentiment(review['content'])
         
-        print(f"Collected {len(processed_reviews)} App Store reviews within date range", file=sys.stderr)
+        print(f"Collected {len(processed_reviews)} App Store reviews within date range {start_date} ~ {end_date}", file=sys.stderr)
         return processed_reviews
         
     except Exception as e:
