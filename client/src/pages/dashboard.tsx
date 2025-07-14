@@ -5,6 +5,7 @@ import StatsOverview from "@/components/stats-overview";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
+import { KeywordNetwork } from "@/components/keyword-network";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
