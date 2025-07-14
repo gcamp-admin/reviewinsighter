@@ -79,6 +79,106 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
     
     Args:
         app_id: Apple App Store app ID
+        count: Number of reviews to fetch (RSS feed limitation)
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
+        
+    Returns:
+        List of review dictionaries
+    """
+    try:
+        # Apple App Store RSS feed for reviews
+        rss_url = f"https://itunes.apple.com/kr/rss/customerreviews/page=1/id={app_id}/sortby=mostrecent/xml"
+        
+        # Fetch RSS feed
+        response = requests.get(rss_url, timeout=10)
+        response.raise_for_status()
+        
+        # Parse XML
+        root = ET.fromstring(response.content)
+        
+        # Define namespaces for Apple RSS feed
+        namespaces = {
+            'atom': 'http://www.w3.org/2005/Atom',
+            'im': 'http://itunes.apple.com/rss'
+        }
+        
+        # Find review entries with proper namespace
+        entries = root.findall('.//atom:entry', namespaces)
+        
+        processed_reviews = []
+        for entry in entries:
+            try:
+                # Extract review data with proper namespace
+                title = entry.find('atom:title', namespaces)
+                content = entry.find('atom:content', namespaces)
+                author = entry.find('atom:author/atom:name', namespaces)
+                updated = entry.find('atom:updated', namespaces)
+                
+                title_text = title.text if title is not None else ''
+                content_text = content.text if content is not None else ''
+                author_text = author.text if author is not None else '익명'
+                updated_text = updated.text if updated is not None else datetime.now().isoformat()
+                
+                # Extract rating from iTunes rating element
+                rating = 5  # Default rating
+                rating_elem = entry.find('im:rating', namespaces)
+                if rating_elem is not None:
+                    try:
+                        rating = int(rating_elem.text)
+                    except:
+                        rating = 5
+                
+                # Parse date
+                try:
+                    review_date = datetime.fromisoformat(updated_text.replace('Z', '+00:00')).replace(tzinfo=None)
+                except:
+                    review_date = datetime.now()
+                
+                # Apply date filtering if specified
+                if start_date and end_date:
+                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                    
+                    # Skip if outside date range
+                    if not (start_dt <= review_date <= end_dt):
+                        continue
+                
+                # Get review ID
+                review_id = entry.find('atom:id', namespaces)
+                review_id_text = review_id.text if review_id is not None else ''
+                
+                processed_review = {
+                    'userName': author_text,
+                    'score': rating,
+                    'content': f"{title_text}\n{content_text}".strip(),
+                    'at': review_date.isoformat(),
+                    'reviewId': review_id_text,
+                    'appVersion': '',
+                    'thumbsUpCount': 0
+                }
+                processed_reviews.append(processed_review)
+                
+                # Limit to requested count
+                if len(processed_reviews) >= count:
+                    break
+                    
+            except Exception as e:
+                print(f"Error processing Apple Store review entry: {str(e)}", file=sys.stderr)
+                continue
+        
+        return processed_reviews
+        
+    except Exception as e:
+        print(f"Error crawling Apple Store reviews: {str(e)}", file=sys.stderr)
+        return []
+
+def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
+    """
+    Crawl reviews from Apple App Store with date filtering
+    
+    Args:
+        app_id: Apple App Store app ID
         count: Number of reviews to fetch (limited by RSS feed)
         start_date: Start date for filtering (ISO format)
         end_date: End date for filtering (ISO format)
