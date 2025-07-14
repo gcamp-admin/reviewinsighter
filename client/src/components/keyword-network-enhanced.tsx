@@ -152,23 +152,74 @@ const KeywordNetworkEnhanced: React.FC<KeywordNetworkProps> = ({
     canvas.height = rect.height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    // 노드 위치 초기화 (원형 배치)
+    // 클러스터 기반 레이아웃 초기화
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const radius = Math.min(centerX, centerY) * 0.6;
+    
+    if (data.clusters.length === 1) {
+      // 단일 클러스터: 중심-방사형 배치
+      initializeSingleClusterLayout(data, centerX, centerY);
+    } else {
+      // 다중 클러스터: 클러스터별 그룹 배치
+      initializeMultiClusterLayout(data, centerX, centerY);
+    }
 
-    data.nodes.forEach((node, index) => {
-      const angle = (2 * Math.PI * index) / data.nodes.length;
-      node.x = centerX + Math.cos(angle) * radius;
-      node.y = centerY + Math.sin(angle) * radius;
-    });
-
-    // Force simulation 효과 (간단한 repulsion)
-    for (let i = 0; i < 100; i++) {
+    // Force simulation 효과 (더 자연스러운 분산)
+    for (let i = 0; i < 150; i++) {
       applyForces(data.nodes, data.edges, centerX, centerY);
     }
 
     drawNetwork();
+  };
+
+  const initializeSingleClusterLayout = (data: KeywordNetworkData, centerX: number, centerY: number) => {
+    const radius = Math.min(centerX, centerY) * 0.7;
+    
+    // 중심에 가장 빈도가 높은 노드 배치
+    const sortedNodes = [...data.nodes].sort((a, b) => b.frequency - a.frequency);
+    
+    sortedNodes.forEach((node, index) => {
+      if (index === 0) {
+        // 중심 노드
+        node.x = centerX;
+        node.y = centerY;
+      } else {
+        // 방사형 배치
+        const angle = (2 * Math.PI * (index - 1)) / (sortedNodes.length - 1);
+        const nodeRadius = radius * (0.4 + Math.random() * 0.4); // 약간의 랜덤성
+        node.x = centerX + Math.cos(angle) * nodeRadius;
+        node.y = centerY + Math.sin(angle) * nodeRadius;
+      }
+    });
+  };
+
+  const initializeMultiClusterLayout = (data: KeywordNetworkData, centerX: number, centerY: number) => {
+    const clusterRadius = Math.min(centerX, centerY) * 0.3;
+    const mainRadius = Math.min(centerX, centerY) * 0.6;
+    
+    data.clusters.forEach((cluster, clusterIndex) => {
+      // 클러스터 중심 위치
+      const clusterAngle = (2 * Math.PI * clusterIndex) / data.clusters.length;
+      const clusterCenterX = centerX + Math.cos(clusterAngle) * mainRadius;
+      const clusterCenterY = centerY + Math.sin(clusterAngle) * mainRadius;
+      
+      // 클러스터 내 노드들 배치
+      const clusterNodes = data.nodes.filter(node => node.cluster === cluster.id);
+      
+      clusterNodes.forEach((node, nodeIndex) => {
+        if (nodeIndex === 0) {
+          // 클러스터 중심에 가장 중요한 노드
+          node.x = clusterCenterX;
+          node.y = clusterCenterY;
+        } else {
+          // 클러스터 내 원형 배치
+          const nodeAngle = (2 * Math.PI * (nodeIndex - 1)) / Math.max(1, clusterNodes.length - 1);
+          const nodeRadius = clusterRadius * (0.3 + Math.random() * 0.4);
+          node.x = clusterCenterX + Math.cos(nodeAngle) * nodeRadius;
+          node.y = clusterCenterY + Math.sin(nodeAngle) * nodeRadius;
+        }
+      });
+    });
   };
 
   const applyForces = (nodes: KeywordNode[], edges: KeywordEdge[], centerX: number, centerY: number) => {
@@ -261,18 +312,20 @@ const KeywordNetworkEnhanced: React.FC<KeywordNetworkProps> = ({
       });
     }
 
-    // 엣지 그리기
+    // 엣지 그리기 (첨부된 이미지 스타일 - 점선)
     networkData.edges.forEach(edge => {
       const source = networkData.nodes.find(n => n.id === edge.source);
       const target = networkData.nodes.find(n => n.id === edge.target);
       
       if (source && target && source.x && source.y && target.x && target.y) {
+        ctx.setLineDash([5, 3]); // 점선 스타일
         ctx.beginPath();
         ctx.moveTo(source.x, source.y);
         ctx.lineTo(target.x, target.y);
-        ctx.strokeStyle = `rgba(100, 100, 100, ${Math.min(edge.weight / 10, 0.8)})`;
-        ctx.lineWidth = Math.max(1, edge.weight / 5);
+        ctx.strokeStyle = `rgba(120, 120, 120, ${Math.min(edge.weight / 10, 0.6)})`;
+        ctx.lineWidth = Math.max(1, edge.weight / 3);
         ctx.stroke();
+        ctx.setLineDash([]); // 점선 해제
       }
     });
 
@@ -292,9 +345,16 @@ const KeywordNetworkEnhanced: React.FC<KeywordNetworkProps> = ({
         
         // 노드 라벨
         ctx.fillStyle = '#333';
-        ctx.font = `${Math.max(10, node.size / 2)}px Arial`;
+        ctx.font = `bold ${Math.max(10, node.size / 2)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        
+        // 텍스트 배경 (가독성 향상)
+        const textWidth = ctx.measureText(node.label).width;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(node.x - textWidth / 2 - 2, node.y - 6, textWidth + 4, 12);
+        
+        ctx.fillStyle = '#333';
         ctx.fillText(node.label, node.x, node.y);
       }
     });
@@ -316,22 +376,36 @@ const KeywordNetworkEnhanced: React.FC<KeywordNetworkProps> = ({
   const drawClusterBackground = (ctx: CanvasRenderingContext2D, nodes: KeywordNode[], cluster: KeywordCluster, color: string) => {
     if (nodes.length === 0) return;
 
-    const padding = 20;
     const positions = nodes.map(n => ({ x: n.x || 0, y: n.y || 0 }));
     
-    const minX = Math.min(...positions.map(p => p.x)) - padding;
-    const maxX = Math.max(...positions.map(p => p.x)) + padding;
-    const minY = Math.min(...positions.map(p => p.y)) - padding;
-    const maxY = Math.max(...positions.map(p => p.y)) + padding;
+    // 클러스터 중심점 계산
+    const centerX = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
+    const centerY = positions.reduce((sum, p) => sum + p.y, 0) / positions.length;
+    
+    // 클러스터 반지름 계산 (가장 먼 노드까지의 거리 + 여유분)
+    const maxDistance = Math.max(...positions.map(p => 
+      Math.sqrt((p.x - centerX) ** 2 + (p.y - centerY) ** 2)
+    ));
+    const clusterRadius = maxDistance + 40;
 
-    ctx.fillStyle = `${color}20`;
-    ctx.strokeStyle = `${color}60`;
+    // 원형 배경 그리기 (첨부된 이미지 스타일)
+    ctx.fillStyle = `${color}15`;
+    ctx.strokeStyle = `${color}40`;
     ctx.lineWidth = 2;
     
     ctx.beginPath();
-    ctx.roundRect(minX, minY, maxX - minX, maxY - minY, 10);
+    ctx.arc(centerX, centerY, clusterRadius, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
+    
+    // 점선 원 추가 (더 시각적으로)
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = `${color}30`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, clusterRadius + 15, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.setLineDash([]);
   };
 
   const drawClusterLabel = (ctx: CanvasRenderingContext2D, nodes: KeywordNode[], cluster: KeywordCluster) => {
@@ -341,19 +415,37 @@ const KeywordNetworkEnhanced: React.FC<KeywordNetworkProps> = ({
     const centerX = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
     const centerY = positions.reduce((sum, p) => sum + p.y, 0) / positions.length;
 
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 14px Arial';
+    // 클러스터 상단에 라벨 위치 (첨부된 이미지 스타일)
+    const maxDistance = Math.max(...positions.map(p => 
+      Math.sqrt((p.x - centerX) ** 2 + (p.y - centerY) ** 2)
+    ));
+    const labelY = centerY - maxDistance - 30;
+
+    ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // 배경
+    // 라벨 배경 (더 세련된 스타일)
     const textWidth = ctx.measureText(cluster.label).width;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.fillRect(centerX - textWidth / 2 - 5, centerY - 10, textWidth + 10, 20);
+    const bgWidth = textWidth + 16;
+    const bgHeight = 28;
+    
+    // 배경 그림자
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(centerX - bgWidth / 2 + 2, labelY - bgHeight / 2 + 2, bgWidth, bgHeight);
+    
+    // 배경
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.fillRect(centerX - bgWidth / 2, labelY - bgHeight / 2, bgWidth, bgHeight);
+    
+    // 테두리
+    ctx.strokeStyle = clusterColors[cluster.id % clusterColors.length];
+    ctx.lineWidth = 2;
+    ctx.strokeRect(centerX - bgWidth / 2, labelY - bgHeight / 2, bgWidth, bgHeight);
     
     // 텍스트
-    ctx.fillStyle = '#333';
-    ctx.fillText(cluster.label, centerX, centerY);
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillText(cluster.label, centerX, labelY);
   };
 
   const handleCanvasClick = (event: React.MouseEvent) => {

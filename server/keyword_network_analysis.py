@@ -192,7 +192,7 @@ def generate_cluster_labels_with_gpt(communities: List[List[str]], keyword_freq:
     for i, community in enumerate(communities):
         # 커뮤니티 내 키워드들을 빈도순으로 정렬
         sorted_keywords = sorted(community, key=lambda x: keyword_freq[x], reverse=True)
-        top_keywords = sorted_keywords[:10]  # 상위 10개 키워드
+        top_keywords = sorted_keywords[:8]  # 상위 8개 키워드
         
         try:
             # GPT API 호출
@@ -205,14 +205,59 @@ def generate_cluster_labels_with_gpt(communities: List[List[str]], keyword_freq:
             
             if response.status_code == 200:
                 result = response.json()
-                labels[i] = result.get('label', f'클러스터 {i+1}').strip('"')
+                generated_label = result.get('label', f'클러스터 {i+1}').strip('"')
+                # UX 인사이트 중심으로 라벨 정제
+                labels[i] = clean_cluster_label(generated_label, top_keywords)
             else:
-                labels[i] = f'클러스터 {i+1}'
+                labels[i] = generate_fallback_label(top_keywords)
         except:
-            # GPT 호출 실패시 대표 키워드 사용
-            labels[i] = f'{top_keywords[0]} 관련'
+            # GPT 호출 실패시 대표 키워드 기반 라벨 생성
+            labels[i] = generate_fallback_label(top_keywords)
     
     return labels
+
+def clean_cluster_label(label: str, keywords: List[str]) -> str:
+    """
+    GPT가 생성한 라벨을 UX 인사이트 관점으로 정제
+    """
+    # 너무 긴 라벨을 줄임
+    if len(label) > 12:
+        # 키워드 기반으로 축약
+        if any(k in label for k in ['통화', '전화', '연결']):
+            return '통화 품질'
+        elif any(k in label for k in ['화면', '버튼', '설정']):
+            return 'UI/UX 개선'
+        elif any(k in label for k in ['오류', '문제', '버그']):
+            return '기능 안정성'
+        elif any(k in label for k in ['편리', '불편', '사용']):
+            return '사용성 개선'
+        else:
+            return label[:10] + '...'
+    
+    return label
+
+def generate_fallback_label(keywords: List[str]) -> str:
+    """
+    GPT 호출 실패시 키워드 기반 라벨 생성
+    """
+    if not keywords:
+        return '기타'
+    
+    # 대표 키워드 기반 카테고리 분류
+    primary_keyword = keywords[0]
+    
+    if any(k in primary_keyword for k in ['통화', '전화', '연결', '수신', '발신']):
+        return '통화 기능'
+    elif any(k in primary_keyword for k in ['화면', '버튼', '메뉴', '설정']):
+        return 'UI 요소'
+    elif any(k in primary_keyword for k in ['오류', '문제', '버그', '실패']):
+        return '안정성 문제'
+    elif any(k in primary_keyword for k in ['음성', '소리', '녹음', '볼륨']):
+        return '음성 품질'
+    elif any(k in primary_keyword for k in ['편리', '불편', '사용', '조작']):
+        return '사용성'
+    else:
+        return f'{primary_keyword} 관련'
 
 def create_network_visualization_data(
     keywords: Dict[str, int],
@@ -295,11 +340,11 @@ def analyze_keyword_network(reviews: List[Dict]) -> Dict[str, Any]:
             'stats': {'total_nodes': 0, 'total_edges': 0, 'total_clusters': 0}
         }
     
-    print(f"Starting keyword network analysis for {len(reviews)} reviews")
+    # print(f"Starting keyword network analysis for {len(reviews)} reviews")
     
     # 1. 키워드 추출
     keywords = extract_meaningful_keywords(reviews)
-    print(f"Extracted {len(keywords)} meaningful keywords")
+    # 디버깅 정보 제거
     
     if len(keywords) < 3:
         return {
@@ -313,19 +358,19 @@ def analyze_keyword_network(reviews: List[Dict]) -> Dict[str, Any]:
     # 2. 공동 등장 분석
     total_words = sum(keywords.values())
     cooccurrence = calculate_cooccurrence_matrix(reviews, keywords)
-    print(f"Calculated co-occurrence for {len(cooccurrence)} keyword pairs")
+    # print(f"Calculated co-occurrence for {len(cooccurrence)} keyword pairs")
     
     # 3. PMI 계산
     pmi_scores = calculate_pmi(cooccurrence, keywords, total_words)
-    print(f"Calculated PMI for {len(pmi_scores)} keyword pairs")
+    # print(f"Calculated PMI for {len(pmi_scores)} keyword pairs")
     
     # 4. 커뮤니티 탐지
     communities = detect_communities(keywords, pmi_scores)
-    print(f"Detected {len(communities)} communities")
+    # print(f"Detected {len(communities)} communities")
     
     # 5. GPT 클러스터 라벨링
     cluster_labels = generate_cluster_labels_with_gpt(communities, keywords)
-    print(f"Generated labels for {len(cluster_labels)} clusters")
+    # print(f"Generated labels for {len(cluster_labels)} clusters")
     
     # 6. 시각화 데이터 생성
     network_data = create_network_visualization_data(keywords, pmi_scores, communities, cluster_labels)
