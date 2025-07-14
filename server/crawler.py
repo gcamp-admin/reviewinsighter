@@ -73,12 +73,15 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                         parsed_date = datetime.strptime(post_date, "%Y%m%d")
                         iso_date = parsed_date.isoformat() + "Z"
                         
-                        # Filter by date range if specified
+                        # Filter by date range if specified (with 7 days buffer for Naver content)
                         if start_date and end_date:
                             start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
                             end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                            if not (start_dt <= parsed_date <= end_dt):
-                                continue  # Skip this review if outside date range
+                            # Add 7 days buffer for Naver blog content
+                            buffer_start = start_dt - timedelta(days=7)
+                            buffer_end = end_dt + timedelta(days=7)
+                            if not (buffer_start <= parsed_date <= buffer_end):
+                                continue  # Skip this review if outside extended date range
                     except:
                         iso_date = "2025-01-01T00:00:00Z"
                         # Skip if we can't parse the date and date filtering is required
@@ -142,12 +145,15 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 parsed_date = datetime.strptime(post_date, "%Y%m%d")
                                 iso_date = parsed_date.isoformat() + "Z"
                                 
-                                # Filter by date range if specified
+                                # Filter by date range if specified (with 7 days buffer for Naver content)
                                 if start_date and end_date:
                                     start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
                                     end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                    if not (start_dt <= parsed_date <= end_dt):
-                                        continue  # Skip this review if outside date range
+                                    # Add 7 days buffer for Naver cafe content
+                                    buffer_start = start_dt - timedelta(days=7)
+                                    buffer_end = end_dt + timedelta(days=7)
+                                    if not (buffer_start <= parsed_date <= buffer_end):
+                                        continue  # Skip this review if outside extended date range
                             except:
                                 # Generate random date within range for cafe reviews (API limitation)
                                 if start_date and end_date:
