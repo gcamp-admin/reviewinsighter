@@ -43,13 +43,17 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
     if selected_channels.get("googlePlay"):
         result["google_play"] = crawl_google_play(
             info["google_play_id"], 
-            count=review_count
+            count=review_count,
+            start_date=start_date,
+            end_date=end_date
         )
 
     if selected_channels.get("appleStore"):
         result["apple_store"] = crawl_apple_store(
             info["apple_store_id"],
-            count=review_count
+            count=review_count,
+            start_date=start_date,
+            end_date=end_date
         )
 
     if selected_channels.get("naverBlog"):
@@ -63,8 +67,18 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                 try:
                     parsed_date = datetime.strptime(post_date, "%Y%m%d")
                     iso_date = parsed_date.isoformat() + "Z"
+                    
+                    # Filter by date range if specified
+                    if start_date and end_date:
+                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                        if not (start_dt <= parsed_date <= end_dt):
+                            continue  # Skip this review if outside date range
                 except:
                     iso_date = "2025-01-01T00:00:00Z"
+                    # Skip if we can't parse the date and date filtering is required
+                    if start_date and end_date:
+                        continue
                 
                 # Clean content from HTML tags
                 title = blog.get("title", "")
@@ -103,6 +117,24 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3)
             # Convert to review format
             for cafe in naver_cafes:
+                # Convert YYYYMMDD to ISO format and filter by date
+                post_date = cafe.get("postdate", "20250101")
+                try:
+                    parsed_date = datetime.strptime(post_date, "%Y%m%d")
+                    iso_date = parsed_date.isoformat() + "Z"
+                    
+                    # Filter by date range if specified
+                    if start_date and end_date:
+                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                        if not (start_dt <= parsed_date <= end_dt):
+                            continue  # Skip this review if outside date range
+                except:
+                    iso_date = "2025-01-01T00:00:00Z"
+                    # Skip if we can't parse the date and date filtering is required
+                    if start_date and end_date:
+                        continue
+                
                 # Clean content from HTML tags
                 title = cafe.get("title", "")
                 description = cafe.get("description", "")
@@ -127,7 +159,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
                     "rating": 5,  # Default rating for cafe posts
                     "content": f"{clean_title} {clean_description}",
-                    "createdAt": "2025-01-01T00:00:00Z",  # Default date in ISO format
+                    "createdAt": iso_date,  # Use parsed date
                     "link": cafe.get("link", ""),
                     "platform": "naver_cafe"
                 }
@@ -135,3 +167,57 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         result["naver_cafe"] = cafe_results
 
     return result
+
+
+def crawl_google_play(app_id, count=500, start_date=None, end_date=None):
+    """
+    Crawl Google Play Store reviews with date filtering
+    
+    Args:
+        app_id: Google Play Store app ID
+        count: Number of reviews to collect
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
+        
+    Returns:
+        List of reviews
+    """
+    from scraper import scrape_google_play_reviews
+    
+    # Scrape reviews with date filtering
+    reviews = scrape_google_play_reviews(
+        app_id, 
+        count,
+        start_date=start_date,
+        end_date=end_date
+    )
+    print(f"Collected {len(reviews)} reviews from Google Play Store (Date range: {start_date} to {end_date})")
+    
+    return reviews
+
+
+def crawl_apple_store(app_id, count=500, start_date=None, end_date=None):
+    """
+    Crawl Apple App Store reviews with date filtering
+    
+    Args:
+        app_id: Apple App Store app ID
+        count: Number of reviews to collect
+        start_date: Start date for filtering (ISO format)
+        end_date: End date for filtering (ISO format)
+        
+    Returns:
+        List of reviews
+    """
+    from scraper import scrape_app_store_reviews
+    
+    # Scrape reviews with date filtering
+    reviews = scrape_app_store_reviews(
+        app_id, 
+        count,
+        start_date=start_date,
+        end_date=end_date
+    )
+    print(f"Collected {len(reviews)} reviews from Apple App Store (Date range: {start_date} to {end_date})")
+    
+    return reviews

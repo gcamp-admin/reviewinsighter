@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -47,9 +48,15 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
   const queryClient = useQueryClient();
   
   const [localFilters, setLocalFilters] = useState(filters);
+  const [collectionProgress, setCollectionProgress] = useState(0);
+  const [collectionStep, setCollectionStep] = useState("");
 
   const collectReviewsMutation = useMutation({
     mutationFn: async (): Promise<CollectResponse> => {
+      // Reset progress
+      setCollectionProgress(0);
+      setCollectionStep("수집 준비 중...");
+      
       // Validate required fields
       if (!localFilters.service) {
         throw new Error('서비스를 선택해주세요');
@@ -97,8 +104,37 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
       };
       
       console.log('Collection payload:', payload);
-      const response = await apiRequest("POST", "/api/reviews/collect", payload);
-      return response.json();
+      
+      // Set progress steps
+      setCollectionProgress(20);
+      setCollectionStep("선택된 스토어에서 리뷰 수집 중...");
+      
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setCollectionProgress(prev => {
+          if (prev < 80) {
+            return prev + 10;
+          }
+          return prev;
+        });
+      }, 2000);
+      
+      try {
+        const response = await apiRequest("POST", "/api/reviews/collect", payload);
+        clearInterval(progressInterval);
+        setCollectionProgress(90);
+        setCollectionStep("감정 분석 중...");
+        
+        const result = await response.json();
+        
+        setCollectionProgress(100);
+        setCollectionStep("수집 완료!");
+        
+        return result;
+      } catch (error) {
+        clearInterval(progressInterval);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       console.log('Collection success data:', data);
@@ -117,6 +153,13 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         title: "수집 완료",
         description: `${data.selectedService || localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
       });
+      
+      // Reset progress
+      setTimeout(() => {
+        setCollectionProgress(0);
+        setCollectionStep("");
+      }, 2000);
+      
       // Only invalidate reviews and stats, not analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
@@ -127,6 +170,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
       }
     },
     onError: (error: any) => {
+      setCollectionProgress(0);
+      setCollectionStep("");
       toast({
         title: "수집 실패",
         description: error?.message || "리뷰 수집 중 오류가 발생했습니다.",
@@ -385,6 +430,23 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
               </p>
             )}
           </div>
+
+          {/* Progress Bar */}
+          {collectReviewsMutation.isPending && (
+            <div className="space-y-3 p-4 bg-gray-50 rounded-lg border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">수집 진행 상황</span>
+                <span className="text-sm text-gray-500">{collectionProgress}%</span>
+              </div>
+              <Progress value={collectionProgress} className="h-2" />
+              {collectionStep && (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                  <span className="text-sm text-gray-600">{collectionStep}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Row 4: Review Collection Button */}
           <div className="pt-2">
