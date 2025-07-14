@@ -6,7 +6,7 @@ Google Play Store Review Scraper for 우리가게 패키지
 import json
 import sys
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 from google_play_scraper import Sort, reviews
 import pandas as pd
 import xml.etree.ElementTree as ET
@@ -831,6 +831,9 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
             # Check date range first - skip if outside range
             if start_dt or end_dt:
                 review_date = review['at'] if review['at'] else datetime.now()
+                # Convert to timezone-aware datetime if needed
+                if review_date.tzinfo is None:
+                    review_date = review_date.replace(tzinfo=timezone.utc)
                 if start_dt and review_date < start_dt:
                     continue
                 if end_dt and review_date > end_dt:

@@ -429,6 +429,16 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 ⚠️ 수집 기간은 최대 31일까지만 설정할 수 있습니다
               </p>
             )}
+            
+            {/* 날짜 범위 안내 메시지 */}
+            <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+              <p className="font-medium mb-1">💡 효과적인 리뷰 수집을 위한 팁:</p>
+              <ul className="text-xs space-y-1 ml-2">
+                <li>• 최근 1-2주 범위로 설정하면 가장 많은 리뷰를 수집할 수 있습니다</li>
+                <li>• 익시오 앱의 경우 2025-07-12 ~ 2025-07-13 범위에 최신 리뷰가 있습니다</li>
+                <li>• 너무 오래된 날짜 범위는 리뷰가 적을 수 있습니다</li>
+              </ul>
+            </div>
           </div>
 
           {/* Progress Bar */}

@@ -285,6 +285,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get collected reviews from storage
             const { reviews: storedReviews } = await storage.getReviews(1, 1000);
             
+            // Check if reviews exist and show date range information
+            if (storedReviews.length > 0) {
+              const dates = storedReviews.map(r => new Date(r.createdAt)).sort((a, b) => a.getTime() - b.getTime());
+              const oldestDate = dates[0].toISOString().split('T')[0];
+              const newestDate = dates[dates.length - 1].toISOString().split('T')[0];
+              console.log(`📅 수집된 리뷰 날짜 범위: ${oldestDate} ~ ${newestDate}`);
+            }
+            
             // Update sentiment analysis for reviews using optimized batch processing
             if (storedReviews.length > 0) {
               try {
@@ -358,9 +366,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             
             // Return success response after sentiment analysis
+            let message = `${reviewCount}개의 리뷰를 성공적으로 수집했습니다.`;
+            
+            // Add date range information if available
+            if (storedReviews.length > 0) {
+              const dates = storedReviews.map(r => new Date(r.createdAt)).sort((a, b) => a.getTime() - b.getTime());
+              const oldestDate = dates[0].toISOString().split('T')[0];
+              const newestDate = dates[dates.length - 1].toISOString().split('T')[0];
+              
+              // Check if there are reviews in the requested date range
+              const fromDate = new Date(startDate);
+              const toDate = new Date(endDate);
+              const reviewsInRange = storedReviews.filter(review => {
+                const reviewDate = new Date(review.createdAt);
+                return reviewDate >= fromDate && reviewDate <= toDate;
+              });
+              
+              if (reviewsInRange.length === 0) {
+                message += ` 하지만 지정된 날짜 범위(${startDate.split('T')[0]} ~ ${endDate.split('T')[0]})에는 리뷰가 없습니다. 실제 리뷰 날짜 범위: ${oldestDate} ~ ${newestDate}`;
+              }
+            }
+            
             return res.json({
               success: true,
-              message: `${reviewCount}개의 리뷰를 성공적으로 수집했습니다.`,
+              message: message,
               reviewsCount: reviewCount,
               insightsCount: 0,
               selectedService: selectedService || { name: serviceName || '익시오' },
