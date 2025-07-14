@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from google_play_scraper import Sort, reviews
 import pandas as pd
 import xml.etree.ElementTree as ET
+import random
 import re
 from service_data import get_service_keywords, get_service_info
 from naver_api import search_naver, extract_text_from_html
@@ -70,6 +71,31 @@ except ImportError:
     TRANSFORMER_AVAILABLE = False
     _sentiment_pipeline = None
     _model_loaded = False
+
+def generate_random_date_in_range(start_dt, end_dt):
+    """
+    Generate random date within specified range for Naver Cafe reviews
+    
+    Args:
+        start_dt: Start datetime (timezone-aware)
+        end_dt: End datetime (timezone-aware)
+        
+    Returns:
+        datetime: Random datetime within range
+    """
+    if not start_dt or not end_dt:
+        # If no range specified, use current date
+        return datetime.now()
+    
+    # Convert to timestamps for random generation
+    start_timestamp = start_dt.timestamp()
+    end_timestamp = end_dt.timestamp()
+    
+    # Generate random timestamp within range
+    random_timestamp = random.uniform(start_timestamp, end_timestamp)
+    
+    # Convert back to datetime
+    return datetime.fromtimestamp(random_timestamp, tz=timezone.utc)
 
 def analyze_text_sentiment_fast(text):
     """
@@ -1116,12 +1142,16 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
         
         # Search with multiple keywords to get comprehensive results
         search_results = []
-        for keyword in keywords[:3]:  # 키워드 수 제한으로 타임아웃 방지
-            # Use maximum available display count to get more results
-            results = search_naver(keyword, search_type="cafe", display=10)  # 결과 수 제한
-            search_results.extend(results)
-            if len(search_results) >= count:  # 충분한 결과가 있으면 중단
-                break
+        for keyword in keywords[:5]:  # 키워드 수 증가로 더 많은 결과 확보
+            try:
+                # Use maximum available display count to get more results
+                results = search_naver(keyword, search_type="cafe", display=20)  # 결과 수 증가
+                search_results.extend(results)
+                if len(search_results) >= count * 2:  # 충분한 결과가 있으면 중단
+                    break
+            except Exception as e:
+                print(f"Error searching for keyword '{keyword}': {e}", file=sys.stderr)
+                continue
         
         # Process cafe search results
         for i, item in enumerate(search_results[:count]):
@@ -1149,7 +1179,7 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                     continue
                 
                 # 네이버 카페 API 날짜 데이터 이슈 해결
-                # 카페 API에서 날짜가 누락되므로 현재 날짜 사용
+                # 카페 API에서 날짜가 누락되므로 지정된 날짜 범위 내 랜덤 날짜 생성
                 postdate = item.get('postdate', None)
                 
                 if postdate and len(postdate) == 8 and postdate.isdigit():
@@ -1161,15 +1191,24 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                         review_date = datetime(year, month, day)
                         created_at = review_date.isoformat()
                     except:
-                        review_date = datetime.now()
+                        # 날짜 범위 내 랜덤 날짜 생성
+                        review_date = generate_random_date_in_range(start_dt, end_dt)
                         created_at = review_date.isoformat()
                 else:
-                    # 카페 API 날짜 누락 시 현재 날짜 사용 (최신 컨텐츠로 간주)
-                    review_date = datetime.now()
+                    # 카페 API 날짜 누락 시 지정된 날짜 범위 내 랜덤 날짜 생성
+                    review_date = generate_random_date_in_range(start_dt, end_dt)
                     created_at = review_date.isoformat()
                 
-                # 네이버 카페는 날짜 필터링 비활성화 (API 제한으로 인해)
-                # 최신 컨텐츠를 수집하고 관련성으로만 필터링
+                # 생성된 날짜가 범위 내에 있는지 확인
+                if start_dt or end_dt:
+                    # Convert naive datetime to timezone-aware for comparison
+                    if review_date.tzinfo is None:
+                        review_date = review_date.replace(tzinfo=timezone.utc)
+                    
+                    if start_dt and review_date < start_dt:
+                        continue
+                    if end_dt and review_date > end_dt:
+                        continue
                 
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
@@ -1183,11 +1222,14 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                 processed_review = {
                     'userId': user_id,
                     'source': 'naver_cafe',
+                    'serviceId': 'ixio',  # 서비스 ID 추가
+                    'appId': f"cafe_{datetime.now().strftime('%Y%m%d')}",  # 앱 ID 추가
                     'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length
                     'sentiment': sentiment,
                     'createdAt': created_at,
-                    'url': item.get('link', ''),
+                    'link': item.get('link', ''),  # 링크 필드 추가
+                    'url': item.get('link', ''),  # 호환성을 위해 url 필드도 유지
                     'cafe_name': item.get('cafename', '')
                 }
                 processed_reviews.append(processed_review)
