@@ -4,8 +4,10 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "beautifulsoup4>=4.13.4",
     "google-play-scraper>=1.2.7",
     "konlpy>=0.6.0",
+    "lxml>=6.0.0",
     "matplotlib>=3.10.3",
     "nltk>=3.9.1",
     "pandas>=2.3.0",

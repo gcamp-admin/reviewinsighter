@@ -73,15 +73,13 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                         parsed_date = datetime.strptime(post_date, "%Y%m%d")
                         iso_date = parsed_date.isoformat() + "Z"
                         
-                        # Filter by date range if specified (with 7 days buffer for Naver content)
+                        # Filter by date range if specified (exact date matching)
                         if start_date and end_date:
                             start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
                             end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                            # Add 7 days buffer for Naver blog content
-                            buffer_start = start_dt - timedelta(days=7)
-                            buffer_end = end_dt + timedelta(days=7)
-                            if not (buffer_start <= parsed_date <= buffer_end):
-                                continue  # Skip this review if outside extended date range
+                            if not (start_dt <= parsed_date <= end_dt):
+                                print(f"  Skipping blog post: {parsed_date} outside range {start_dt} to {end_dt}")
+                                continue  # Skip this review if outside date range
                     except:
                         iso_date = "2025-01-01T00:00:00Z"
                         # Skip if we can't parse the date and date filtering is required
@@ -145,43 +143,60 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 parsed_date = datetime.strptime(post_date, "%Y%m%d")
                                 iso_date = parsed_date.isoformat() + "Z"
                                 
-                                # Filter by date range if specified (with 7 days buffer for Naver content)
+                                # Filter by date range if specified (exact date matching)
                                 if start_date and end_date:
                                     start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
                                     end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                    # Add 7 days buffer for Naver cafe content
-                                    buffer_start = start_dt - timedelta(days=7)
-                                    buffer_end = end_dt + timedelta(days=7)
-                                    if not (buffer_start <= parsed_date <= buffer_end):
-                                        continue  # Skip this review if outside extended date range
+                                    if not (start_dt <= parsed_date <= end_dt):
+                                        print(f"  Skipping cafe post: {parsed_date} outside range {start_dt} to {end_dt}")
+                                        continue  # Skip this review if outside date range
                             except:
-                                # Generate random date within range for cafe reviews (API limitation)
-                                if start_date and end_date:
-                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                    random_days = (end_dt - start_dt).days
-                                    if random_days > 0:
-                                        import random
-                                        random_date = start_dt + timedelta(days=random.randint(0, random_days))
-                                        iso_date = random_date.isoformat() + "Z"
-                                    else:
-                                        iso_date = start_dt.isoformat() + "Z"
-                                else:
-                                    iso_date = "2025-07-01T00:00:00Z"
+                                # 날짜 파싱 실패 시 - 정확한 날짜 알 수 없으므로 스킵
+                                print(f"  Skipping cafe post: date parsing failed")
+                                continue
                         else:
-                            # Generate random date within range for cafe reviews (API limitation)
+                            # 네이버 카페 API는 날짜를 제공하지 않음 - 정확한 날짜 기반 필터링 불가
+                            # 제목에서 날짜 추출 시도
+                            title_text = cafe.get("title", "")
+                            extracted_date = None
+                            
+                            # 제목에서 날짜 패턴 추출 시도
+                            import re
+                            date_patterns = [
+                                r'(\d{4})-(\d{2})-(\d{2})',  # 2025-07-14
+                                r'(\d{4})\.(\d{2})\.(\d{2})',  # 2025.07.14
+                                r'(\d{4})/(\d{2})/(\d{2})',  # 2025/07/14
+                                r'(\d{2})/(\d{2})/(\d{4})',  # 07/14/2025
+                            ]
+                            
+                            for pattern in date_patterns:
+                                match = re.search(pattern, title_text)
+                                if match:
+                                    try:
+                                        if pattern.startswith(r'(\d{4})'):
+                                            year, month, day = match.groups()
+                                            extracted_date = datetime(int(year), int(month), int(day))
+                                        else:  # MM/DD/YYYY 형식
+                                            month, day, year = match.groups()
+                                            extracted_date = datetime(int(year), int(month), int(day))
+                                        break
+                                    except ValueError:
+                                        continue
+                            
+                            # 날짜 추출 실패 시 - 정확한 날짜 알 수 없으므로 스킵
+                            if not extracted_date:
+                                print(f"  Skipping cafe post: no date available from API or title")
+                                continue
+                                
+                            iso_date = extracted_date.isoformat() + "Z"
+                            
+                            # 추출된 날짜로 필터링
                             if start_date and end_date:
                                 start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
                                 end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                random_days = (end_dt - start_dt).days
-                                if random_days > 0:
-                                    import random
-                                    random_date = start_dt + timedelta(days=random.randint(0, random_days))
-                                    iso_date = random_date.isoformat() + "Z"
-                                else:
-                                    iso_date = start_dt.isoformat() + "Z"
-                            else:
-                                iso_date = "2025-07-01T00:00:00Z"
+                                if not (start_dt <= extracted_date <= end_dt):
+                                    print(f"  Skipping cafe post: {extracted_date} outside range {start_dt} to {end_dt}")
+                                    continue
                         
                         # Clean content from HTML tags
                         title = cafe.get("title", "")
