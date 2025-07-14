@@ -33,7 +33,7 @@ interface KeywordNetworkData {
   nodes: KeywordNode[];
   edges: KeywordEdge[];
   clusters: KeywordCluster[];
-  statistics: {
+  stats?: {
     total_nodes: number;
     total_edges: number;
     total_clusters: number;
@@ -308,9 +308,9 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="text-sm text-gray-600">
-                      노드: {networkData.statistics.total_nodes}개 | 
-                      엣지: {networkData.statistics.total_edges}개 | 
-                      클러스터: {networkData.statistics.total_clusters}개
+                      노드: {networkData.nodes?.length || 0}개 | 
+                      엣지: {networkData.edges?.length || 0}개 | 
+                      클러스터: {networkData.clusters?.length || 0}개
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
