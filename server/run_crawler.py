@@ -64,26 +64,36 @@ def main():
                         # Handle different review formats
                         if source in ['naver_blog', 'naver_cafe']:
                             # For Naver reviews, use the data from crawler.py
+                            created_at = review.get('createdAt', datetime.now().isoformat())
+                            # Handle datetime objects
+                            if hasattr(created_at, 'isoformat'):
+                                created_at = created_at.isoformat()
+                            
                             review_data = {
                                 'userId': review.get('userId', '익명'),
                                 'content': review.get('content', ''),
                                 'rating': review.get('rating', 5),
                                 'source': review.get('source', mapped_source),
-                                'createdAt': review.get('createdAt', datetime.now().isoformat()),
+                                'createdAt': created_at,
                                 'serviceId': review.get('serviceId', 'ixio'),
                                 'appId': review.get('appId', str(total_reviews)),
                                 'link': review.get('link', '')
                             }
                         else:
-                            # For app store reviews, use the old format
+                            # For app store reviews, use the proper format
+                            created_at = review.get('createdAt', review.get('at', datetime.now().isoformat()))
+                            # Handle datetime objects
+                            if hasattr(created_at, 'isoformat'):
+                                created_at = created_at.isoformat()
+                            
                             review_data = {
-                                'userId': review.get('userName', review.get('title', '익명')),
-                                'content': review.get('content', review.get('description', '')),
-                                'rating': review.get('score', 0),
+                                'userId': review.get('userId', review.get('userName', '익명')),
+                                'content': review.get('content', ''),
+                                'rating': review.get('rating', review.get('score', 0)),
                                 'source': mapped_source,
-                                'createdAt': review.get('at', review.get('pubDate', datetime.now().isoformat())),
+                                'createdAt': created_at,
                                 'serviceId': 'ixio',
-                                'appId': review.get('reviewId', str(total_reviews))
+                                'appId': review.get('appId', str(total_reviews))
                             }
                         
                         # Send to Node.js API

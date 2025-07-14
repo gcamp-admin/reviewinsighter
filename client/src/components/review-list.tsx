@@ -56,13 +56,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
       if (filters.source && filters.source.length > 0) {
         filters.source.forEach(source => {
-          // Handle both naming conventions
-          if (source === "app_store") {
-            params.append("source", "app_store");
-            params.append("source", "apple_store");
-          } else {
-            params.append("source", source);
-          }
+          params.append("source", source);
         });
       }
       if (filters.dateFrom) {

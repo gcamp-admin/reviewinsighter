@@ -160,6 +160,9 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         setCollectionStep("");
       }, 2000);
       
+      // Update filters with the collected service information
+      onFiltersChange(localFilters);
+      
       // Only invalidate reviews and stats, not analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
