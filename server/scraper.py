@@ -1116,17 +1116,25 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
         
         # Search with multiple keywords to get comprehensive results
         search_results = []
-        for keyword in keywords[:5]:  # Use more keywords for better coverage
+        for keyword in keywords[:3]:  # 키워드 수 제한으로 타임아웃 방지
             # Use maximum available display count to get more results
-            results = search_naver(keyword, search_type="cafe", display=100)  # Use max allowed by API
+            results = search_naver(keyword, search_type="cafe", display=10)  # 결과 수 제한
             search_results.extend(results)
+            if len(search_results) >= count:  # 충분한 결과가 있으면 중단
+                break
         
         # Process cafe search results
         for i, item in enumerate(search_results[:count]):
             try:
-                # Filter out non-review content using quality check
-                from naver_api import is_likely_user_review
-                if not is_likely_user_review(item, keywords):
+                # 네이버 카페 콘텐츠 품질 확인 완화
+                # 기본적인 키워드 매칭만 수행하여 더 많은 콘텐츠 수집
+                title = item.get('title', '')
+                description = item.get('description', '')
+                content_to_check = f"{title} {description}".lower()
+                
+                # 기본적인 키워드 매칭
+                has_keyword = any(keyword.lower() in content_to_check for keyword in keywords[:5])
+                if not has_keyword:
                     continue
                 
                 # Extract clean text from description
@@ -1140,33 +1148,28 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                 if len(content.strip()) < 10:
                     continue
                 
-                # Convert date from YYYYMMDD to ISO format
-                postdate = item.get('postdate', datetime.now().strftime('%Y%m%d'))
-                try:
-                    # Parse YYYYMMDD format and convert to ISO
-                    if len(postdate) == 8 and postdate.isdigit():
+                # 네이버 카페 API 날짜 데이터 이슈 해결
+                # 카페 API에서 날짜가 누락되므로 현재 날짜 사용
+                postdate = item.get('postdate', None)
+                
+                if postdate and len(postdate) == 8 and postdate.isdigit():
+                    # 정상적인 날짜 데이터 처리
+                    try:
                         year = int(postdate[:4])
                         month = int(postdate[4:6])
                         day = int(postdate[6:8])
                         review_date = datetime(year, month, day)
                         created_at = review_date.isoformat()
-                    else:
+                    except:
                         review_date = datetime.now()
                         created_at = review_date.isoformat()
-                except:
+                else:
+                    # 카페 API 날짜 누락 시 현재 날짜 사용 (최신 컨텐츠로 간주)
                     review_date = datetime.now()
                     created_at = review_date.isoformat()
                 
-                # Check date range first - skip if outside range
-                if start_dt or end_dt:
-                    # Convert naive datetime to timezone-aware for comparison
-                    if review_date.tzinfo is None:
-                        review_date = review_date.replace(tzinfo=timezone.utc)
-                    
-                    if start_dt and review_date < start_dt:
-                        continue
-                    if end_dt and review_date > end_dt:
-                        continue
+                # 네이버 카페는 날짜 필터링 비활성화 (API 제한으로 인해)
+                # 최신 컨텐츠를 수집하고 관련성으로만 필터링
                 
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
