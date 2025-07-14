@@ -41,10 +41,11 @@ function StoreIcon({ source }: { source: string }) {
 export default function ReviewList({ filters, currentPage, onPageChange }: ReviewListProps) {
   const [sortOrder, setSortOrder] = useState("newest");
   const [sentimentFilter, setSentimentFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
   const limit = 10;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
-    queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo, sentimentFilter],
+    queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo, sentimentFilter, sourceFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -54,11 +55,16 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       if (filters?.service?.id) {
         params.append("serviceId", filters.service.id);
       }
-      if (filters.source && filters.source.length > 0) {
+      
+      // 소스 필터 적용
+      if (sourceFilter !== "all") {
+        params.append("source", sourceFilter);
+      } else if (filters.source && filters.source.length > 0) {
         filters.source.forEach(source => {
           params.append("source", source);
         });
       }
+      
       if (filters.dateFrom) {
         params.append("dateFrom", filters.dateFrom.toISOString());
       }
@@ -265,60 +271,138 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
               {data?.total ? `총 ${data.total}개` : ""}
             </span>
           </CardTitle>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      <span>전체</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="긍정">
-                    <div className="flex items-center gap-2">
-                      <ThumbsUp className="h-4 w-4 text-green-600" />
-                      <span>긍정</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="부정">
-                    <div className="flex items-center gap-2">
-                      <ThumbsDown className="h-4 w-4 text-red-600" />
-                      <span>부정</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="중립">
-                    <div className="flex items-center gap-2">
-                      <Minus className="h-4 w-4 text-gray-600" />
-                      <span>중립</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
+            {/* 필터 적용 상태 표시 */}
+            {(sentimentFilter !== "all" || sourceFilter !== "all") && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">필터 적용 중:</span>
+                <div className="flex items-center gap-2">
+                  {sentimentFilter !== "all" && (
+                    <Badge variant="secondary" className="text-xs">
+                      {sentimentFilter === "긍정" ? "긍정" : sentimentFilter === "부정" ? "부정" : "중립"}
+                    </Badge>
+                  )}
+                  {sourceFilter !== "all" && (
+                    <Badge variant="secondary" className="text-xs">
+                      {getSourceName(sourceFilter)}
+                    </Badge>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSentimentFilter("all");
+                      setSourceFilter("all");
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    필터 초기화
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-3">
+              {/* 감정 필터 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">감정</span>
+                <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
+                  <SelectTrigger className="w-28">
+                    <SelectValue placeholder="전체" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        <span>전체</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="긍정">
+                      <div className="flex items-center gap-2">
+                        <ThumbsUp className="h-4 w-4 text-green-600" />
+                        <span>긍정</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="부정">
+                      <div className="flex items-center gap-2">
+                        <ThumbsDown className="h-4 w-4 text-red-600" />
+                        <span>부정</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="중립">
+                      <div className="flex items-center gap-2">
+                        <Minus className="h-4 w-4 text-gray-600" />
+                        <span>중립</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 채널 필터 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">채널</span>
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder="전체" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        <span>전체</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="google_play">
+                      <div className="flex items-center gap-2">
+                        <FaGooglePlay className="h-4 w-4 text-green-600" />
+                        <span>구글 플레이</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="app_store">
+                      <div className="flex items-center gap-2">
+                        <FaApple className="h-4 w-4 text-gray-800" />
+                        <span>애플 앱스토어</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="naver_blog">
+                      <div className="flex items-center gap-2">
+                        <FaPenNib className="h-4 w-4 text-green-600" />
+                        <span>네이버 블로그</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="naver_cafe">
+                      <div className="flex items-center gap-2">
+                        <FaMugHot className="h-4 w-4 text-green-600" />
+                        <span>네이버 카페</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 정렬 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">정렬</span>
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger className="w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">최신순</SelectItem>
+                    <SelectItem value="oldest">오래된순</SelectItem>
+                    <SelectItem value="rating-high">평점높은순</SelectItem>
+                    <SelectItem value="rating-low">평점낮은순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-              <SelectItem value="newest">최신순</SelectItem>
-              <SelectItem value="oldest">오래된순</SelectItem>
-              <SelectItem value="rating-high">평점높은순</SelectItem>
-              <SelectItem value="rating-low">평점낮은순</SelectItem>
-            </SelectContent>
-            </Select>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filteredReviews.map((review) => (
-            <div key={review.id} className="p-4 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md group">
-              <div className="flex items-center justify-between mb-3">
+            <div key={review.id} className="p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-lg border border-gray-100 hover:border-blue-200 hover:shadow-md group">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3 text-sm">
                   <span className="text-lg group-hover:scale-110 transform transition-transform duration-300">{getSourceIcon(review.source)}</span>
                   <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{getSourceName(review.source)}</span>
@@ -336,7 +420,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   {getSentimentBadge(review.sentiment)}
                 </div>
               </div>
-              <div className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors">
+              <div className="text-gray-700 text-sm leading-5 group-hover:text-gray-800 transition-colors">
                 <span>
                   {review.content.length > 200 ? review.content.slice(0, 200) + '...' : review.content}
                 </span>

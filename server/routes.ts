@@ -235,16 +235,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Build command line arguments with new crawler structure
       const crawlerArgs = {
-        service_name: selectedService?.name || serviceName || '익시오',
-        selected_channels: {
+        serviceName: selectedService || serviceName || '익시오',
+        selectedChannels: {
           googlePlay: selectedChannels?.googlePlay || false,
           appleStore: selectedChannels?.appleStore || false,
           naverBlog: selectedChannels?.naverBlog || false,
           naverCafe: selectedChannels?.naverCafe || false
         },
-        start_date: startDate || null,
-        end_date: endDate || null,
-        review_count: count || 100
+        startDate: startDate || null,
+        endDate: endDate || null,
+        count: count || 100
       };
       
       const args = [

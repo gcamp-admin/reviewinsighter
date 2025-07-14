@@ -175,11 +175,16 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
   };
 
   const drawNetwork = () => {
-    if (!canvasRef.current || !networkData) return;
+    if (!canvasRef.current || !networkData) {
+      console.log('❌ 캔버스 또는 네트워크 데이터 없음:', { canvas: !!canvasRef.current, data: !!networkData });
+      return;
+    }
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    console.log('🎨 네트워크 그리기 시작 - 노드:', networkData.nodes.length, '엣지:', networkData.edges.length);
 
     // 캔버스 초기화
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -189,14 +194,55 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
     ctx.translate(pan.x, pan.y);
     ctx.scale(zoom, zoom);
 
-    // 엣지 그리기
-    ctx.strokeStyle = '#E0E0E0';
-    ctx.lineWidth = 1;
+    // 🔴 클러스터 배경 원 그리기 (새로운 기능)
+    if (networkData.clusters && networkData.clusters.length > 0) {
+      networkData.clusters.forEach((cluster, index) => {
+        const clusterNodes = networkData.nodes.filter(n => n.cluster === index);
+        if (clusterNodes.length === 0) return;
+        
+        // 클러스터 중심점 계산
+        const centerX = clusterNodes.reduce((sum, n) => sum + (n.x || 0), 0) / clusterNodes.length;
+        const centerY = clusterNodes.reduce((sum, n) => sum + (n.y || 0), 0) / clusterNodes.length;
+        
+        // 클러스터 반지름 계산
+        const maxDistance = Math.max(...clusterNodes.map(n => 
+          Math.sqrt(Math.pow((n.x || 0) - centerX, 2) + Math.pow((n.y || 0) - centerY, 2))
+        ));
+        const clusterRadius = maxDistance + 40;
+        
+        // 클러스터 배경 원
+        ctx.fillStyle = clusterColors[index] + '20'; // 20% 투명도
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, clusterRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // 클러스터 테두리
+        ctx.strokeStyle = clusterColors[index] + '60';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // 🏷️ 클러스터 라벨 (GPT 생성)
+        ctx.fillStyle = '#333333';
+        ctx.font = 'bold 14px "LG Smart UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cluster.label, centerX, centerY - clusterRadius - 25);
+      });
+    }
+
+    // 🔗 엣지 그리기 (두께 = 연관도)
     networkData.edges.forEach(edge => {
       const sourceNode = networkData.nodes.find(n => n.id === edge.source);
       const targetNode = networkData.nodes.find(n => n.id === edge.target);
       
       if (sourceNode && targetNode && sourceNode.x && sourceNode.y && targetNode.x && targetNode.y) {
+        // 엣지 두께 = PMI 또는 weight 기반
+        const edgeWeight = Math.max(1, Math.min(8, (edge.pmi || edge.weight || 1) * 2));
+        
+        ctx.strokeStyle = '#E0E0E0';
+        ctx.lineWidth = edgeWeight;
         ctx.beginPath();
         ctx.moveTo(sourceNode.x, sourceNode.y);
         ctx.lineTo(targetNode.x, targetNode.y);
@@ -204,11 +250,12 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
       }
     });
 
-    // 노드 그리기
+    // 🔵 노드 그리기 (크기 = 빈도)
     networkData.nodes.forEach(node => {
       if (!node.x || !node.y) return;
       
-      const nodeSize = Math.max(8, Math.min(30, node.frequency * 3));
+      // 노드 크기 = 등장 빈도 비례
+      const nodeSize = Math.max(12, Math.min(40, node.frequency * 4));
       const clusterColor = clusterColors[node.cluster || 0];
       
       // 노드 원
@@ -219,18 +266,24 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
       
       // 노드 테두리
       ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.stroke();
       
       // 노드 라벨
       ctx.fillStyle = '#333333';
-      ctx.font = '12px "LG Smart UI", sans-serif';
+      ctx.font = 'bold 12px "LG Smart UI", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(node.label, node.x, node.y + nodeSize + 15);
+      ctx.fillText(node.label, node.x, node.y + nodeSize + 18);
+      
+      // 빈도 표시
+      ctx.fillStyle = '#666666';
+      ctx.font = '10px "LG Smart UI", sans-serif';
+      ctx.fillText(`(${node.frequency})`, node.x, node.y + nodeSize + 32);
     });
 
     ctx.restore();
+    console.log('✅ 네트워크 그리기 완료');
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
