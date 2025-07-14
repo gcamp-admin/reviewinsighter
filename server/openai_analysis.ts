@@ -23,16 +23,16 @@ export async function analyzeHeartFrameworkWithGPT(reviews: any[]): Promise<any[
       source: review.source
     }));
 
-    // Create prompt for HEART framework analysis
+    // Create prompt for UX-focused HEART framework analysis
     const prompt = `
 다음 리뷰들을 HEART 프레임워크에 따라 분석하여 UX 개선 제안을 생성해주세요.
 
-HEART 프레임워크:
-- Happiness: 사용자 만족도 및 감정
-- Engagement: 사용자 참여도 및 활동 수준
-- Adoption: 새로운 기능 채택 및 사용 시작
-- Retention: 사용자 유지 및 재사용
-- Task Success: 작업 완료 및 성공률
+HEART 프레임워크 (UX 관점):
+- Happiness: 사용자 만족도, 감정적 반응, 사용 즐거움
+- Engagement: 사용자 참여 패턴, 기능 사용 빈도, 상호작용 품질
+- Adoption: 새로운 기능 발견성, 학습 용이성, 첫 사용 경험
+- Retention: 재사용 동기, 사용자 이탈 방지, 지속적 가치 제공
+- Task Success: 작업 완료율, 오류 방지, 사용자 목표 달성
 
 리뷰 데이터:
 ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
@@ -44,8 +44,8 @@ ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: $
     {
       "category": "happiness|engagement|adoption|retention|task_success",
       "title": "🔴 Critical | HEART: [category] | [문제유형] ([건수]건)",
-      "problem_summary": "실제 사용자 표현을 인용하며 구체적인 문제점 설명",
-      "ux_suggestions": "구체적이고 실행 가능한 UX 개선 제안 (3-5가지)",
+      "problem_summary": "실제 사용자 표현을 인용하며 구체적인 UX 문제점 설명",
+      "ux_suggestions": "사용자 경험 개선을 위한 구체적 UX 솔루션 (인터페이스 개선, 사용자 플로우 최적화, 접근성 향상, 피드백 시스템 등)",
       "priority": "critical|major|minor",
       "mention_count": 건수,
       "trend": "stable"
@@ -53,11 +53,14 @@ ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: $
   ]
 }
 
-우선순위 기준:
-- Critical: 핵심 기능 오류, 앱 크래시, 작업 실패 (3건 이상)
-- Major: 주요 불편사항, 사용성 문제 (2건 이상)
-- Minor: 개선 제안, 소소한 불편 (1건)
+UX 개선 제안 작성 원칙:
+1. 사용자 인터페이스 개선 (버튼 배치, 메뉴 구조, 시각적 피드백)
+2. 사용자 플로우 최적화 (단계 축소, 직관적 네비게이션)
+3. 접근성 향상 (사용 편의성, 학습 용이성)
+4. 피드백 시스템 개선 (상태 표시, 오류 메시지, 도움말)
+5. 사용자 만족도 향상 (개인화, 커스터마이징)
 
+기술적 구현 방법은 제외하고, 순수 UX 관점에서의 개선 방안만 제시하세요.
 실제 사용자 리뷰에서 발견된 문제만 분석하고, 가상의 문제는 만들지 마세요.
 `;
 
@@ -66,7 +69,7 @@ ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: $
       messages: [
         {
           role: "system",
-          content: "당신은 UX 전문가입니다. 사용자 리뷰를 분석하여 실용적인 UX 개선 제안을 생성합니다. 응답은 반드시 유효한 JSON 배열 형태로 해주세요."
+          content: "당신은 UX 전문가입니다. 사용자 리뷰를 분석하여 사용자 경험 개선에 초점을 맞춘 실용적인 UX 솔루션을 제안합니다. 기술적 구현 방법은 제외하고, 순수 UX 관점에서 인터페이스 개선, 사용자 플로우 최적화, 접근성 향상, 피드백 시스템 개선에 집중하세요. 응답은 반드시 유효한 JSON 형태로 해주세요."
         },
         {
           role: "user",

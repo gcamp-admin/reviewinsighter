@@ -338,6 +338,9 @@ Changelog:
 - July 14, 2025. Date range 2025-07-01~03 contains 9 Naver cafe reviews, no blog reviews (this is expected behavior)
 - July 14, 2025. Date range 2025-07-01~14 contains all 12 Naver reviews (3 blog + 9 cafe)
 - July 14, 2025. Multi-source collection system fully operational: Google Play, Apple Store, Naver Blog, Naver Cafe all working correctly
+- July 14, 2025. **ENHANCED**: Updated HEART framework analysis to focus exclusively on UX aspects per user requirement
+- July 14, 2025. Modified GPT prompts to exclude technical implementation and focus on interface improvements, user flow optimization, accessibility, and feedback systems
+- July 14, 2025. HEART analysis now provides pure UX solutions: button placement, menu structure, visual feedback, navigation improvements, and user satisfaction enhancements
 
 ## User Preferences
 
