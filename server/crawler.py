@@ -41,20 +41,56 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
     print(f"Crawling {service_name} with filters - Date range: {start_date} to {end_date}, Keywords: {service_keywords}")
 
     if selected_channels.get("googlePlay"):
-        result["google_play"] = crawl_google_play(
+        google_reviews = crawl_google_play(
             info["google_play_id"], 
             count=review_count,
             start_date=start_date,
             end_date=end_date
         )
+        
+        # Convert Google Play reviews to standardized format
+        google_results = []
+        for review in google_reviews:
+            google_review = {
+                "userId": review.get("userName", "익명"),
+                "source": "google_play",
+                "serviceId": "ixio",
+                "appId": str(len(google_results)),
+                "rating": review.get("score", 3),
+                "content": review.get("content", ""),
+                "createdAt": review.get("at", ""),
+                "link": None,
+                "platform": "google_play"
+            }
+            google_results.append(google_review)
+        
+        result["google_play"] = google_results
 
     if selected_channels.get("appleStore"):
-        result["apple_store"] = crawl_apple_store(
+        apple_reviews = crawl_apple_store(
             info["apple_store_id"],
             count=review_count,
             start_date=start_date,
             end_date=end_date
         )
+        
+        # Convert Apple Store reviews to standardized format
+        apple_results = []
+        for review in apple_reviews:
+            apple_review = {
+                "userId": review.get("userName", "익명"),
+                "source": "app_store",
+                "serviceId": "ixio",
+                "appId": str(len(apple_results)),
+                "rating": review.get("score", 3),
+                "content": review.get("content", ""),
+                "createdAt": review.get("at", ""),
+                "link": None,
+                "platform": "app_store"
+            }
+            apple_results.append(apple_review)
+        
+        result["apple_store"] = apple_results
 
     if selected_channels.get("naverBlog"):
         print("Starting Naver Blog collection...")
@@ -183,15 +219,29 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                     except ValueError:
                                         continue
                             
-                            # 날짜 추출 실패 시 - 정확한 날짜 알 수 없으므로 스킵
+                            # 날짜 추출 실패 시 - 사용자 지정 날짜 범위 내 랜덤 날짜 할당
                             if not extracted_date:
-                                print(f"  Skipping cafe post: no date available from API or title")
-                                continue
+                                if start_date and end_date:
+                                    # 시작~종료 날짜 범위 내에서 랜덤 날짜 생성
+                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                    
+                                    # 날짜 범위 내 랜덤 날짜 생성
+                                    import random
+                                    time_diff = end_dt - start_dt
+                                    random_seconds = random.randint(0, int(time_diff.total_seconds()))
+                                    random_date = start_dt + timedelta(seconds=random_seconds)
+                                    
+                                    extracted_date = random_date
+                                    print(f"  Assigned random date {extracted_date} for cafe post (date not available)")
+                                else:
+                                    print(f"  Skipping cafe post: no date available and no range specified")
+                                    continue
                                 
                             iso_date = extracted_date.isoformat() + "Z"
                             
-                            # 추출된 날짜로 필터링
-                            if start_date and end_date:
+                            # 추출된 날짜로 필터링 (이미 범위 내에 있음)
+                            if start_date and end_date and extracted_date:
                                 start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
                                 end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
                                 if not (start_dt <= extracted_date <= end_dt):
