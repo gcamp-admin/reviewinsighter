@@ -75,31 +75,54 @@ def search_naver(keyword, search_type="blog", display=10):
     if not base_url:
         raise ValueError("search_type은 'blog' 또는 'cafe' 이어야 합니다")
 
-    # 🔐 키워드를 따옴표로 감싸 정확 검색 유도
-    query = urllib.parse.quote(f'"{keyword}"')  
-    url = f"{base_url}?query={query}&display={display}"
+    # 🔐 정확 검색과 일반 검색을 병행하여 더 많은 결과 확보
+    queries = [
+        urllib.parse.quote(f'"{keyword}"'),  # 정확 검색
+        urllib.parse.quote(keyword),  # 일반 검색
+        urllib.parse.quote(f"{keyword} 앱"),  # 앱 관련 검색
+        urllib.parse.quote(f"{keyword} 리뷰")  # 리뷰 관련 검색
+    ]
+    
+    all_results = []
+    seen_links = set()
+    
+    for query in queries:
+        url = f"{base_url}?query={query}&display={display}&sort=date"  # 최신순 정렬 추가
 
-    headers = {
-        "X-Naver-Client-Id": NAVER_CLIENT_ID,
-        "X-Naver-Client-Secret": NAVER_CLIENT_SECRET
-    }
+        headers = {
+            "X-Naver-Client-Id": NAVER_CLIENT_ID,
+            "X-Naver-Client-Secret": NAVER_CLIENT_SECRET
+        }
 
-    try:
-        res = requests.get(url, headers=headers, timeout=10)
+        try:
+            res = requests.get(url, headers=headers, timeout=10)
+            
+            if res.status_code == 200:
+                items = res.json().get("items", [])
+                # Extract user IDs from URLs and avoid duplicates
+                for item in items:
+                    link = item.get('link', '')
+                    if link not in seen_links:
+                        seen_links.add(link)
+                        user_id = extract_user_id_from_url(item.get('bloggerlink', ''), link, search_type)
+                        item['extracted_user_id'] = user_id
+                        all_results.append(item)
+                        
+                        # 목표 수량에 도달하면 종료
+                        if len(all_results) >= display:
+                            break
+            else:
+                print(f"네이버 API 오류: {res.status_code} - {res.text}", file=sys.stderr)
+                
+        except requests.exceptions.RequestException as e:
+            print(f"네이버 API 요청 실패: {str(e)}", file=sys.stderr)
+            continue
         
-        if res.status_code == 200:
-            items = res.json().get("items", [])
-            # Extract user IDs from URLs
-            for item in items:
-                user_id = extract_user_id_from_url(item.get('bloggerlink', ''), item.get('link', ''), search_type)
-                item['extracted_user_id'] = user_id
-            return items
-        else:
-            print(f"네이버 API 오류: {res.status_code} - {res.text}", file=sys.stderr)
-            return []
-    except requests.exceptions.RequestException as e:
-        print(f"네이버 API 요청 실패: {str(e)}", file=sys.stderr)
-        return []
+        # 목표 수량에 도달하면 종료
+        if len(all_results) >= display:
+            break
+    
+    return all_results[:display]
 
 def extract_text_from_html(html_content):
     """
