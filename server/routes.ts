@@ -368,13 +368,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Return success response after sentiment analysis
             let message = `${reviewCount}개의 리뷰를 성공적으로 수집했습니다.`;
             
-            // Add date range information if available
-            if (storedReviews.length > 0) {
-              const dates = storedReviews.map(r => new Date(r.createdAt)).sort((a, b) => a.getTime() - b.getTime());
-              const oldestDate = dates[0].toISOString().split('T')[0];
-              const newestDate = dates[dates.length - 1].toISOString().split('T')[0];
-              message += ` (실제 리뷰 날짜: ${oldestDate} ~ ${newestDate})`;
-            }
+            // Simple success message without date info
+            // Date filtering is handled at collection time
             
             return res.json({
               success: true,
