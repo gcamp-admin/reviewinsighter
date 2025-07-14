@@ -9,6 +9,7 @@ dependencies = [
     "konlpy>=0.6.0",
     "lxml>=6.0.0",
     "matplotlib>=3.10.3",
+    "networkx>=3.5",
     "nltk>=3.9.1",
     "pandas>=2.3.0",
     "requests>=2.32.4",

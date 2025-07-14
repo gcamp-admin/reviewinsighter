@@ -757,15 +757,15 @@ print(json.dumps(result, ensure_ascii=False))
         });
       }
       
-      if (reviews.length < 10) {
+      if (reviews.length < 5) {
         return res.json({
           error: '데이터 부족',
-          message: '키워드 네트워크 분석을 위해서는 최소 10개 이상의 리뷰가 필요합니다.'
+          message: '키워드 네트워크 분석을 위해서는 최소 5개 이상의 리뷰가 필요합니다. 더 많은 리뷰를 수집하거나 날짜 범위를 확장해주세요.'
         });
       }
 
       // Use Python-based keyword network analysis
-      const analysisPath = path.join(__dirname, 'keyword_network.py');
+      const analysisPath = path.join(__dirname, 'keyword_network_analysis.py');
       
       // Ensure reviews is an array and has the right structure
       let reviewsArray;
@@ -786,10 +786,7 @@ print(json.dumps(result, ensure_ascii=False))
       
       const args = [
         analysisPath,
-        JSON.stringify({
-          reviews: reviewsArray,
-          method: method
-        })
+        JSON.stringify(reviewsArray)
       ];
       
       console.log(`Running keyword network analysis for ${reviews.length} reviews`);
