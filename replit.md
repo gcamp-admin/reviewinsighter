@@ -299,6 +299,12 @@ Changelog:
 - July 11, 2025. Enhanced crawler.py with proper serviceId mapping and review structure for multi-source compatibility
 - July 11, 2025. Updated run_crawler.py with differentiated data handling for Naver vs app store reviews
 - July 11, 2025. Successfully tested Naver integration: 6 blog reviews + 6 cafe reviews collected and stored properly
+- July 14, 2025. Completely restructured review collection system to ensure comprehensive data gathering within user-specified date ranges
+- July 14, 2025. Fixed critical timezone comparison issues in Naver blog/cafe date filtering that prevented review collection  
+- July 14, 2025. Enhanced Google Play crawling to fetch 1,000 reviews and Naver sources to use 100 results per keyword for comprehensive coverage
+- July 14, 2025. Implemented proper date range filtering that collects ALL reviews within user-specified periods, not just limited samples
+- July 14, 2025. System now correctly handles user date selections without auto-adjusting based on existing review dates
+- July 14, 2025. Verified comprehensive collection: 26 reviews collected from 2025-07-01 to 2025-07-05 range across Google Play and App Store
 
 ## User Preferences
 

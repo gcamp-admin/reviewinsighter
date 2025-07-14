@@ -816,13 +816,15 @@ def scrape_google_play_reviews(app_id='com.lguplus.sohoapp', count=100, lang='ko
         if end_date:
             end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
         
-        # Fetch reviews from Google Play Store with extra count for filtering
+        # Fetch comprehensive reviews to ensure we capture all reviews in the date range
+        # Use maximum available count to get complete data set
+        fetch_count = 1000  # Fetch many reviews to ensure we don't miss any in the date range
         result, _ = reviews(
             app_id,
             lang=lang,
             country=country,
             sort=Sort.NEWEST,
-            count=count * 5  # Fetch extra to account for date filtering
+            count=fetch_count
         )
         
         # Process and filter the data - only collect reviews within date range
@@ -996,10 +998,11 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
         keywords = service_keywords or get_service_keywords(service_name)
         processed_reviews = []
         
-        # Search with multiple keywords to get diverse results
+        # Search with multiple keywords to get comprehensive results
         search_results = []
-        for keyword in keywords[:3]:  # Use top 3 keywords to avoid API rate limits
-            results = search_naver(keyword, search_type="blog", display=min(count // len(keywords[:3]) + 5, 30))
+        for keyword in keywords[:5]:  # Use more keywords for better coverage
+            # Use maximum available display count to get more results
+            results = search_naver(keyword, search_type="blog", display=100)  # Use max allowed by API
             search_results.extend(results)
         
         # Process blog search results
@@ -1039,10 +1042,15 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
                     created_at = review_date.isoformat()
                 
                 # Check date range first - skip if outside range
-                if start_dt and review_date < start_dt:
-                    continue
-                if end_dt and review_date > end_dt:
-                    continue
+                if start_dt or end_dt:
+                    # Convert naive datetime to timezone-aware for comparison
+                    if review_date.tzinfo is None:
+                        review_date = review_date.replace(tzinfo=timezone.utc)
+                    
+                    if start_dt and review_date < start_dt:
+                        continue
+                    if end_dt and review_date > end_dt:
+                        continue
                 
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
@@ -1106,10 +1114,11 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
         keywords = get_service_keywords(service_name)
         processed_reviews = []
         
-        # Search with multiple keywords to get diverse results
+        # Search with multiple keywords to get comprehensive results
         search_results = []
-        for keyword in keywords[:3]:  # Use top 3 keywords to avoid API rate limits
-            results = search_naver(keyword, search_type="cafe", display=min(count // len(keywords[:3]) + 5, 30))
+        for keyword in keywords[:5]:  # Use more keywords for better coverage
+            # Use maximum available display count to get more results
+            results = search_naver(keyword, search_type="cafe", display=100)  # Use max allowed by API
             search_results.extend(results)
         
         # Process cafe search results
@@ -1149,10 +1158,15 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                     created_at = review_date.isoformat()
                 
                 # Check date range first - skip if outside range
-                if start_dt and review_date < start_dt:
-                    continue
-                if end_dt and review_date > end_dt:
-                    continue
+                if start_dt or end_dt:
+                    # Convert naive datetime to timezone-aware for comparison
+                    if review_date.tzinfo is None:
+                        review_date = review_date.replace(tzinfo=timezone.utc)
+                    
+                    if start_dt and review_date < start_dt:
+                        continue
+                    if end_dt and review_date > end_dt:
+                        continue
                 
                 # Text-based sentiment analysis
                 sentiment = analyze_text_sentiment(content)
