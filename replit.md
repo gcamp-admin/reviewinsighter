@@ -346,6 +346,12 @@ Changelog:
 - July 14, 2025. Enhanced store_api.py with complete crawl_apple_store function for RSS feed review collection
 - July 14, 2025. Verified comprehensive collection: Google Play (20), Apple Store (18), Naver Blog (3), Naver Cafe (18) reviews in 2025-07-10~15 range
 - July 14, 2025. Multi-source date filtering working correctly - different sources have reviews in different date ranges
+- July 14, 2025. **RESOLVED**: Fixed network collection display issues - all 4 sources now showing correctly in frontend
+- July 14, 2025. Confirmed comprehensive collection working: Google Play (20), Apple Store (18), Naver Blog (1), Naver Cafe (18) reviews
+- July 14, 2025. **ENHANCED**: Significantly improved HEART framework analysis with concrete UX improvement examples
+- July 14, 2025. Added specific few-shot examples: vibration control, call disconnection, carrier restrictions with actionable solutions
+- July 14, 2025. Updated GPT prompts with detailed examples showing user quote → specific UX solution methodology
+- July 14, 2025. HEART analysis now generates implementable UI improvements instead of generic suggestions
 
 ## User Preferences
 
