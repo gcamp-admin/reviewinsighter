@@ -379,9 +379,8 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 </Select>
               </div>
 
-              {/* 정렬 */}
+              {/* 정렬 - 라벨 제거 */}
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">정렬</span>
                 <Select value={sortOrder} onValueChange={setSortOrder}>
                   <SelectTrigger className="w-28">
                     <SelectValue />

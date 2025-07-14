@@ -82,9 +82,9 @@ def main():
                                 'userId': review.get('userId', '익명'),
                                 'content': review.get('content', ''),
                                 'rating': review.get('rating', 5),
-                                'source': review.get('source', mapped_source),
+                                'source': mapped_source,  # 소스 매핑 수정
                                 'createdAt': created_at,
-                                'serviceId': review.get('serviceId', 'ixio'),
+                                'serviceId': 'ixio',
                                 'appId': review.get('appId', str(total_reviews)),
                                 'link': review.get('link', '')
                             }
