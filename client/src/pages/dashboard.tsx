@@ -18,7 +18,7 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [hasCollectedReviews, setHasCollectedReviews] = useState(false);
-  const [activeAnalysisSection, setActiveAnalysisSection] = useState<'wordcloud' | 'heart' | null>(null);
+  const [activeAnalysisSection, setActiveAnalysisSection] = useState<'wordcloud' | 'heart' | 'comprehensive' | null>(null);
 
   const handleFiltersChange = (newFilters: ReviewFilters) => {
     setFilters(newFilters);
@@ -30,11 +30,7 @@ export default function Dashboard() {
   };
 
   const handleAnalysisSuccess = (analysisType: 'wordcloud' | 'heart' | 'comprehensive') => {
-    if (analysisType === 'comprehensive') {
-      setActiveAnalysisSection('wordcloud'); // Show word cloud first, then insights
-    } else {
-      setActiveAnalysisSection(analysisType);
-    }
+    setActiveAnalysisSection(analysisType);
   };
 
   return (
@@ -73,7 +69,7 @@ export default function Dashboard() {
         )}
         
         {hasCollectedReviews && activeAnalysisSection && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 space-y-4">
             {activeAnalysisSection === 'wordcloud' && (
               <KeywordNetwork 
                 serviceId={filters.service?.id || "익시오"}
@@ -85,6 +81,18 @@ export default function Dashboard() {
                 filters={filters}
                 activeSection={activeAnalysisSection}
               />
+            )}
+            {activeAnalysisSection === 'comprehensive' && (
+              <>
+                <KeywordNetwork 
+                  serviceId={filters.service?.id || "익시오"}
+                  className="mb-4"
+                />
+                <WordCloudAndInsights 
+                  filters={filters}
+                  activeSection={'heart'}
+                />
+              </>
             )}
           </div>
         )}

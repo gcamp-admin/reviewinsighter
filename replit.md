@@ -329,6 +329,10 @@ Changelog:
 - July 14, 2025. Verified complete system functionality: run_crawler.py correctly processes Naver data and transmits to storage via /api/reviews/create endpoint
 - July 14, 2025. Multi-source collection fully operational: Google Play (151), Apple Store (49), Naver Blog (3), Naver Cafe (9) reviews collected successfully
 - July 14, 2025. System now properly handles all four review sources with correct date filtering and sentiment analysis integration
+- July 14, 2025. **RESOLVED**: Fixed HEART framework analysis display issue in comprehensive analysis mode
+- July 14, 2025. Enhanced dashboard to show both keyword network and HEART insights when comprehensive analysis is requested
+- July 14, 2025. Verified HEART analysis data generation: 6 UX insights successfully created and stored
+- July 14, 2025. Complete analysis workflow now functional: collection → sentiment analysis → keyword network → HEART framework all displayed properly
 
 ## User Preferences
 
