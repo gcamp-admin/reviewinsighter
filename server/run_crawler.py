@@ -20,7 +20,16 @@ def main():
         
         # Parse crawler arguments
         crawler_args_str = sys.argv[1]
-        crawler_args = json.loads(crawler_args_str)
+        if not crawler_args_str.strip():
+            print("Error: Empty crawler arguments")
+            sys.exit(1)
+        
+        try:
+            crawler_args = json.loads(crawler_args_str)
+        except json.JSONDecodeError as e:
+            print(f"JSON parsing error: {e}")
+            print(f"Input string: {crawler_args_str}")
+            sys.exit(1)
         
         service_name = crawler_args.get('service_name', '익시오')
         selected_channels = crawler_args.get('selected_channels', {})

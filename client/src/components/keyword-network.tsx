@@ -109,6 +109,19 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
         return;
       }
 
+      // 데이터 유효성 검증
+      if (!data.nodes || data.nodes.length === 0) {
+        setError('분석 가능한 키워드가 부족합니다. 더 많은 리뷰를 수집하거나 다른 날짜 범위를 선택해 주세요.');
+        setNetworkData(null);
+        return;
+      }
+
+      if (!data.edges || data.edges.length === 0) {
+        setError('키워드 간 연관성이 부족합니다. 더 많은 리뷰를 수집하거나 다른 날짜 범위를 선택해 주세요.');
+        setNetworkData(null);
+        return;
+      }
+
       // 백엔드 응답 형식에 맞게 클러스터 데이터 변환
       const transformedData = {
         ...data,
@@ -271,6 +284,13 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
       drawNetwork();
     }
   }, [zoom, pan, networkData]);
+
+  // 컴포넌트 마운트 시 자동으로 분석 실행
+  useEffect(() => {
+    if (dateFrom && dateTo && !networkData && !loading) {
+      analyzeKeywordNetwork();
+    }
+  }, [dateFrom, dateTo]);
 
   return (
     <div className="space-y-4">

@@ -106,21 +106,32 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       
       const heartResponse = await apiRequest("POST", "/api/analyze", heartPayload);
       
+      // 키워드 네트워크 분석도 동시에 수행
+      const keywordNetworkPayload = {
+        serviceId: filters.service.id,
+        source: filters.source,
+        dateFrom: filters.dateFrom,
+        dateTo: endDate
+      };
+      
+      const keywordNetworkResponse = await apiRequest("POST", "/api/keyword-network", keywordNetworkPayload);
+      
       return { 
-        wordcloud: await wordcloudResponse.json(),
-        heart: await heartResponse.json()
+        message: "통합 분석이 완료되었습니다.",
+        success: true
       };
     },
     onSuccess: (data) => {
       toast({
         title: "코멘토 분석 완료",
-        description: "워드클라우드와 HEART 프레임워크 분석이 완료되었습니다.",
+        description: "워드클라우드, HEART 프레임워크, 키워드 네트워크 분석이 완료되었습니다.",
       });
       setHasAnalyzedComprehensive(true);
       onAnalysisSuccess('comprehensive');
-      // Invalidate both word cloud and insights data
+      // Invalidate all analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/keyword-network"] });
     },
     onError: (error: any) => {
       toast({
