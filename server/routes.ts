@@ -5,7 +5,7 @@ import { z } from "zod";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch } from "./openai_analysis";
+import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateKeywordNetworkWithGPT } from "./openai_analysis";
 import { insertReviewSchema } from "../shared/schema";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -566,11 +566,10 @@ print(json.dumps(result, ensure_ascii=False))
             // For wordcloud analysis, use GPT-based analysis
             if (analysisType === 'wordcloud') {
               try {
-                const { generateWordCloudWithGPT } = await import('./openai_analysis');
-                const gptWordCloud = await generateWordCloudWithGPT(reviewsForAnalysis);
+                const gptNetwork = await generateKeywordNetworkWithGPT(reviewsForAnalysis);
                 
                 // Store positive words
-                for (const wordData of gptWordCloud.positive) {
+                for (const wordData of gptNetwork.positive) {
                   try {
                     await storage.createWordCloudData({
                       word: wordData.word,
@@ -585,7 +584,7 @@ print(json.dumps(result, ensure_ascii=False))
                 }
                 
                 // Store negative words
-                for (const wordData of gptWordCloud.negative) {
+                for (const wordData of gptNetwork.negative) {
                   try {
                     await storage.createWordCloudData({
                       word: wordData.word,
@@ -597,6 +596,12 @@ print(json.dumps(result, ensure_ascii=False))
                   } catch (err) {
                     console.error("Error storing GPT negative word cloud data:", err);
                   }
+                }
+
+                // Store keyword network data (nodes and links)
+                if (gptNetwork.nodes && gptNetwork.links) {
+                  await storage.storeKeywordNetwork(serviceId, gptNetwork.nodes, gptNetwork.links);
+                  console.log(`Stored keyword network with ${gptNetwork.nodes.length} nodes and ${gptNetwork.links.length} links`);
                 }
               } catch (gptError) {
                 console.error("GPT word cloud analysis failed, falling back to Python analysis:", gptError);
@@ -716,6 +721,19 @@ print(json.dumps(result, ensure_ascii=False))
     } catch (error) {
       console.error('GPT batch sentiment analysis error:', error);
       res.status(500).json({ error: "Failed to analyze sentiments" });
+    }
+  });
+
+  // Get keyword network data
+  app.get("/api/keyword-network/:serviceId", async (req, res) => {
+    try {
+      const { serviceId } = req.params;
+      const networkData = await storage.getKeywordNetwork(serviceId);
+      
+      res.json(networkData);
+    } catch (error) {
+      console.error('Error getting keyword network:', error);
+      res.status(500).json({ error: "Failed to get keyword network" });
     }
   });
 

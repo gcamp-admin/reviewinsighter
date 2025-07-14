@@ -16,6 +16,10 @@ export interface IStorage {
   getWordCloudData(sentiment: string, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date }): Promise<WordCloudData[]>;
   createWordCloudData(data: InsertWordCloudData): Promise<WordCloudData>;
   
+  // Keyword network storage methods
+  storeKeywordNetwork(serviceId: string, nodes: any[], links: any[]): Promise<void>;
+  getKeywordNetwork(serviceId: string): Promise<{ nodes: any[], links: any[] }>;
+  
   // Clear analysis data when new reviews are collected
   clearAnalysisData(serviceId: string): Promise<void>;
 }
@@ -25,6 +29,7 @@ export class MemStorage implements IStorage {
   private reviews: Map<number, Review>;
   private insights: Map<number, Insight>;
   private wordCloudData: Map<number, WordCloudData>;
+  private keywordNetworks: Map<string, { nodes: any[], links: any[] }>;
   private currentUserId: number;
   private currentReviewId: number;
   private currentInsightId: number;
@@ -35,6 +40,7 @@ export class MemStorage implements IStorage {
     this.reviews = new Map();
     this.insights = new Map();
     this.wordCloudData = new Map();
+    this.keywordNetworks = new Map();
     this.currentUserId = 1;
     this.currentReviewId = 1;
     this.currentInsightId = 1;
@@ -298,6 +304,15 @@ export class MemStorage implements IStorage {
     return data;
   }
 
+  async storeKeywordNetwork(serviceId: string, nodes: any[], links: any[]): Promise<void> {
+    this.keywordNetworks.set(serviceId, { nodes, links });
+    console.log(`Stored keyword network for service ${serviceId}: ${nodes.length} nodes, ${links.length} links`);
+  }
+
+  async getKeywordNetwork(serviceId: string): Promise<{ nodes: any[], links: any[] }> {
+    return this.keywordNetworks.get(serviceId) || { nodes: [], links: [] };
+  }
+
   // Clear analysis data when new reviews are collected
   async clearAnalysisData(serviceId: string): Promise<void> {
     console.log(`Clearing analysis data for service: ${serviceId}`);
@@ -308,6 +323,9 @@ export class MemStorage implements IStorage {
     
     this.insights.clear();
     this.wordCloudData.clear();
+    
+    // Clear keyword network data
+    this.keywordNetworks.delete(serviceId);
     
     console.log(`Cleared ${beforeInsights} insights and ${beforeWordCloud} word cloud items`);
   }

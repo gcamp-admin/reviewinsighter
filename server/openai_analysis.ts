@@ -103,125 +103,134 @@ ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: $
   }
 }
 
-// GPT-based word cloud analysis
-export async function generateWordCloudWithGPT(reviews: any[]): Promise<{
+// GPT-based keyword network analysis
+export async function generateKeywordNetworkWithGPT(reviews: any[]): Promise<{
+  nodes: any[];
+  links: any[];
   positive: { word: string; frequency: number; sentiment: string }[];
   negative: { word: string; frequency: number; sentiment: string }[];
 }> {
   if (!reviews || reviews.length === 0) {
-    return { positive: [], negative: [] };
+    return { nodes: [], links: [], positive: [], negative: [] };
   }
 
   try {
-    // Separate reviews by sentiment
-    const positiveReviews = reviews.filter(r => r.sentiment === '긍정');
-    const negativeReviews = reviews.filter(r => r.sentiment === '부정');
+    // Prepare review texts for analysis
+    const reviewTexts = reviews.map(review => ({
+      content: review.content,
+      sentiment: review.sentiment,
+      source: review.source
+    }));
 
-    // Create prompts for positive and negative word extraction
-    const positivePrompt = `
-다음 긍정적인 리뷰들에서 자주 언급되는 중요한 한국어 단어 10개를 추출해주세요.
+    // Create prompt for keyword network analysis
+    const prompt = `
+다음 리뷰들에서 키워드 간 연관성을 분석하여 네트워크 그래프를 생성해주세요.
 
-긍정 리뷰:
-${positiveReviews.map((review, index) => `${index + 1}. ${review.content}`).join('\n')}
+리뷰 데이터:
+${reviewTexts.map((review, index) => `${index + 1}. [${review.sentiment}] [${review.source}] ${review.content}`).join('\n\n')}
 
-다음 JSON 형식으로 반환해주세요:
+분석 결과를 다음 JSON 형식으로 반환해주세요:
 {
-  "words": [
-    {"word": "단어", "frequency": 빈도수, "sentiment": "positive"}
+  "nodes": [
+    {
+      "id": "키워드",
+      "word": "키워드",
+      "frequency": 빈도수,
+      "sentiment": "긍정|부정|중립",
+      "category": "기능|품질|사용성|감정|기타",
+      "size": 노드크기 (20-100)
+    }
+  ],
+  "links": [
+    {
+      "source": "키워드1",
+      "target": "키워드2", 
+      "weight": 연관강도 (1-10),
+      "context": "연관 맥락",
+      "distance": 거리 (50-150)
+    }
+  ],
+  "positive_keywords": [
+    {
+      "word": "키워드",
+      "frequency": 빈도수,
+      "sentiment": "positive"
+    }
+  ],
+  "negative_keywords": [
+    {
+      "word": "키워드", 
+      "frequency": 빈도수,
+      "sentiment": "negative"
+    }
   ]
 }
 
-조건:
-- 의미 있는 명사나 형용사만 선택
-- 한국어 단어만 추출
-- 빈도수는 실제 언급 횟수 기반
-- 총 10개 단어 선택
+요구사항:
+- 총 15-20개의 핵심 키워드 추출
+- 키워드 간 연관성 분석 (동시 등장, 의미적 연관성)
+- 노드 크기는 언급 빈도에 비례 (20-100)
+- 링크 거리는 연관강도에 반비례 (50-150)
+- 연관강도는 1-10 스케일 (10이 가장 강한 연관성)
+- 실제 리뷰에서 언급된 키워드만 포함
+- 한국어 키워드 우선, 의미 있는 키워드만 선택
+- 각 감정별로 최대 10개의 키워드 추출
 `;
 
-    const negativePrompt = `
-다음 부정적인 리뷰들에서 자주 언급되는 중요한 한국어 단어 10개를 추출해주세요.
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "당신은 텍스트 분석 전문가입니다. 사용자 리뷰에서 의미 있는 키워드를 추출하고 키워드 간 연관성을 분석합니다. 응답은 반드시 유효한 JSON 형태로 해주세요."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 3000,
+      response_format: { type: "json_object" }
+    });
 
-부정 리뷰:
-${negativeReviews.map((review, index) => `${index + 1}. ${review.content}`).join('\n')}
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    
+    // Transform to expected format
+    const nodes = (result.nodes || []).map((node: any) => ({
+      id: node.id || node.word,
+      text: node.word || node.id,
+      sentiment: node.sentiment === 'positive' ? '긍정' : node.sentiment === 'negative' ? '부정' : '중립',
+      frequency: node.frequency || 1
+    }));
 
-다음 JSON 형식으로 반환해주세요:
-{
-  "words": [
-    {"word": "단어", "frequency": 빈도수, "sentiment": "negative"}
-  ]
-}
+    const links = (result.links || []).map((link: any) => ({
+      source: link.source,
+      target: link.target,
+      strength: Math.min(1, (link.weight || 1) / 10) // Normalize to 0-1 range
+    }));
 
-조건:
-- 의미 있는 명사나 형용사만 선택
-- 한국어 단어만 추출
-- 빈도수는 실제 언급 횟수 기반
-- 총 10개 단어 선택
-`;
+    // Transform to expected format for backward compatibility
+    const positiveWords = (result.positive_keywords || []).map((item: any) => ({
+      word: item.word,
+      frequency: item.frequency || 1
+    }));
 
-    // Process positive words
-    let positiveWords: any[] = [];
-    if (positiveReviews.length > 0) {
-      const positiveResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "당신은 한국어 텍스트 분석 전문가입니다. 리뷰에서 의미 있는 키워드를 추출합니다."
-          },
-          {
-            role: "user",
-            content: positivePrompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.3,
-        response_format: { type: "json_object" }
-      });
-
-      try {
-        const positiveResult = JSON.parse(positiveResponse.choices[0].message.content || '{}');
-        positiveWords = positiveResult.words || [];
-      } catch (error) {
-        console.error('Failed to parse positive words:', error);
-      }
-    }
-
-    // Process negative words
-    let negativeWords: any[] = [];
-    if (negativeReviews.length > 0) {
-      const negativeResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "당신은 한국어 텍스트 분석 전문가입니다. 리뷰에서 의미 있는 키워드를 추출합니다."
-          },
-          {
-            role: "user",
-            content: negativePrompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.3,
-        response_format: { type: "json_object" }
-      });
-
-      try {
-        const negativeResult = JSON.parse(negativeResponse.choices[0].message.content || '{}');
-        negativeWords = negativeResult.words || [];
-      } catch (error) {
-        console.error('Failed to parse negative words:', error);
-      }
-    }
+    const negativeWords = (result.negative_keywords || []).map((item: any) => ({
+      word: item.word,
+      frequency: item.frequency || 1
+    }));
 
     return {
+      nodes,
+      links,
       positive: positiveWords,
       negative: negativeWords
     };
 
   } catch (error) {
-    console.error('OpenAI API error in word cloud analysis:', error);
-    return { positive: [], negative: [] };
+    console.error('Error generating keyword network with GPT:', error);
+    return { nodes: [], links: [], positive: [], negative: [] };
   }
 }
 

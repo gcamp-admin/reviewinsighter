@@ -73,7 +73,18 @@ export default function Dashboard() {
         
         {hasCollectedReviews && activeAnalysisSection && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} showBoth={true} />
+            {activeAnalysisSection === 'wordcloud' && (
+              <KeywordNetwork 
+                serviceId={filters.service?.id || "익시오"}
+                className="mb-4"
+              />
+            )}
+            {activeAnalysisSection === 'heart' && (
+              <WordCloudAndInsights 
+                filters={filters}
+                activeSection={activeAnalysisSection}
+              />
+            )}
           </div>
         )}
       </main>

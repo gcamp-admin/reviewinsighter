@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import type { WordCloudData, ReviewFilters } from "@/types";
 import { useEffect, useRef } from "react";
-import KeywordNetwork from "./keyword-network";
+import { KeywordNetwork } from "./keyword-network";
 
 interface WordCloudProps {
   filters: ReviewFilters;
