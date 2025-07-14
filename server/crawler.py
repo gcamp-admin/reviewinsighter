@@ -57,28 +57,33 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         )
 
     if selected_channels.get("naverBlog"):
+        print("Starting Naver Blog collection...")
         blog_results = []
-        for kw in service_keywords[:3]:  # Limit to top 3 keywords
-            naver_blogs = search_naver(kw, search_type="blog", display=review_count//3)
-            # Convert to review format
-            for blog in naver_blogs:
-                # Convert YYYYMMDD to ISO format
-                post_date = blog.get("postdate", "20250101")
-                try:
-                    parsed_date = datetime.strptime(post_date, "%Y%m%d")
-                    iso_date = parsed_date.isoformat() + "Z"
-                    
-                    # Filter by date range if specified
-                    if start_date and end_date:
-                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                        if not (start_dt <= parsed_date <= end_dt):
-                            continue  # Skip this review if outside date range
-                except:
-                    iso_date = "2025-01-01T00:00:00Z"
-                    # Skip if we can't parse the date and date filtering is required
-                    if start_date and end_date:
-                        continue
+        try:
+            for kw in service_keywords[:3]:  # Limit to top 3 keywords
+                print(f"Searching Naver Blog with keyword: {kw}")
+                naver_blogs = search_naver(kw, search_type="blog", display=review_count//3)
+                print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
+                
+                # Convert to review format
+                for blog in naver_blogs:
+                    # Convert YYYYMMDD to ISO format
+                    post_date = blog.get("postdate", "20250101")
+                    try:
+                        parsed_date = datetime.strptime(post_date, "%Y%m%d")
+                        iso_date = parsed_date.isoformat() + "Z"
+                        
+                        # Filter by date range if specified
+                        if start_date and end_date:
+                            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                            if not (start_dt <= parsed_date <= end_dt):
+                                continue  # Skip this review if outside date range
+                    except:
+                        iso_date = "2025-01-01T00:00:00Z"
+                        # Skip if we can't parse the date and date filtering is required
+                        if start_date and end_date:
+                            continue
                 
                 # Clean content from HTML tags
                 title = blog.get("title", "")
@@ -109,87 +114,106 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     "platform": "naver_blog"
                 }
                 blog_results.append(blog_review)
+                print(f"Added blog review from {blog_review['userId']}: {blog_review['content'][:50]}...")
+            print(f"Total blog results collected: {len(blog_results)}")
+        except Exception as e:
+            print(f"Error collecting Naver Blog reviews: {str(e)}")
+            blog_results = []
         result["naver_blog"] = blog_results
 
     if selected_channels.get("naverCafe"):
+        print("Starting Naver Cafe collection...")
         cafe_results = []
-        for kw in service_keywords[:5]:  # Increase to 5 keywords for better coverage
-            naver_cafes = search_naver(kw, search_type="cafe", display=review_count//2)
-            # Convert to review format
-            for cafe in naver_cafes:
-                # Convert YYYYMMDD to ISO format with flexible date handling
-                post_date = cafe.get("postdate", "")
-                
-                # Handle date with more flexibility for cafe reviews
-                if post_date and len(post_date) == 8 and post_date.isdigit():
-                    try:
-                        parsed_date = datetime.strptime(post_date, "%Y%m%d")
-                        iso_date = parsed_date.isoformat() + "Z"
+        try:
+            for kw in service_keywords[:3]:  # Limit to 3 keywords for stability
+                print(f"Searching Naver Cafe with keyword: {kw}")
+                try:
+                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3)
+                    print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
+                    
+                    # Convert to review format
+                    for cafe in naver_cafes:
+                        # Convert YYYYMMDD to ISO format with flexible date handling
+                        post_date = cafe.get("postdate", "")
                         
-                        # Filter by date range if specified
-                        if start_date and end_date:
-                            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                            if not (start_dt <= parsed_date <= end_dt):
-                                continue  # Skip this review if outside date range
-                    except:
-                        # Generate random date within range for cafe reviews (API limitation)
-                        if start_date and end_date:
-                            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                            random_days = (end_dt - start_dt).days
-                            if random_days > 0:
-                                import random
-                                random_date = start_dt + timedelta(days=random.randint(0, random_days))
-                                iso_date = random_date.isoformat() + "Z"
+                        # Handle date with more flexibility for cafe reviews
+                        if post_date and len(post_date) == 8 and post_date.isdigit():
+                            try:
+                                parsed_date = datetime.strptime(post_date, "%Y%m%d")
+                                iso_date = parsed_date.isoformat() + "Z"
+                                
+                                # Filter by date range if specified
+                                if start_date and end_date:
+                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                    if not (start_dt <= parsed_date <= end_dt):
+                                        continue  # Skip this review if outside date range
+                            except:
+                                # Generate random date within range for cafe reviews (API limitation)
+                                if start_date and end_date:
+                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                    random_days = (end_dt - start_dt).days
+                                    if random_days > 0:
+                                        import random
+                                        random_date = start_dt + timedelta(days=random.randint(0, random_days))
+                                        iso_date = random_date.isoformat() + "Z"
+                                    else:
+                                        iso_date = start_dt.isoformat() + "Z"
+                                else:
+                                    iso_date = "2025-07-01T00:00:00Z"
+                        else:
+                            # Generate random date within range for cafe reviews (API limitation)
+                            if start_date and end_date:
+                                start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                random_days = (end_dt - start_dt).days
+                                if random_days > 0:
+                                    import random
+                                    random_date = start_dt + timedelta(days=random.randint(0, random_days))
+                                    iso_date = random_date.isoformat() + "Z"
+                                else:
+                                    iso_date = start_dt.isoformat() + "Z"
                             else:
-                                iso_date = start_dt.isoformat() + "Z"
-                        else:
-                            iso_date = "2025-07-01T00:00:00Z"
-                else:
-                    # Generate random date within range for cafe reviews (API limitation)
-                    if start_date and end_date:
-                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                        random_days = (end_dt - start_dt).days
-                        if random_days > 0:
-                            import random
-                            random_date = start_dt + timedelta(days=random.randint(0, random_days))
-                            iso_date = random_date.isoformat() + "Z"
-                        else:
-                            iso_date = start_dt.isoformat() + "Z"
-                    else:
-                        iso_date = "2025-07-01T00:00:00Z"
+                                iso_date = "2025-07-01T00:00:00Z"
+                        
+                        # Clean content from HTML tags
+                        title = cafe.get("title", "")
+                        description = cafe.get("description", "")
+                        
+                        # Remove HTML tags from content
+                        import re
+                        def clean_html(text):
+                            # Remove HTML tags
+                            text = re.sub(r'<[^>]+>', '', text)
+                            # Decode HTML entities
+                            text = text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                            text = text.replace('&quot;', '"').replace('&#39;', "'")
+                            return text.strip()
+                        
+                        clean_title = clean_html(title)
+                        clean_description = clean_html(description)
                 
-                # Clean content from HTML tags
-                title = cafe.get("title", "")
-                description = cafe.get("description", "")
-                
-                # Remove HTML tags from content
-                import re
-                def clean_html(text):
-                    # Remove HTML tags
-                    text = re.sub(r'<[^>]+>', '', text)
-                    # Decode HTML entities
-                    text = text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
-                    text = text.replace('&quot;', '"').replace('&#39;', "'")
-                    return text.strip()
-                
-                clean_title = clean_html(title)
-                clean_description = clean_html(description)
-                
-                cafe_review = {
-                    "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
-                    "source": "naver_cafe",
-                    "serviceId": "ixio",
-                    "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
-                    "rating": 5,  # Default rating for cafe posts
-                    "content": f"{clean_title} {clean_description}",
-                    "createdAt": iso_date,  # Use parsed date
-                    "link": cafe.get("link", ""),
-                    "platform": "naver_cafe"
-                }
-                cafe_results.append(cafe_review)
+                        cafe_review = {
+                            "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
+                            "source": "naver_cafe",
+                            "serviceId": "ixio",
+                            "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
+                            "rating": 5,  # Default rating for cafe posts
+                            "content": f"{clean_title} {clean_description}",
+                            "createdAt": iso_date,  # Use parsed date
+                            "link": cafe.get("link", ""),
+                            "platform": "naver_cafe"
+                        }
+                        cafe_results.append(cafe_review)
+                        print(f"Added cafe review from {cafe_review['userId']}: {cafe_review['content'][:50]}...")
+                except Exception as e:
+                    print(f"Error searching cafe with keyword {kw}: {str(e)}")
+                    continue
+            print(f"Total cafe results collected: {len(cafe_results)}")
+        except Exception as e:
+            print(f"Error collecting Naver Cafe reviews: {str(e)}")
+            cafe_results = []
         result["naver_cafe"] = cafe_results
 
     return result
