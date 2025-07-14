@@ -305,6 +305,10 @@ Changelog:
 - July 14, 2025. Implemented proper date range filtering that collects ALL reviews within user-specified periods, not just limited samples
 - July 14, 2025. System now correctly handles user date selections without auto-adjusting based on existing review dates
 - July 14, 2025. Verified comprehensive collection: 26 reviews collected from 2025-07-01 to 2025-07-05 range across Google Play and App Store
+- July 14, 2025. Fixed multi-source collection issues: unified date filtering across Google Play, Apple Store, and Naver sources
+- July 14, 2025. Resolved date filtering problems in store_api.py - Google Play and Apple Store now properly filter reviews by user-selected date ranges
+- July 14, 2025. Enhanced crawler system reliability: eliminated function duplication and improved error handling for all four review sources
+- July 14, 2025. Confirmed system functionality: Google Play (6 reviews), Apple Store (10 reviews) successfully collected from 2025-07-11~13 date range
 
 ## User Preferences
 
