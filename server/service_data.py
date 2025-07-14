@@ -10,7 +10,13 @@ services = {
     "익시오": {
         "google_play_id": "com.lguplus.aicallagent",
         "apple_store_id": "6503931858",
-        "keywords": ["익시오", "ixio", "익시o", "ixi오", "LG익시오", "U+익시오", "유플러스익시오"]
+        "keywords": [
+            "익시오", "ixio", "ixi-o", "익시o", "ixi오", 
+            "LG익시오", "LG 익시오", "U+익시오", "유플러스익시오", "유플러스 익시오",
+            "LG U+ 익시오", "LGU+ 익시오", 
+            "익시오 앱", "익시오 통화", "익시오 AI", "익시오 리뷰", "익시오 사용후기",
+            "ixi-O", "IXIO"
+        ]
     },
     "AI비즈콜": {
         "google_play_id": "com.uplus.ubizai",

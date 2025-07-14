@@ -314,6 +314,9 @@ Changelog:
 - July 14, 2025. Verified date-specific content availability: 2025-07-01~06 range legitimately contains no Naver content (not a system error)
 - July 14, 2025. Confirmed user-specified date range analysis: 2025-06-01~07-01 successfully collected 273 total reviews with 0 Naver content
 - July 14, 2025. Verified Naver content distribution: Recent blog posts concentrated in July 12-14 period, none available in June-early July range
+- July 14, 2025. CRITICAL FIX: Expanded Naver search keywords from 7 to 19 keywords including "LG U+ 익시오", "익시오 AI", "익시오 리뷰" etc.
+- July 14, 2025. Successfully resolved Naver collection issue: 44 blog reviews collected from 2025-06-01~07-01 range with expanded keywords
+- July 14, 2025. Confirmed enhanced keyword strategy works: "ixio" (15 results), "LG U+ 익시오" (18 results), "익시오 AI" (19 results)
 
 ## User Preferences
 
