@@ -70,8 +70,8 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     
                     # Filter by date range if specified
                     if start_date and end_date:
-                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
                         if not (start_dt <= parsed_date <= end_dt):
                             continue  # Skip this review if outside date range
                 except:
@@ -125,8 +125,8 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     
                     # Filter by date range if specified
                     if start_date and end_date:
-                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
                         if not (start_dt <= parsed_date <= end_dt):
                             continue  # Skip this review if outside date range
                 except:
