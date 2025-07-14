@@ -31,11 +31,11 @@ def main():
             print(f"Input string: {crawler_args_str}")
             sys.exit(1)
         
-        service_name = crawler_args.get('service_name', '익시오')
-        selected_channels = crawler_args.get('selected_channels', {})
-        start_date = crawler_args.get('start_date')
-        end_date = crawler_args.get('end_date')
-        review_count = crawler_args.get('review_count', 100)
+        service_name = crawler_args.get('serviceName', '익시오')
+        selected_channels = crawler_args.get('selectedChannels', {})
+        start_date = crawler_args.get('startDate')
+        end_date = crawler_args.get('endDate')
+        review_count = crawler_args.get('count', 100)
         
         print(f"Starting crawler for {service_name}")
         print(f"Channels: {selected_channels}")
