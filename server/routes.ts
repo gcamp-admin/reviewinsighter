@@ -736,7 +736,20 @@ print(json.dumps(result, ensure_ascii=False))
         dateTo: dateTo ? new Date(dateTo) : undefined
       };
       
-      const reviews = await storage.getReviews(undefined, undefined, filters);
+      const reviewsResult = await storage.getReviews(1, 1000, filters);
+      const reviews = reviewsResult.reviews || [];
+      
+      console.log(`Retrieved ${reviews ? reviews.length : 'undefined'} reviews for keyword network analysis`);
+      console.log(`Reviews type: ${Array.isArray(reviews) ? 'array' : typeof reviews}`);
+      console.log(`Reviews content:`, reviews);
+      
+      if (!Array.isArray(reviews)) {
+        console.error('Reviews is not an array:', reviews);
+        return res.status(500).json({
+          error: '데이터 타입 오류',
+          message: '리뷰 데이터를 배열로 가져올 수 없습니다.'
+        });
+      }
       
       if (reviews.length < 10) {
         return res.json({
@@ -747,14 +760,28 @@ print(json.dumps(result, ensure_ascii=False))
 
       // Use Python-based keyword network analysis
       const analysisPath = path.join(__dirname, 'keyword_network.py');
+      
+      // Ensure reviews is an array and has the right structure
+      let reviewsArray;
+      try {
+        reviewsArray = reviews.map(r => ({
+          content: r.content,
+          sentiment: r.sentiment,
+          source: r.source
+        }));
+      } catch (error) {
+        console.error('Error mapping reviews:', error);
+        console.error('Reviews data:', reviews);
+        return res.status(500).json({
+          error: '리뷰 데이터 처리 오류',
+          message: '리뷰 데이터를 처리할 수 없습니다.'
+        });
+      }
+      
       const args = [
         analysisPath,
         JSON.stringify({
-          reviews: reviews.map(r => ({
-            content: r.content,
-            sentiment: r.sentiment,
-            source: r.source
-          })),
+          reviews: reviewsArray,
           method: method
         })
       ];

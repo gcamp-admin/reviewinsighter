@@ -77,14 +77,11 @@ def extract_keywords_from_reviews(reviews, min_freq=1):
         # 최소 빈도 이상의 키워드만 반환
         filtered_keywords = {k: v for k, v in keyword_freq.items() if v >= min_freq}
         
-        print(f"추출된 키워드: {len(filtered_keywords)}개")
-        for k, v in list(filtered_keywords.items())[:10]:  # 상위 10개 출력
-            print(f"  {k}: {v}")
+
         
         return filtered_keywords
         
     except Exception as e:
-        print(f"키워드 추출 오류: {e}")
         return {}
 
 def extract_keywords_regex(text):
@@ -237,9 +234,6 @@ def create_network_data(keywords, cooccurrence, pmi_matrix, min_edge_weight=1):
                     })
                     edge_id += 1
     
-    print(f"생성된 노드 수: {len(nodes)}")
-    print(f"생성된 엣지 수: {len(edges)}")
-    
     return nodes, edges
 
 def simple_clustering(nodes, edges, min_cluster_size=3):
@@ -328,7 +322,6 @@ def generate_cluster_labels_with_gpt(clusters, keywords):
                 cluster_labels[cluster_idx] = f'클러스터 {cluster_idx + 1}'
                 
         except Exception as e:
-            print(f"클러스터 라벨 생성 오류: {e}")
             cluster_labels[cluster_idx] = f'클러스터 {cluster_idx + 1}'
     
     return cluster_labels
@@ -350,17 +343,15 @@ def analyze_keyword_network(reviews, method='cooccurrence'):
             'message': '네트워크 분석을 위해서는 최소 10개 이상의 리뷰가 필요합니다.'
         }
     
-    print(f"키워드 네트워크 분석 시작: {len(reviews)}개 리뷰")
+
     
     # 1. 키워드 추출
     keywords = extract_keywords_from_reviews(reviews)
-    if len(keywords) < 5:
+    if len(keywords) < 3:
         return {
             'error': '키워드 부족',
             'message': '분석할 키워드가 부족합니다. 더 많은 리뷰가 필요합니다.'
         }
-    
-    print(f"추출된 키워드: {len(keywords)}개")
     
     # 2. 동시 출현 계산
     cooccurrence = calculate_cooccurrence(reviews, keywords)
@@ -378,15 +369,11 @@ def analyze_keyword_network(reviews, method='cooccurrence'):
             'message': '키워드 간 연결이 부족합니다. 더 다양한 리뷰가 필요합니다.'
         }
     
-    print(f"네트워크 생성: {len(nodes)}개 노드, {len(edges)}개 엣지")
-    
     # 5. 클러스터링
     nodes, clusters = simple_clustering(nodes, edges)
     
     # 6. 클러스터 라벨 생성
     cluster_labels = generate_cluster_labels_with_gpt(clusters, keywords)
-    
-    print(f"클러스터링 완료: {len(clusters)}개 클러스터")
     
     return {
         'nodes': nodes,
