@@ -223,64 +223,64 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
         ctx.stroke();
         ctx.setLineDash([]);
         
-        // 🏷️ 클러스터 라벨 (GPT 생성)
-        ctx.fillStyle = '#333333';
-        ctx.font = 'bold 14px "LG Smart UI", sans-serif';
+        // 클러스터 라벨 그리기
+        ctx.fillStyle = clusterColors[index];
+        ctx.font = '12px Arial';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(cluster.label, centerX, centerY - clusterRadius - 25);
+        ctx.fillText(cluster.label, centerX, centerY - clusterRadius - 10);
       });
     }
 
-    // 🔗 엣지 그리기 (두께 = 연관도)
-    networkData.edges.forEach(edge => {
-      const sourceNode = networkData.nodes.find(n => n.id === edge.source);
-      const targetNode = networkData.nodes.find(n => n.id === edge.target);
-      
-      if (sourceNode && targetNode && sourceNode.x && sourceNode.y && targetNode.x && targetNode.y) {
-        // 엣지 두께 = PMI 또는 weight 기반
-        const edgeWeight = Math.max(1, Math.min(8, (edge.pmi || edge.weight || 1) * 2));
+    // 🔵 엣지 그리기
+    if (networkData.edges && networkData.edges.length > 0) {
+      networkData.edges.forEach(edge => {
+        const sourceNode = networkData.nodes.find(n => n.id === edge.source);
+        const targetNode = networkData.nodes.find(n => n.id === edge.target);
         
-        ctx.strokeStyle = '#E0E0E0';
-        ctx.lineWidth = edgeWeight;
-        ctx.beginPath();
-        ctx.moveTo(sourceNode.x, sourceNode.y);
-        ctx.lineTo(targetNode.x, targetNode.y);
-        ctx.stroke();
-      }
-    });
+        if (sourceNode && targetNode && sourceNode.x && sourceNode.y && targetNode.x && targetNode.y) {
+          ctx.strokeStyle = '#e0e0e0';
+          ctx.lineWidth = Math.max(1, (edge.weight || 1) * 2);
+          ctx.beginPath();
+          ctx.moveTo(sourceNode.x, sourceNode.y);
+          ctx.lineTo(targetNode.x, targetNode.y);
+          ctx.stroke();
+        }
+      });
+    }
 
-    // 🔵 노드 그리기 (크기 = 빈도)
-    networkData.nodes.forEach(node => {
-      if (!node.x || !node.y) return;
-      
-      // 노드 크기 = 등장 빈도 비례
-      const nodeSize = Math.max(12, Math.min(40, node.frequency * 4));
-      const clusterColor = clusterColors[node.cluster || 0];
-      
-      // 노드 원
-      ctx.fillStyle = clusterColor;
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // 노드 테두리
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      
-      // 노드 라벨
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 12px "LG Smart UI", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(node.label, node.x, node.y + nodeSize + 18);
-      
-      // 빈도 표시
-      ctx.fillStyle = '#666666';
-      ctx.font = '10px "LG Smart UI", sans-serif';
-      ctx.fillText(`(${node.frequency})`, node.x, node.y + nodeSize + 32);
-    });
+    // 🔴 노드 그리기
+    if (networkData.nodes && networkData.nodes.length > 0) {
+      networkData.nodes.forEach((node, index) => {
+        if (!node.x || !node.y) return;
+        
+        const nodeRadius = Math.max(8, Math.min(30, (node.size || 10) * 0.8));
+        const nodeColor = node.cluster !== undefined ? clusterColors[node.cluster] || '#7CF3C4' : '#7CF3C4';
+        
+        // 노드 배경 원
+        ctx.fillStyle = nodeColor;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // 노드 테두리
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // 노드 라벨
+        ctx.fillStyle = '#333';
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(node.label, node.x, node.y + nodeRadius + 15);
+        
+        // 빈도 표시
+        if (node.frequency) {
+          ctx.fillStyle = '#666';
+          ctx.font = '9px Arial';
+          ctx.fillText(`(${node.frequency})`, node.x, node.y + nodeRadius + 28);
+        }
+      });
+    }
 
     ctx.restore();
     console.log('✅ 네트워크 그리기 완료');
