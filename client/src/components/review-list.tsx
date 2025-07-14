@@ -379,20 +379,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 </Select>
               </div>
 
-              {/* 정렬 - 라벨 제거 */}
-              <div className="flex items-center gap-2">
-                <Select value={sortOrder} onValueChange={setSortOrder}>
-                  <SelectTrigger className="w-28">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">최신순</SelectItem>
-                    <SelectItem value="oldest">오래된순</SelectItem>
-                    <SelectItem value="rating-high">평점높은순</SelectItem>
-                    <SelectItem value="rating-low">평점낮은순</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              
             </div>
           </div>
         </div>
