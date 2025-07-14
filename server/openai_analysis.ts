@@ -338,25 +338,37 @@ export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promis
       const batch = needsGPTAnalysis.slice(i, i + batchSize);
       
       try {
-        const prompt = `다음 리뷰들을 세심하게 분석하여 각각의 감정을 정확히 판단해주세요. 문맥과 맥락, 뉘앙스를 꼼꼼히 파악하여 분류하세요.
+        const prompt = `당신은 감정 분석 전문가입니다. 
+다음 문장들을 '긍정', '부정', '중립' 중 하나로 분류하세요.
+**문장 내 감정 단어가 아닌 전체 맥락을 기준으로 판단해야 하며, 
+문장의 후반부나 결말이 부정적인 경우에는 반드시 '부정'으로 분류합니다.**
 
-분석 기준:
-- 문맥과 맥락을 종합적으로 고려하여 판단
-- 다음 키워드가 포함된 경우 반드시 부정으로 분류: 거절, 못하는, 안하는, 안돼는, 조치
-- 사용자의 실제 감정과 의도를 신중히 파악
-- 단순한 키워드 매칭이 아닌 전체적인 의미 해석
-- 단어와 키워드의 의미를 정확히 이해하여 분류
+분석 예시:
+1. "깔끔하고 좋아요. 그런데 너무 자주 끊깁니다." → 부정 (결말이 부정적)
+2. "녹음 잘 되고 기능도 괜찮아요." → 긍정 (전체적으로 긍정적)
+3. "기대 이하네요." → 부정 (명확한 부정적 감정)
+4. "그럭저럭 쓸만합니다." → 중립 (보통 수준의 평가)
+5. "정말 좋은 앱이에요. 그런데 최근 들어 계속 튕겨서 너무 짜증납니다." → 부정 (결말이 부정적)
+6. "처음엔 괜찮았는데 지금은 너무 느려요." → 부정 (현재 상태가 부정적)
+7. "보통 수준입니다." → 중립 (명확한 중립적 표현)
+8. "안되는 기능이 많아요." → 부정 (기능 부족에 대한 불만)
+
+중요 규칙:
+- 문장에 '좋다', '빠르다' 같은 긍정 단어가 있어도 **전체 맥락이 부정적이면 '부정'**
+- '그런데', '하지만', '근데' 뒤에 오는 부정적 내용이 더 중요함
+- '안되다', '못하다', '안돼다' 등은 강한 부정 신호
+- '괜찮다', '보통', '그럭저럭' 등은 중립 신호
 
 리뷰 텍스트들:
 ${batch.map((item, idx) => `${idx + 1}. ${item.text}`).join('\n')}
 
-각 리뷰를 천천히 읽고 분석한 후 JSON 형식으로 응답해주세요:
+각 리뷰를 전체 맥락과 결말을 고려하여 분석한 후 JSON 형식으로 응답해주세요:
 {"sentiments": ["긍정", "부정", "중립", ...]}`;
 
         const response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "당신은 한국어 리뷰 감정 분석 전문가입니다. 리뷰의 문맥과 맥락을 세심하게 분석하여 사용자의 진짜 감정을 파악해주세요. 단순한 키워드 매칭이 아닌 전체적인 의미와 뉘앙스를 고려하여 정확히 분류해주세요." },
+            { role: "system", content: "당신은 한국어 리뷰 감정 분석 전문가입니다. 문장의 전체 맥락과 결말을 종합적으로 고려하여 감정을 정확히 판단해주세요. 긍정적 단어가 포함되어 있어도 전체 맥락이 부정적이면 '부정'으로 분류하고, 접속사('그런데', '하지만', '근데') 뒤의 내용을 더 중요하게 고려해주세요." },
             { role: "user", content: prompt }
           ],
           max_tokens: 100,
@@ -420,14 +432,23 @@ export async function analyzeReviewSentimentWithGPT(reviewText: string): Promise
       messages: [
         {
           role: "system",
-          content: "한국어 감정 분석. 응답: 긍정/부정/중립 중 하나만"
+          content: "당신은 한국어 리뷰 감정 분석 전문가입니다. 문장의 전체 맥락과 결말을 종합적으로 고려하여 감정을 정확히 판단해주세요. 긍정적 단어가 포함되어 있어도 전체 맥락이 부정적이면 '부정'으로 분류하고, 접속사('그런데', '하지만', '근데') 뒤의 내용을 더 중요하게 고려해주세요."
         },
         {
           role: "user",
-          content: reviewText
+          content: `다음 리뷰를 전체 맥락과 결말을 고려하여 분석해주세요:
+"${reviewText}"
+
+분석 규칙:
+- 문장에 '좋다', '빠르다' 같은 긍정 단어가 있어도 전체 맥락이 부정적이면 '부정'
+- '그런데', '하지만', '근데' 뒤에 오는 부정적 내용이 더 중요함
+- '안되다', '못하다', '안돼다' 등은 강한 부정 신호
+- '괜찮다', '보통', '그럭저럭' 등은 중립 신호
+
+응답: 긍정/부정/중립 중 하나만`
         }
       ],
-      max_tokens: 5, // Reduce to minimum needed
+      max_tokens: 10,
       temperature: 0   // Deterministic results
     });
 
@@ -517,6 +538,33 @@ function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | nu
   // Question-only reviews
   if (text.trim().endsWith('?') && text.split('?').length <= 2) return '중립';
   
+  // Context-aware analysis for conjunctions (그런데, 하지만, 근데)
+  const conjunctions = ['그런데', '하지만', '근데', '그러나', '하지만서도', '그치만'];
+  const hasConjunction = conjunctions.some(conj => lowerText.includes(conj));
+  
+  if (hasConjunction) {
+    // Split by conjunction and analyze the latter part more heavily
+    for (const conj of conjunctions) {
+      if (lowerText.includes(conj)) {
+        const parts = text.split(conj);
+        if (parts.length > 1) {
+          const latterPart = parts[parts.length - 1].toLowerCase();
+          const latterNegativeCount = strongNegativePatterns.filter(pattern => latterPart.includes(pattern)).length;
+          const latterPositiveCount = strongPositivePatterns.filter(pattern => latterPart.includes(pattern)).length;
+          
+          // If latter part is clearly negative, classify as negative
+          if (latterNegativeCount > 0 && latterPositiveCount === 0) return '부정';
+          if (latterPositiveCount > 0 && latterNegativeCount === 0) return '긍정';
+          
+          // Weight the latter part more heavily
+          if (latterNegativeCount > latterPositiveCount) return '부정';
+          if (latterPositiveCount > latterNegativeCount) return '긍정';
+        }
+        break;
+      }
+    }
+  }
+
   // Mixed sentiment with neutral tendency
   if (negativeCount > 0 && positiveCount > 0) {
     if (Math.abs(negativeCount - positiveCount) <= 1) return '중립';

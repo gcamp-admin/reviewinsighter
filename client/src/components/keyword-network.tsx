@@ -109,8 +109,19 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
         return;
       }
 
-      setNetworkData(data);
-      onAnalysisComplete?.(data);
+      // 백엔드 응답 형식에 맞게 클러스터 데이터 변환
+      const transformedData = {
+        ...data,
+        clusters: (data.clusters || []).map((cluster: any, index: number) => ({
+          id: index,
+          keywords: Array.isArray(cluster) ? cluster : cluster.keywords || [],
+          size: Array.isArray(cluster) ? cluster.length : cluster.keywords?.length || 0,
+          label: data.cluster_labels?.[index]?.replace(/"/g, '') || `클러스터 ${index + 1}`
+        }))
+      };
+
+      setNetworkData(transformedData);
+      onAnalysisComplete?.(transformedData);
       
       // 캔버스 초기화
       setTimeout(() => {
@@ -365,7 +376,7 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
                           <span className="font-medium text-sm">{cluster.label}</span>
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          {cluster.keywords.slice(0, 8).map((keyword, keyIndex) => (
+                          {(cluster.keywords || []).slice(0, 8).map((keyword, keyIndex) => (
                             <Badge 
                               key={keyIndex} 
                               variant="secondary"
@@ -374,9 +385,9 @@ const KeywordNetwork: React.FC<KeywordNetworkProps> = ({
                               {keyword}
                             </Badge>
                           ))}
-                          {cluster.keywords.length > 8 && (
+                          {(cluster.keywords || []).length > 8 && (
                             <Badge variant="outline" className="text-xs">
-                              +{cluster.keywords.length - 8}
+                              +{(cluster.keywords || []).length - 8}
                             </Badge>
                           )}
                         </div>
