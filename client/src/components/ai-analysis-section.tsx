@@ -127,7 +127,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
         description: "워드클라우드, HEART 프레임워크, 키워드 네트워크 분석이 완료되었습니다.",
       });
       setHasAnalyzedComprehensive(true);
-      onAnalysisSuccess('comprehensive');
+      onAnalysisSuccess('wordcloud');
       // Invalidate all analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });

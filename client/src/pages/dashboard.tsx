@@ -5,7 +5,7 @@ import StatsOverview from "@/components/stats-overview";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
-import KeywordNetworkEnhanced from "@/components/keyword-network-enhanced";
+import KeywordNetworkPortfolio from "@/components/keyword-network-portfolio";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
@@ -71,7 +71,7 @@ export default function Dashboard() {
         {hasCollectedReviews && activeAnalysisSection && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 space-y-4">
             {activeAnalysisSection === 'wordcloud' && (
-              <KeywordNetworkEnhanced 
+              <KeywordNetworkPortfolio 
                 serviceId={filters.service?.id || "익시오"}
                 dateFrom={filters.dateFrom?.toISOString()}
                 dateTo={filters.dateTo?.toISOString()}
@@ -85,7 +85,7 @@ export default function Dashboard() {
             )}
             {activeAnalysisSection === 'comprehensive' && (
               <>
-                <KeywordNetworkEnhanced 
+                <KeywordNetworkPortfolio 
                   serviceId={filters.service?.id || "익시오"}
                   dateFrom={filters.dateFrom?.toISOString()}
                   dateTo={filters.dateTo?.toISOString()}

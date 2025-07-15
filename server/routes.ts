@@ -776,7 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fs.writeFileSync(tempNetworkFilePath, JSON.stringify(reviewsArray, null, 2));
         
         const args = [
-          analysisPath,
+          'server/negative_keyword_analysis.py',
           tempNetworkFilePath
         ];
         

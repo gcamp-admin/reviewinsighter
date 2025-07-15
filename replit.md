@@ -375,6 +375,12 @@ Changelog:
 - July 15, 2025. **MULTI-SOURCE COLLECTION SUCCESS**: Google Play (72 reviews), Apple Store (2 reviews), Naver Cafe (48 reviews) all working properly
 - July 15, 2025. **DATE FILTERING OPTIMIZED**: Enhanced Google Play to fetch 1000 reviews for better date range coverage, fixed Apple Store PST timezone handling
 - July 15, 2025. **COMPREHENSIVE TESTING VERIFIED**: 122 total authentic reviews collected from July 1-5, 2025 date range with real source links
+- July 15, 2025. **REVOLUTIONARY KEYWORD NETWORK ANALYSIS**: Completely rebuilt analysis system based on user requirements for UX-focused negative review analysis
+- July 15, 2025. **NEGATIVE REVIEW FILTERING**: Implemented exclusive negative review filtering system that extracts top 20 keywords from sentiment-classified negative reviews only
+- July 15, 2025. **GPT-POWERED UX CLUSTERING**: Integrated GPT-4o-mini for professional UX expert-level clustering with meaningful cluster names like "기기 호환성 문제", "설정의 복잡성", "통화 안정성 저하"
+- July 15, 2025. **PORTFOLIO-STYLE VISUALIZATION**: Created new KeywordNetworkPortfolio component with professional UX diagram styling - circular clusters, pastel colors, grid backgrounds
+- July 15, 2025. **COMPLETE WORKFLOW INTEGRATION**: "코멘토에게 분석 요청하기" button now triggers comprehensive negative review analysis with top 20 keyword extraction and UX clustering
+- July 15, 2025. **AUTHENTIC DATA ENFORCEMENT**: Ensured all analysis uses only authentic review data with proper sentiment classification and real-time keyword extraction
 
 ## User Preferences
 
