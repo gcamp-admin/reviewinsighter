@@ -7,7 +7,7 @@ Main crawler module for multi-source review collection
 
 from service_data import services
 from store_api import crawl_google_play, crawl_apple_store
-from naver_api import search_naver
+from naver_api import search_naver, extract_user_id_from_url
 from datetime import datetime, timedelta
 import random
 import re
