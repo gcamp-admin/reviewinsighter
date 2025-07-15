@@ -88,7 +88,9 @@ def search_naver(keyword, search_type="blog", display=10):
     seen_links = set()
     
     for query in queries:
-        url = f"{base_url}?query={query}&display={display}&sort=date"  # 최신순 정렬 추가
+        # display 값 범위 제한 (1-100)
+        safe_display = min(max(1, display), 100)
+        url = f"{base_url}?query={query}&display={safe_display}&sort=date"  # 최신순 정렬 추가
 
         headers = {
             "X-Naver-Client-Id": NAVER_CLIENT_ID,
