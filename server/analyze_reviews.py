@@ -7,7 +7,14 @@ import sys
 import json
 import os
 import tempfile
-from scraper import analyze_sentiments, extract_korean_words_advanced
+import traceback
+
+try:
+    sys.path.append('server')
+    from scraper import analyze_sentiments, extract_korean_words_advanced
+except ImportError as e:
+    print(f"Import error: {e}", file=sys.stderr)
+    sys.exit(1)
 
 def main():
     if len(sys.argv) < 3:
@@ -56,6 +63,7 @@ def main():
     
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

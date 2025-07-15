@@ -448,7 +448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
         
         // Run analysis using Python script file
-        const pythonProcess = spawn("python", ["server/analyze_reviews.py", tempFilePath, analysisType || 'full']);
+        const pythonProcess = spawn("python3", ["server/analyze_reviews.py", tempFilePath, analysisType || 'full']);
       
         let output = "";
         let error = "";
@@ -471,7 +471,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (code !== 0) {
             console.error("Python analysis error:", error);
-            return res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+            console.error("Python analysis stdout:", output);
+            return res.status(500).json({ success: false, message: `AI 분석 중 오류가 발생했습니다: ${error}` });
           }
         
         try {
@@ -653,17 +654,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (parseError) {
           console.error("Error parsing Python analysis output:", parseError);
-          res.status(500).json({ success: false, message: "AI 분석 결과 처리 중 오류가 발생했습니다." });
+          console.error("Python output:", output);
+          res.status(500).json({ success: false, message: `AI 분석 결과 처리 중 오류가 발생했습니다: ${parseError.message}` });
         }
         });
       
       } catch (fileError) {
         console.error("Error writing temp file:", fileError);
-        res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+        res.status(500).json({ success: false, message: `파일 생성 중 오류가 발생했습니다: ${fileError.message}` });
       }
     } catch (error) {
       console.error("Error in analyze endpoint:", error);
-      res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+      res.status(500).json({ success: false, message: `분석 시스템 오류: ${error.message}` });
     }
   });
 
@@ -802,9 +804,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (code !== 0) {
           console.error('Keyword network analysis error:', stderr);
+          console.error('Keyword network analysis stdout:', stdout);
           return res.status(500).json({ 
             error: "분석 실행 실패",
-            message: "키워드 네트워크 분석 중 오류가 발생했습니다."
+            message: `키워드 네트워크 분석 중 오류가 발생했습니다: ${stderr}`
           });
         }
         
@@ -813,21 +816,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           res.json(result);
         } catch (parseError) {
           console.error('Failed to parse keyword network result:', parseError);
+          console.error('Network analysis output:', stdout);
           res.status(500).json({ 
             error: "결과 파싱 실패",
-            message: "분석 결과를 처리하는 중 오류가 발생했습니다."
+            message: `분석 결과를 처리하는 중 오류가 발생했습니다: ${parseError.message}`
           });
         }
       });
       
       } catch (fileError) {
         console.error("Error writing temp network file:", fileError);
-        res.status(500).json({ error: "Failed to analyze keyword network" });
+        res.status(500).json({ error: `파일 생성 중 오류가 발생했습니다: ${fileError.message}` });
       }
       
     } catch (error) {
       console.error('Keyword network analysis error:', error);
-      res.status(500).json({ error: "Failed to analyze keyword network" });
+      res.status(500).json({ error: `키워드 네트워크 분석 시스템 오류: ${error.message}` });
     }
   });
 

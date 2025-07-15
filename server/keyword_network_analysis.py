@@ -14,11 +14,25 @@ import re
 import json
 import math
 import sys
-import requests
+import os
 from collections import defaultdict, Counter
 from itertools import combinations
-import networkx as nx
 from typing import Dict, List, Tuple, Any
+
+# NetworkX 설치 확인
+try:
+    import networkx as nx
+except ImportError:
+    print("NetworkX not installed. Installing basic graph functionality.", file=sys.stderr)
+    # NetworkX 없이 기본 그래프 기능으로 대체
+    nx = None
+
+# requests 설치 확인
+try:
+    import requests
+except ImportError:
+    print("Requests not installed. Using basic HTTP functionality.", file=sys.stderr)
+    requests = None
 
 def extract_meaningful_keywords(reviews: List[Dict]) -> Dict[str, int]:
     """
@@ -151,10 +165,32 @@ def calculate_pmi(cooccurrence: Dict[Tuple[str, str], int], keyword_freq: Dict[s
     
     return pmi_scores
 
+def simple_clustering_fallback(keywords: Dict[str, int], pmi_scores: Dict[Tuple[str, str], float]) -> List[List[str]]:
+    """
+    NetworkX 없이 기본 클러스터링
+    """
+    # 빈도 기반 간단한 클러스터링
+    sorted_keywords = sorted(keywords.items(), key=lambda x: x[1], reverse=True)
+    
+    # 상위 키워드들을 클러스터로 분류
+    clusters = []
+    cluster_size = max(3, len(sorted_keywords) // 3)
+    
+    for i in range(0, len(sorted_keywords), cluster_size):
+        cluster = [kw for kw, _ in sorted_keywords[i:i+cluster_size]]
+        if cluster:
+            clusters.append(cluster)
+    
+    return clusters
+
 def detect_communities(keywords: Dict[str, int], pmi_scores: Dict[Tuple[str, str], float]) -> List[List[str]]:
     """
-    NetworkX를 사용한 커뮤니티 탐지
+    NetworkX를 사용한 커뮤니티 탐지 (없으면 기본 클러스터링 사용)
     """
+    if nx is None:
+        # NetworkX 없이 기본 클러스터링
+        return simple_clustering_fallback(keywords, pmi_scores)
+    
     # 네트워크 그래프 생성
     G = nx.Graph()
     
@@ -195,20 +231,24 @@ def generate_cluster_labels_with_gpt(communities: List[List[str]], keyword_freq:
         top_keywords = sorted_keywords[:8]  # 상위 8개 키워드
         
         try:
-            # GPT API 호출
-            response = requests.post(
-                'http://localhost:5000/api/generate-cluster-label',
-                json={'keywords': top_keywords},
-                headers={'Content-Type': 'application/json'},
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                generated_label = result.get('label', f'클러스터 {i+1}').strip('"')
-                # UX 인사이트 중심으로 라벨 정제
-                labels[i] = clean_cluster_label(generated_label, top_keywords)
+            # GPT API 호출 (requests 사용 가능한 경우)
+            if requests is not None:
+                response = requests.post(
+                    'http://localhost:5000/api/generate-cluster-label',
+                    json={'keywords': top_keywords},
+                    headers={'Content-Type': 'application/json'},
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    generated_label = result.get('label', f'클러스터 {i+1}').strip('"')
+                    # UX 인사이트 중심으로 라벨 정제
+                    labels[i] = clean_cluster_label(generated_label, top_keywords)
+                else:
+                    labels[i] = generate_fallback_label(top_keywords)
             else:
+                # requests 없이 fallback 라벨 생성
                 labels[i] = generate_fallback_label(top_keywords)
         except:
             # GPT 호출 실패시 대표 키워드 기반 라벨 생성
@@ -403,7 +443,9 @@ def main():
             pass
         
     except Exception as e:
-        print(f"Error: {e}")
+        import traceback
+        print(f"Error: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":
