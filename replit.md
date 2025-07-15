@@ -379,3 +379,4 @@ Changelog:
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Technical accuracy: Distinguish between "fixing broken functionality" and "improving/enhancing features" - use precise terminology.
