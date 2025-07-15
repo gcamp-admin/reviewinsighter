@@ -17,9 +17,6 @@ export default function Header() {
               />
             </div>
             <div>
-              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                고객은 이미 말했습니다. 이제는 당신이 들을 차례입니다.
-              </p>
               <p className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors duration-300 mt-1">
                 당신의 AI UX 멘토, 코멘토!
               </p>
