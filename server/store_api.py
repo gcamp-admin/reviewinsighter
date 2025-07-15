@@ -43,18 +43,31 @@ def crawl_google_play(app_id, count=100, lang='ko', country='kr', start_date=Non
             
             # Apply date filtering if specified
             if start_date and end_date:
-                start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                
-                # Convert review date to naive datetime
-                if hasattr(review_date, 'replace'):
-                    review_dt = review_date.replace(tzinfo=None).date()
-                else:
-                    review_dt = datetime.fromisoformat(review_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                
-                # Skip if outside date range
-                if not (start_dt <= review_dt <= end_dt):
-                    continue
+                try:
+                    # 시작/끝 날짜를 정확히 파싱
+                    if start_date.endswith('Z'):
+                        start_dt = datetime.fromisoformat(start_date[:-1]).date()
+                    else:
+                        start_dt = datetime.fromisoformat(start_date).date()
+                    
+                    if end_date.endswith('Z'):
+                        end_dt = datetime.fromisoformat(end_date[:-1]).date()
+                    else:
+                        end_dt = datetime.fromisoformat(end_date).date()
+                    
+                    # 리뷰 날짜를 정확히 파싱
+                    if hasattr(review_date, 'replace'):
+                        review_dt = review_date.replace(tzinfo=None).date()
+                    else:
+                        review_dt = datetime.fromisoformat(str(review_date).replace('Z', '+00:00')).replace(tzinfo=None).date()
+                    
+                    # 범위 밖이면 건너뛰기
+                    if not (start_dt <= review_dt <= end_dt):
+                        continue
+                except Exception as e:
+                    # 날짜 파싱 실패시 리뷰 포함
+                    print(f"Date parsing error for review: {e}")
+                    pass
             
             processed_review = {
                 'userName': review['userName'] if review['userName'] else '익명',
@@ -137,12 +150,25 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                 
                 # Apply date filtering if specified
                 if start_date and end_date:
-                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                    
-                    # Skip if outside date range
-                    if not (start_dt <= review_date.date() <= end_dt):
-                        continue
+                    try:
+                        # 시작/끝 날짜를 정확히 파싱
+                        if start_date.endswith('Z'):
+                            start_dt = datetime.fromisoformat(start_date[:-1]).date()
+                        else:
+                            start_dt = datetime.fromisoformat(start_date).date()
+                        
+                        if end_date.endswith('Z'):
+                            end_dt = datetime.fromisoformat(end_date[:-1]).date()
+                        else:
+                            end_dt = datetime.fromisoformat(end_date).date()
+                        
+                        # 범위 밖이면 건너뛰기
+                        if not (start_dt <= review_date.date() <= end_dt):
+                            continue
+                    except Exception as e:
+                        # 날짜 파싱 실패시 리뷰 포함
+                        print(f"Date parsing error for Apple review: {e}")
+                        pass
                 
                 # Get review ID
                 review_id = entry.find('atom:id', namespaces)
