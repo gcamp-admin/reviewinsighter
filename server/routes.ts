@@ -767,13 +767,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const args = [
-        analysisPath,
-        JSON.stringify(reviewsArray)
-      ];
+      // Write reviews to temporary file to avoid E2BIG error
+      const tempNetworkFilePath = path.join(process.cwd(), 'temp_network_analysis.json');
       
-      console.log(`Running keyword network analysis for ${reviews.length} reviews`);
-      const pythonProcess = spawn('python3', args);
+      try {
+        fs.writeFileSync(tempNetworkFilePath, JSON.stringify(reviewsArray, null, 2));
+        
+        const args = [
+          analysisPath,
+          tempNetworkFilePath
+        ];
+        
+        console.log(`Running keyword network analysis for ${reviews.length} reviews`);
+        const pythonProcess = spawn('python3', args);
       
       let stdout = '';
       let stderr = '';
@@ -787,6 +793,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       pythonProcess.on('close', async (code) => {
+        // Clean up temp file
+        try {
+          fs.unlinkSync(tempNetworkFilePath);
+        } catch (cleanupError) {
+          console.warn("Failed to cleanup temp network file:", cleanupError);
+        }
+        
         if (code !== 0) {
           console.error('Keyword network analysis error:', stderr);
           return res.status(500).json({ 
@@ -806,6 +819,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       });
+      
+      } catch (fileError) {
+        console.error("Error writing temp network file:", fileError);
+        res.status(500).json({ error: "Failed to analyze keyword network" });
+      }
       
     } catch (error) {
       console.error('Keyword network analysis error:', error);

@@ -382,15 +382,25 @@ def main():
     명령줄에서 실행 시 사용
     """
     if len(sys.argv) < 2:
-        print("Usage: python keyword_network_analysis.py <reviews_json>")
+        print("Usage: python keyword_network_analysis.py <reviews_file_path>")
         sys.exit(1)
     
     try:
-        reviews_json = sys.argv[1]
-        reviews = json.loads(reviews_json)
+        reviews_file_path = sys.argv[1]
+        
+        # 파일에서 리뷰 데이터 읽기
+        with open(reviews_file_path, 'r', encoding='utf-8') as f:
+            reviews = json.load(f)
         
         result = analyze_keyword_network(reviews)
         print(json.dumps(result, ensure_ascii=False, indent=2))
+        
+        # 임시 파일 정리
+        try:
+            import os
+            os.remove(reviews_file_path)
+        except:
+            pass
         
     except Exception as e:
         print(f"Error: {e}")
