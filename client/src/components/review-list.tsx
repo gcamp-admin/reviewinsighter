@@ -212,45 +212,125 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 {data?.total ? `총 ${data.total}개` : ""}
               </span>
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      <span>전체</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="긍정">
-                    <div className="flex items-center gap-2">
-                      <ThumbsUp className="h-4 w-4 text-green-600" />
-                      <span>긍정</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="부정">
-                    <div className="flex items-center gap-2">
-                      <ThumbsDown className="h-4 w-4 text-red-600" />
-                      <span>부정</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="중립">
-                    <div className="flex items-center gap-2">
-                      <Minus className="h-4 w-4 text-gray-600" />
-                      <span>중립</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
+              {/* 필터 적용 상태 표시 */}
+              {(sentimentFilter !== "all" || sourceFilter !== "all") && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">필터 적용 중:</span>
+                  <div className="flex items-center gap-2">
+                    {sentimentFilter !== "all" && (
+                      <Badge variant="secondary" className="text-xs">
+                        {sentimentFilter === "긍정" ? "긍정" : sentimentFilter === "부정" ? "부정" : "중립"}
+                      </Badge>
+                    )}
+                    {sourceFilter !== "all" && (
+                      <Badge variant="secondary" className="text-xs">
+                        {getSourceName(sourceFilter)}
+                      </Badge>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSentimentFilter("all");
+                        setSourceFilter("all");
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                    >
+                      필터 초기화
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3">
+                {/* 감정 필터 */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">감정</span>
+                  <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
+                    <SelectTrigger className="w-28">
+                      <SelectValue placeholder="전체" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          <span>전체</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="긍정">
+                        <div className="flex items-center gap-2">
+                          <ThumbsUp className="h-4 w-4 text-green-600" />
+                          <span>긍정</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="부정">
+                        <div className="flex items-center gap-2">
+                          <ThumbsDown className="h-4 w-4 text-red-600" />
+                          <span>부정</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="중립">
+                        <div className="flex items-center gap-2">
+                          <Minus className="h-4 w-4 text-gray-600" />
+                          <span>중립</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 채널 필터 */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">채널</span>
+                  <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder="전체" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          <span>전체</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="google_play">
+                        <div className="flex items-center gap-2">
+                          <FaGooglePlay className="h-4 w-4 text-green-600" />
+                          <span>구글 플레이</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="app_store">
+                        <div className="flex items-center gap-2">
+                          <FaApple className="h-4 w-4 text-gray-800" />
+                          <span>애플 앱스토어</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="naver_blog">
+                        <div className="flex items-center gap-2">
+                          <FaPenNib className="h-4 w-4 text-green-600" />
+                          <span>네이버 블로그</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="naver_cafe">
+                        <div className="flex items-center gap-2">
+                          <FaMugHot className="h-4 w-4 text-green-600" />
+                          <span>네이버 카페</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="text-center text-gray-500 py-8">
             선택한 조건에 맞는 리뷰가 없습니다.
+            {sourceFilter === "naver_blog" && (
+              <div className="mt-2 text-sm">
+                이 날짜 범위에는 네이버 블로그 리뷰가 없습니다. 다른 채널을 선택해보세요.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
