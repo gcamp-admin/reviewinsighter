@@ -140,66 +140,79 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             api_success = False
             for kw in service_keywords[:3]:  # Limit to top 3 keywords
                 print(f"Searching Naver Blog with keyword: {kw}")
-                naver_blogs = search_naver(kw, search_type="blog", display=review_count//3)
-                print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
-                
-                if naver_blogs:
-                    api_success = True
-                    # Convert to review format
-                    for blog in naver_blogs:
-                        # Convert YYYYMMDD to ISO format
-                        post_date = blog.get("postdate", "20250101")
-                        try:
-                            parsed_date = datetime.strptime(post_date, "%Y%m%d")
-                            iso_date = parsed_date.isoformat() + "Z"
+                try:
+                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//3)
+                    print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
+                    
+                    if naver_blogs:
+                        api_success = True
+                        # Convert to review format
+                        for blog in naver_blogs:
+                            # Convert YYYYMMDD to ISO format
+                            post_date = blog.get("postdate", "20250101")
+                            try:
+                                parsed_date = datetime.strptime(post_date, "%Y%m%d")
+                                iso_date = parsed_date.isoformat() + "Z"
+                                
+                                # Filter by date range if specified (date only comparison)
+                                if start_date and end_date:
+                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                                    blog_date = parsed_date.date()
+                                    if not (start_dt <= blog_date <= end_dt):
+                                        print(f"  Skipping blog post: {blog_date} outside range {start_dt} to {end_dt}")
+                                        continue  # Skip this review if outside date range
+                            except:
+                                iso_date = "2025-01-01T00:00:00Z"
+                                # Skip if we can't parse the date and date filtering is required
+                                if start_date and end_date:
+                                    continue
                             
-                            # Filter by date range if specified (exact date matching)
-                            if start_date and end_date:
-                                start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                if not (start_dt <= parsed_date <= end_dt):
-                                    print(f"  Skipping blog post: {parsed_date} outside range {start_dt} to {end_dt}")
-                                    continue  # Skip this review if outside date range
-                        except:
-                            iso_date = "2025-01-01T00:00:00Z"
-                            # Skip if we can't parse the date and date filtering is required
-                            if start_date and end_date:
-                                continue
-                        
-                        # Clean content from HTML tags
-                        title = blog.get("title", "")
-                        description = blog.get("description", "")
-                        
-                        # Remove HTML tags from content
-                        def clean_html(text):
-                            # Remove HTML tags
-                            import re
-                            text = re.sub(r'<[^>]+>', '', text)
-                            # Decode HTML entities
-                            text = text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
-                            text = text.replace('&quot;', '"').replace('&#39;', "'")
-                            return text.strip()
-                        
-                        clean_title = clean_html(title)
-                        clean_description = clean_html(description)
-                        
-                        blog_review = {
-                            "userId": blog.get("extracted_user_id") or blog.get("bloggername", "Unknown"),
-                            "source": "naver_blog",
-                            "serviceId": "ixio",
-                            "appId": f"blog_{blog.get('postdate', 'unknown')}",
-                            "rating": 5,  # Default rating for blog posts
-                            "content": f"{clean_title} {clean_description}",
-                            "createdAt": iso_date,
-                            "link": blog.get("link", ""),
-                            "platform": "naver_blog"
-                        }
-                        blog_results.append(blog_review)
-                        print(f"Added blog review from {blog_review['userId']}: {blog_review['content'][:50]}...")
+                            # Clean content from HTML tags
+                            title = blog.get("title", "")
+                            description = blog.get("description", "")
+                            
+                            # Remove HTML tags from content
+                            def clean_html(text):
+                                # Remove HTML tags
+                                import re
+                                text = re.sub(r'<[^>]+>', '', text)
+                                # Decode HTML entities
+                                text = text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                                text = text.replace('&quot;', '"').replace('&#39;', "'")
+                                return text.strip()
+                            
+                            clean_title = clean_html(title)
+                            clean_description = clean_html(description)
+                            
+                            # Extract user ID from URL
+                            user_id = extract_user_id_from_url(
+                                blog.get("bloggerlink", ""),
+                                blog.get("link", ""),
+                                "blog"
+                            ) or blog.get("bloggername", "Unknown")
+                            
+                            blog_review = {
+                                "userId": user_id,
+                                "source": "naver_blog",
+                                "serviceId": "ixio",
+                                "appId": f"blog_{blog.get('postdate', 'unknown')}",
+                                "rating": 5,  # Default rating for blog posts
+                                "content": f"{clean_title} {clean_description}",
+                                "createdAt": iso_date,
+                                "link": blog.get("link", ""),
+                                "platform": "naver_blog"
+                            }
+                            blog_results.append(blog_review)
+                            print(f"Added blog review from {blog_review['userId']}: {blog_review['content'][:50]}...")
+                
+                except Exception as e:
+                    print(f"Error searching Naver Blog with keyword {kw}: {e}")
+                    continue
             
             # 네이버 API 실패 시 빈 결과 반환
             if not api_success or len(blog_results) == 0:
-                print("네이버 API 실패 - 유효한 API 키가 필요합니다")
+                print("네이버 블로그 API 실패 - 유효한 API 키가 필요합니다")
                 blog_results = []
                 
             print(f"Total blog results collected: {len(blog_results)}")
