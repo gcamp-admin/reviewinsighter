@@ -43,14 +43,14 @@ def crawl_google_play(app_id, count=100, lang='ko', country='kr', start_date=Non
             
             # Apply date filtering if specified
             if start_date and end_date:
-                start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
                 
                 # Convert review date to naive datetime
                 if hasattr(review_date, 'replace'):
-                    review_dt = review_date.replace(tzinfo=None)
+                    review_dt = review_date.replace(tzinfo=None).date()
                 else:
-                    review_dt = datetime.fromisoformat(review_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                    review_dt = datetime.fromisoformat(review_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
                 
                 # Skip if outside date range
                 if not (start_dt <= review_dt <= end_dt):
@@ -137,11 +137,11 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                 
                 # Apply date filtering if specified
                 if start_date and end_date:
-                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
                     
                     # Skip if outside date range
-                    if not (start_dt <= review_date <= end_dt):
+                    if not (start_dt <= review_date.date() <= end_dt):
                         continue
                 
                 # Get review ID
