@@ -23,8 +23,19 @@ def extract_negative_keywords(reviews: List[Dict]) -> Dict[str, int]:
     """
     부정 리뷰에서만 키워드를 추출하고 상위 20개 선택
     """
-    # 부정 리뷰만 필터링
-    negative_reviews = [r for r in reviews if r.get('sentiment', '').strip() == '부정']
+    # 부정 리뷰만 필터링 (더 관대한 조건)
+    negative_reviews = []
+    for r in reviews:
+        sentiment = r.get('sentiment', '').strip()
+        content = r.get('content', '')
+        
+        # 감정이 부정이거나, 명확한 부정 표현이 있는 리뷰 포함
+        if (sentiment == '부정' or 
+            '불편' in content or '안되' in content or '안돼' in content or 
+            '문제' in content or '오류' in content or '실패' in content or
+            '느림' in content or '끊어' in content or '멈춤' in content or
+            '복잡' in content or '어려' in content or '힘들' in content):
+            negative_reviews.append(r)
     
     if not negative_reviews:
         return {}
@@ -308,12 +319,21 @@ def analyze_negative_keyword_network(reviews: List[Dict]) -> Dict[str, Any]:
     """
     try:
         print("부정 리뷰 기반 키워드 네트워크 분석 시작...", file=sys.stderr)
+        print(f"전체 리뷰 수: {len(reviews)}", file=sys.stderr)
+        
+        # 부정 리뷰 개수 확인
+        negative_reviews = [r for r in reviews if r.get('sentiment', '').strip() == '부정']
+        print(f"부정 리뷰 수: {len(negative_reviews)}", file=sys.stderr)
         
         # 1. 부정 리뷰에서 상위 20개 키워드 추출
         keywords = extract_negative_keywords(reviews)
         
         if not keywords:
             print("부정 리뷰에서 키워드를 찾을 수 없습니다.", file=sys.stderr)
+            print("감정 분포:", {
+                sentiment: len([r for r in reviews if r.get('sentiment', '').strip() == sentiment])
+                for sentiment in ['긍정', '부정', '중립']
+            }, file=sys.stderr)
             return {
                 'nodes': [],
                 'edges': [],
@@ -322,7 +342,9 @@ def analyze_negative_keyword_network(reviews: List[Dict]) -> Dict[str, Any]:
                     'total_nodes': 0,
                     'total_edges': 0,
                     'total_clusters': 0,
-                    'analysis_type': 'negative_reviews'
+                    'analysis_type': 'negative_reviews',
+                    'total_reviews': len(reviews),
+                    'negative_reviews': len(negative_reviews)
                 }
             }
         

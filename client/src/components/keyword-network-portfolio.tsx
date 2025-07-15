@@ -52,6 +52,8 @@ export default function KeywordNetworkPortfolio({ serviceId, dateFrom, dateTo }:
   const { data: networkData, isLoading, error } = useQuery<KeywordNetworkData>({
     queryKey: ['keyword-network', serviceId, dateFrom, dateTo],
     queryFn: async () => {
+      console.log('🔍 키워드 네트워크 분석 요청:', { serviceId, dateFrom, dateTo });
+      
       const params = new URLSearchParams({
         serviceId,
         ...(dateFrom && { dateFrom }),
@@ -59,12 +61,21 @@ export default function KeywordNetworkPortfolio({ serviceId, dateFrom, dateTo }:
       });
       
       const response = await fetch(`/api/keyword-network?${params}`);
+      console.log('📊 키워드 네트워크 응답 상태:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ 키워드 네트워크 분석 실패:', errorText);
         throw new Error('키워드 네트워크 분석 실패');
       }
-      return response.json();
+      
+      const data = await response.json();
+      console.log('📊 키워드 네트워크 분석 결과:', data);
+      return data;
     },
-    enabled: !!serviceId
+    enabled: !!serviceId,
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   const drawNetwork = () => {
@@ -224,7 +235,8 @@ export default function KeywordNetworkPortfolio({ serviceId, dateFrom, dateTo }:
     );
   }
 
-  if (!networkData || networkData.nodes.length === 0) {
+  if (!networkData || !networkData.nodes || networkData.nodes.length === 0) {
+    console.log('⚠️ 키워드 네트워크 데이터 없음:', networkData);
     return (
       <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
         <div className="flex items-center justify-center h-96">
@@ -232,6 +244,11 @@ export default function KeywordNetworkPortfolio({ serviceId, dateFrom, dateTo }:
             <div className="text-gray-400 text-2xl mb-2">📊</div>
             <p className="text-gray-600 font-medium">분석할 부정 리뷰가 없습니다</p>
             <p className="text-gray-500 text-sm mt-1">선택한 기간에 부정 리뷰가 충분하지 않습니다.</p>
+            {networkData && (
+              <div className="mt-2 text-xs text-gray-400">
+                디버그: {JSON.stringify(networkData.stats || {}, null, 2)}
+              </div>
+            )}
           </div>
         </div>
       </div>
