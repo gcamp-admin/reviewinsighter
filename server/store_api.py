@@ -8,7 +8,7 @@ Store API Integration for Google Play and Apple App Store
 import sys
 import requests
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 from google_play_scraper import reviews, Sort
 
 def crawl_google_play(app_id, count=100, lang='ko', country='kr', start_date=None, end_date=None):
@@ -61,7 +61,7 @@ def crawl_google_play(app_id, count=100, lang='ko', country='kr', start_date=Non
                     else:
                         review_dt = datetime.fromisoformat(str(review_date).replace('Z', '+00:00')).replace(tzinfo=None).date()
                     
-                    print(f"Date filter: {start_dt} <= {review_dt} <= {end_dt} = {start_dt <= review_dt <= end_dt}")
+
                     
                     # 범위 밖이면 건너뛰기
                     if not (start_dt <= review_dt <= end_dt):
@@ -120,6 +120,12 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
         
         # Find review entries with proper namespace
         entries = root.findall('.//atom:entry', namespaces)
+        print(f"Found {len(entries)} Apple Store entries in RSS feed")
+        
+        # Remove app info entry (first entry is usually app info)
+        if entries:
+            entries = entries[1:]
+            print(f"After removing app info entry: {len(entries)} entries")
         
         processed_reviews = []
         for entry in entries:
@@ -146,7 +152,14 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                 
                 # Parse date
                 try:
-                    review_date = datetime.fromisoformat(updated_text.replace('Z', '+00:00')).replace(tzinfo=None)
+                    # Handle different date formats
+                    if '-07:00' in updated_text:
+                        # PST timezone - keep as is for date comparison
+                        review_date = datetime.fromisoformat(updated_text.replace('-07:00', '')).replace(tzinfo=None)
+                    elif 'Z' in updated_text:
+                        review_date = datetime.fromisoformat(updated_text.replace('Z', '')).replace(tzinfo=None)
+                    else:
+                        review_date = datetime.fromisoformat(updated_text).replace(tzinfo=None)
                 except:
                     review_date = datetime.now()
                 
@@ -164,7 +177,7 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                         else:
                             end_dt = datetime.fromisoformat(end_date).date()
                         
-                        print(f"Apple date filter: {start_dt} <= {review_date.date()} <= {end_dt} = {start_dt <= review_date.date() <= end_dt}")
+
                         
                         # 범위 밖이면 건너뛰기
                         if not (start_dt <= review_date.date() <= end_dt):

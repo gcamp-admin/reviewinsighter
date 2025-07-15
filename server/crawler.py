@@ -46,7 +46,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Google Play collection for {info['google_play_id']}...")
         google_reviews = crawl_google_play(
             info["google_play_id"], 
-            count=review_count,
+            count=1000,  # 더 많은 리뷰를 가져와서 날짜 필터링
             start_date=start_date,
             end_date=end_date
         )
@@ -89,7 +89,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Apple Store collection for {info['apple_store_id']}...")
         apple_reviews = crawl_apple_store(
             info["apple_store_id"],
-            count=review_count,
+            count=100,  # 더 많은 리뷰를 가져와서 날짜 필터링
             start_date=start_date,
             end_date=end_date
         )
