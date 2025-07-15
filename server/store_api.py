@@ -45,13 +45,13 @@ def crawl_google_play(app_id, count=100, lang='ko', country='kr', start_date=Non
             if start_date and end_date:
                 try:
                     # 시작/끝 날짜를 정확히 파싱
-                    if start_date.endswith('Z'):
-                        start_dt = datetime.fromisoformat(start_date[:-1]).date()
+                    if 'T' in start_date:
+                        start_dt = datetime.fromisoformat(start_date.replace('Z', '')).date()
                     else:
                         start_dt = datetime.fromisoformat(start_date).date()
                     
-                    if end_date.endswith('Z'):
-                        end_dt = datetime.fromisoformat(end_date[:-1]).date()
+                    if 'T' in end_date:
+                        end_dt = datetime.fromisoformat(end_date.replace('Z', '')).date()
                     else:
                         end_dt = datetime.fromisoformat(end_date).date()
                     
@@ -60,6 +60,8 @@ def crawl_google_play(app_id, count=100, lang='ko', country='kr', start_date=Non
                         review_dt = review_date.replace(tzinfo=None).date()
                     else:
                         review_dt = datetime.fromisoformat(str(review_date).replace('Z', '+00:00')).replace(tzinfo=None).date()
+                    
+                    print(f"Date filter: {start_dt} <= {review_dt} <= {end_dt} = {start_dt <= review_dt <= end_dt}")
                     
                     # 범위 밖이면 건너뛰기
                     if not (start_dt <= review_dt <= end_dt):
@@ -152,15 +154,17 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                 if start_date and end_date:
                     try:
                         # 시작/끝 날짜를 정확히 파싱
-                        if start_date.endswith('Z'):
-                            start_dt = datetime.fromisoformat(start_date[:-1]).date()
+                        if 'T' in start_date:
+                            start_dt = datetime.fromisoformat(start_date.replace('Z', '')).date()
                         else:
                             start_dt = datetime.fromisoformat(start_date).date()
                         
-                        if end_date.endswith('Z'):
-                            end_dt = datetime.fromisoformat(end_date[:-1]).date()
+                        if 'T' in end_date:
+                            end_dt = datetime.fromisoformat(end_date.replace('Z', '')).date()
                         else:
                             end_dt = datetime.fromisoformat(end_date).date()
+                        
+                        print(f"Apple date filter: {start_dt} <= {review_date.date()} <= {end_dt} = {start_dt <= review_date.date() <= end_dt}")
                         
                         # 범위 밖이면 건너뛰기
                         if not (start_dt <= review_date.date() <= end_dt):
