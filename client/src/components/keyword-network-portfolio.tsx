@@ -60,7 +60,18 @@ export default function KeywordNetworkPortfolio({ serviceId, dateFrom, dateTo }:
         ...(dateTo && { dateTo })
       });
       
-      const response = await fetch(`/api/keyword-network?${params}`);
+      const response = await fetch(`/api/keyword-network`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          serviceId,
+          ...(dateFrom && { dateFrom }),
+          ...(dateTo && { dateTo })
+        })
+      });
+      
       console.log('📊 키워드 네트워크 응답 상태:', response.status);
       
       if (!response.ok) {

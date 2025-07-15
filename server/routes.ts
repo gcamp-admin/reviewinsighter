@@ -486,8 +486,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // For HEART analysis, use GPT-based analysis
             if (analysisType === 'heart') {
               try {
-                const { analyzeHeartFrameworkWithGPT } = await import('./openai_analysis');
-                const gptInsights = await analyzeHeartFrameworkWithGPT(reviewsForAnalysis);
+                const { generateSimpleHeartInsights } = await import('./simple_heart_analysis');
+                const gptInsights = await generateSimpleHeartInsights(reviewsForAnalysis);
                 
                 for (const insight of gptInsights) {
                   try {

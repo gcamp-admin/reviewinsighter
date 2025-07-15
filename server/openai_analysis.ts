@@ -35,8 +35,8 @@ HEART 프레임워크 (UX 관점):
 - Task Success: 작업 완료율, 오류 방지, 사용자 목표 달성
 
 리뷰 데이터:
-${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
-내용: ${review.content}`).join('\n\n')}
+${reviewTexts.slice(0, 10).map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
+내용: ${review.content.substring(0, 150)}`).join('\n\n')}
 
 분석 결과를 다음 JSON 형식으로 반환해주세요:
 {
@@ -90,7 +90,7 @@ UX 개선 제안 작성 가이드라인:
 `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // Use more powerful model for complex analysis
+      model: "gpt-4o-mini", // Use mini model to reduce token usage
       messages: [
         {
           role: "system",
@@ -101,7 +101,7 @@ UX 개선 제안 작성 가이드라인:
           content: prompt
         }
       ],
-      max_tokens: 2000,
+      max_tokens: 1500,
       temperature: 0.3,
       response_format: { type: "json_object" }
     });
