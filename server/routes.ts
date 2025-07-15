@@ -440,17 +440,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: review.createdAt.toISOString(),
       }));
       
-      // Run analysis on existing reviews based on analysis type
-      const analysisFunction = analysisType === 'wordcloud' ? 'extract_korean_words_advanced' : 'analyze_sentiments';
-      const pythonProcess = spawn("python", ["-c", `
+      // Write reviews to temporary file to avoid E2BIG error
+      const fs = require('fs');
+      const path = require('path');
+      const tempFilePath = path.join(__dirname, 'temp_analysis_data.json');
+      
+      try {
+        fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
+        
+        // Run analysis using file input
+        const pythonProcess = spawn("python", ["-c", `
 import sys
 import json
+import os
 sys.path.append('server')
 from scraper import analyze_sentiments, extract_korean_words_advanced
 
-# Read reviews and analysis type from input
-reviews_data = json.loads(sys.argv[1])
-analysis_type = sys.argv[2] if len(sys.argv) > 2 else 'full'
+# Read reviews from file
+temp_file = '${tempFilePath}'
+with open(temp_file, 'r', encoding='utf-8') as f:
+    reviews_data = json.load(f)
+
+analysis_type = sys.argv[1] if len(sys.argv) > 1 else 'full'
 
 if analysis_type == 'wordcloud':
     # Extract word cloud data only
@@ -476,25 +487,38 @@ else:
     # Full analysis (backward compatibility)
     result = analyze_sentiments(reviews_data)
 
+# Clean up temp file
+try:
+    os.remove(temp_file)
+except:
+    pass
+
 print(json.dumps(result, ensure_ascii=False))
-      `, JSON.stringify(reviewsForAnalysis), analysisType || 'full']);
+        `, analysisType || 'full']);
       
-      let output = "";
-      let error = "";
-      
-      pythonProcess.stdout.on("data", (data) => {
-        output += data.toString();
-      });
-      
-      pythonProcess.stderr.on("data", (data) => {
-        error += data.toString();
-      });
-      
-      pythonProcess.on("close", async (code) => {
-        if (code !== 0) {
-          console.error("Python analysis error:", error);
-          return res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
-        }
+        let output = "";
+        let error = "";
+        
+        pythonProcess.stdout.on("data", (data) => {
+          output += data.toString();
+        });
+        
+        pythonProcess.stderr.on("data", (data) => {
+          error += data.toString();
+        });
+        
+        pythonProcess.on("close", async (code) => {
+          // Clean up temp file
+          try {
+            fs.unlinkSync(tempFilePath);
+          } catch (cleanupError) {
+            console.warn("Failed to cleanup temp file:", cleanupError);
+          }
+          
+          if (code !== 0) {
+            console.error("Python analysis error:", error);
+            return res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+          }
         
         try {
           const result = JSON.parse(output);
@@ -677,7 +701,12 @@ print(json.dumps(result, ensure_ascii=False))
           console.error("Error parsing Python analysis output:", parseError);
           res.status(500).json({ success: false, message: "AI 분석 결과 처리 중 오류가 발생했습니다." });
         }
-      });
+        });
+      
+      } catch (fileError) {
+        console.error("Error writing temp file:", fileError);
+        res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
+      }
     } catch (error) {
       console.error("Error in analyze endpoint:", error);
       res.status(500).json({ success: false, message: "AI 분석 중 오류가 발생했습니다." });
