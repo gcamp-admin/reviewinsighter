@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { spawn } from "child_process";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateKeywordNetworkWithGPT, generateClusterLabel } from "./openai_analysis";
 import { insertReviewSchema } from "../shared/schema";
@@ -441,12 +442,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
       
       // Write reviews to temporary file to avoid E2BIG error
-      const fs = await import('fs');
-      const path = await import('path');
       const tempFilePath = path.join(process.cwd(), 'temp_analysis_data.json');
       
       try {
-        fs.default.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
+        fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
         
         // Run analysis using file input
         const pythonProcess = spawn("python", ["-c", `
@@ -510,7 +509,7 @@ print(json.dumps(result, ensure_ascii=False))
         pythonProcess.on("close", async (code) => {
           // Clean up temp file
           try {
-            fs.default.unlinkSync(tempFilePath);
+            fs.unlinkSync(tempFilePath);
           } catch (cleanupError) {
             console.warn("Failed to cleanup temp file:", cleanupError);
           }
