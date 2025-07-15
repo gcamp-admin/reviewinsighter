@@ -197,23 +197,15 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                         blog_results.append(blog_review)
                         print(f"Added blog review from {blog_review['userId']}: {blog_review['content'][:50]}...")
             
-            # 네이버 API 실패 시 대체 데이터 사용
+            # 네이버 API 실패 시 빈 결과 반환
             if not api_success or len(blog_results) == 0:
-                print("네이버 API 실패, 대체 데이터 사용 중...")
-                from naver_fallback import generate_naver_blog_fallback
-                blog_results = generate_naver_blog_fallback(service_name, start_date, end_date, review_count)
-                print(f"대체 블로그 데이터 생성: {len(blog_results)}개")
+                print("네이버 API 실패 - 유효한 API 키가 필요합니다")
+                blog_results = []
                 
             print(f"Total blog results collected: {len(blog_results)}")
         except Exception as e:
             print(f"Error collecting Naver Blog reviews: {str(e)}")
-            # 예외 발생 시도 대체 데이터 사용
-            try:
-                from naver_fallback import generate_naver_blog_fallback
-                blog_results = generate_naver_blog_fallback(service_name, start_date, end_date, review_count)
-                print(f"예외 발생, 대체 블로그 데이터 생성: {len(blog_results)}개")
-            except:
-                blog_results = []
+            blog_results = []
         result["naver_blog"] = blog_results
 
     if selected_channels.get("naverCafe"):
@@ -283,25 +275,17 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     traceback.print_exc()
                     continue
             
-            # 네이버 API 실패 시 대체 데이터 사용
+            # 네이버 API 실패 시 빈 결과 반환
             if not api_success or len(cafe_results) == 0:
-                print("네이버 API 실패, 대체 데이터 사용 중...")
-                from naver_fallback import generate_naver_cafe_fallback
-                cafe_results = generate_naver_cafe_fallback(service_name, start_date, end_date, review_count)
-                print(f"대체 카페 데이터 생성: {len(cafe_results)}개")
+                print("네이버 API 실패 - 유효한 API 키가 필요합니다")
+                cafe_results = []
             
             print(f"Total cafe results collected: {len(cafe_results)}")
         except Exception as e:
             print(f"Error collecting Naver Cafe reviews: {str(e)}")
             import traceback
             traceback.print_exc()
-            # 예외 발생 시도 대체 데이터 사용
-            try:
-                from naver_fallback import generate_naver_cafe_fallback
-                cafe_results = generate_naver_cafe_fallback(service_name, start_date, end_date, review_count)
-                print(f"예외 발생, 대체 카페 데이터 생성: {len(cafe_results)}개")
-            except:
-                cafe_results = []
+            cafe_results = []
         result["naver_cafe"] = cafe_results
 
     return result
