@@ -10,8 +10,9 @@ import urllib.parse
 import sys
 import re
 
-NAVER_CLIENT_ID = "YINpbvMCsck1Vr0PwwJd"
-NAVER_CLIENT_SECRET = "gdi7lnyV1Z"
+import os
+NAVER_CLIENT_ID = os.environ.get('NAVER_CLIENT_ID')
+NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET')
 
 def extract_user_id_from_url(bloggerlink, link, search_type):
     """
