@@ -394,6 +394,8 @@ Changelog:
 - July 16, 2025. **PYTHON HEART ANALYSIS SYSTEM**: Implemented comprehensive Python-based HEART framework analysis system with UX expert methodology, service case studies, and concrete improvement suggestions following user-provided system prompt specifications
 - July 16, 2025. **SENTIMENT ANALYSIS BUG FIX**: Fixed review list display issue where first page showed "중립" by default - changed initial sentiment from "중립" to "분석중" and improved sentiment analysis workflow with better logging and status tracking
 - July 16, 2025. **UI IMPROVEMENT**: Removed collection progress box and moved progress percentage display to collection button for cleaner UI - button now shows "수집 중... X%" during collection process
+- July 16, 2025. **REVIEW LIST OPTIMIZATION**: Changed review list to show 5 items per page instead of 10, implemented analysis completion detection - list only shows after sentiment analysis is complete, displays "분석 중" message during processing
+- July 16, 2025. **BUTTON LAYOUT ENHANCEMENT**: Updated both "리뷰 수집" and "코멘토에게 분석 요청하기" buttons to full width (100%), added progress percentage display to analysis button matching collection button format
 
 ## User Preferences
 

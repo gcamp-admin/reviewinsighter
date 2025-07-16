@@ -14,6 +14,7 @@ interface AIAnalysisSectionProps {
 
 export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnalysisSectionProps) {
   const [hasAnalyzedComprehensive, setHasAnalyzedComprehensive] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -56,6 +57,9 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
 
   const comprehensiveAnalysisMutation = useMutation({
     mutationFn: async (): Promise<{ message: string; success: boolean }> => {
+      // Reset progress
+      setAnalysisProgress(0);
+      
       if (!filters.service) {
         throw new Error('서비스를 선택해주세요');
       }
@@ -83,6 +87,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       }
       
       // 먼저 워드클라우드 분석 수행
+      setAnalysisProgress(25);
       const wordcloudPayload = {
         serviceId: filters.service.id,
         serviceName: filters.service.name,
@@ -95,6 +100,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       const wordcloudResponse = await apiRequest("POST", "/api/analyze", wordcloudPayload);
       
       // 그 다음 HEART 분석 수행
+      setAnalysisProgress(50);
       const heartPayload = {
         serviceId: filters.service.id,
         serviceName: filters.service.name,
@@ -107,6 +113,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       const heartResponse = await apiRequest("POST", "/api/analyze", heartPayload);
       
       // 키워드 네트워크 분석도 동시에 수행
+      setAnalysisProgress(75);
       const keywordNetworkPayload = {
         serviceId: filters.service.id,
         source: filters.source,
@@ -116,6 +123,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       
       const keywordNetworkResponse = await apiRequest("POST", "/api/keyword-network", keywordNetworkPayload);
       
+      setAnalysisProgress(100);
       return { 
         message: "통합 분석이 완료되었습니다.",
         success: true
@@ -128,6 +136,12 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       });
       setHasAnalyzedComprehensive(true);
       onAnalysisSuccess('comprehensive');
+      
+      // Reset progress after completion
+      setTimeout(() => {
+        setAnalysisProgress(0);
+      }, 2000);
+      
       // Invalidate all analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
@@ -169,26 +183,24 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center space-y-3">
-          <div className="flex gap-4 w-full max-w-2xl">
-            <Button 
-              onClick={() => handleComprehensiveAnalysis()}
-              disabled={comprehensiveAnalysisMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
-              className="flex-1 gradient-bg hover:shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
-              size="lg"
-            >
-              {comprehensiveAnalysisMutation.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                  <span className="animate-pulse">코멘토 분석 중...</span>
-                </>
-              ) : (
-                <>
-                  <Brain className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
-                  코멘토에게 분석 요청하기
-                </>
-              )}
-            </Button>
-          </div>
+          <Button 
+            onClick={() => handleComprehensiveAnalysis()}
+            disabled={comprehensiveAnalysisMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
+            className="w-full gradient-bg hover:shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+            size="lg"
+          >
+            {comprehensiveAnalysisMutation.isPending ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                <span className="animate-pulse">코멘토 분석 중... {analysisProgress}%</span>
+              </>
+            ) : (
+              <>
+                <Brain className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
+                코멘토에게 분석 요청하기
+              </>
+            )}
+          </Button>
           
           {!filters.dateFrom && (
             <p className="text-center text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">
