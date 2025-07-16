@@ -253,22 +253,37 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 API는 날짜를 제공하지 않음 - 사용자 지정 날짜 범위 내 랜덤 날짜 할당
-                            if start_date and end_date:
-                                # 시작~종료 날짜 범위 내에서 랜덤 날짜 생성
-                                from datetime import datetime as dt, timedelta as td
-                                start_dt = dt.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                end_dt = dt.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                
-                                # 날짜 범위 내 랜덤 날짜 생성
-                                time_diff = end_dt - start_dt
-                                random_seconds = random.randint(0, int(time_diff.total_seconds()))
-                                random_date = start_dt + td(seconds=random_seconds)
-                                
-                                iso_date = random_date.isoformat() + "Z"
-                                print(f"  Assigned random date {random_date} for cafe post (date not available)")
-                            else:
-                                print(f"  Skipping cafe post: no date range specified")
+                            # 네이버 카페 API는 날짜를 제공하지 않음 - 실제 날짜 스크래핑 시도
+                            actual_date = None
+                            cafe_url = cafe.get("link", "")
+                            
+                            # 네이버 카페 실제 날짜 스크래핑 시도
+                            try:
+                                if cafe_url:
+                                    from naver_cafe_scraper import extract_cafe_post_date
+                                    actual_date = extract_cafe_post_date(cafe_url)
+                                    
+                                    if actual_date:
+                                        # 날짜 필터링 적용
+                                        if start_date and end_date:
+                                            from datetime import datetime as dt
+                                            start_dt = dt.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                            end_dt = dt.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                            
+                                            if actual_date < start_dt or actual_date > end_dt:
+                                                print(f"  Skipping cafe post: date {actual_date} outside range {start_dt} ~ {end_dt}")
+                                                continue
+                                        
+                                        iso_date = actual_date.isoformat() + "Z"
+                                        print(f"  Using actual cafe post date: {actual_date}")
+                                    else:
+                                        print(f"  Could not extract date from cafe URL, skipping")
+                                        continue
+                                else:
+                                    print(f"  No cafe URL available, skipping")
+                                    continue
+                            except Exception as e:
+                                print(f"  Error extracting cafe date: {e}, skipping")
                                 continue
                             
                             # Clean content from HTML tags

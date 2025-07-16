@@ -35,7 +35,6 @@ const ChannelBarChart = ({ data }: Props) => {
         }]
       },
       options: {
-        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -45,13 +44,24 @@ const ChannelBarChart = ({ data }: Props) => {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.label}: ${context.parsed.x.toFixed(1)}%`;
+                return `${context.label}: ${context.parsed.y.toFixed(1)}%`;
               }
             }
           }
         },
         scales: {
           x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 11
+              },
+              color: "#374151"
+            }
+          },
+          y: {
             beginAtZero: true,
             max: Math.max(...data.map(item => item.value)) * 1.1,
             grid: {
@@ -61,17 +71,6 @@ const ChannelBarChart = ({ data }: Props) => {
               callback: function(value) {
                 return value + '%';
               }
-            }
-          },
-          y: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              font: {
-                size: 11
-              },
-              color: "#374151"
             }
           }
         }

@@ -60,7 +60,9 @@ export default function SourceDistributionCard({ filters }: Props) {
     );
   }
 
-  // Group reviews by source - count all reviews, not just current page
+  // Ensure all 4 channels are included, even if they have 0 reviews
+  const allChannels = ['google_play', 'app_store', 'naver_blog', 'naver_cafe'];
+  
   const sourceCounts = reviewsData.reviews.reduce((acc, review) => {
     acc[review.source] = (acc[review.source] || 0) + 1;
     return acc;
@@ -68,10 +70,10 @@ export default function SourceDistributionCard({ filters }: Props) {
 
   const totalReviews = reviewsData.reviews.length;
   
-  const chartData = Object.entries(sourceCounts).map(([source, count]) => ({
-    label: CHANNEL_NAMES[source] || source,
-    value: totalReviews > 0 ? (count / totalReviews) * 100 : 0,
-    color: CHANNEL_COLORS[source] || "#8884d8"
+  const chartData = allChannels.map(channel => ({
+    label: CHANNEL_NAMES[channel] || channel,
+    value: totalReviews > 0 ? ((sourceCounts[channel] || 0) / totalReviews) * 100 : 0,
+    color: CHANNEL_COLORS[channel] || "#8884d8"
   }));
 
   return <ChannelBarChart data={chartData} />;
