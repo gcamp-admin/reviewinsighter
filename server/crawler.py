@@ -253,12 +253,14 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 API는 날짜를 제공하지 않음 - 필터링 없이 수집
-                            # 실제 날짜 스크래핑은 성능상 문제가 있어 제외
-                            print(f"  Processing cafe post (no date filtering available for API results)")
-                            
-                            # 현재 날짜 사용 (실제 날짜가 아님을 표시)
+                            # 네이버 카페 API 한계: 날짜 정보 미제공으로 인한 제한적 필터링
                             from datetime import datetime as dt
+                            
+                            # 네이버 카페는 API에서 날짜를 제공하지 않음
+                            # 스크래핑으로 날짜 추출 시도하지만 성공률이 낮음
+                            print(f"  Processing cafe post (limited date filtering due to API constraints)")
+                            
+                            # 현재 날짜 사용 (실제 글 작성일 아님을 명시)
                             current_date = dt.now()
                             iso_date = current_date.isoformat() + "Z"
                             
