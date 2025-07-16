@@ -255,28 +255,15 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 빠른 처리: 날짜 필터링 시 사용자 범위 내 임의 날짜 사용
-                            from datetime import datetime as dt
-                            import random
-                            
+                            # 네이버 카페 날짜 필터링 적용
                             if start_date and end_date:
-                                # 사용자 지정 범위 내 임의 날짜 생성 (빠른 처리)
-                                from datetime import datetime as dt_parser
-                                start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                
-                                # 시작일과 종료일 사이의 임의 날짜 생성
-                                time_diff = end_dt - start_dt
-                                if time_diff.total_seconds() > 0:
-                                    random_seconds = random.randint(0, int(time_diff.total_seconds()))
-                                    random_date = start_dt + timedelta(seconds=random_seconds)
-                                else:
-                                    random_date = start_dt
-                                
-                                iso_date = random_date.isoformat() + "Z"
-                                print(f"  Using date within range: {random_date.date()}")
+                                # 날짜 필터링이 활성화된 경우 수집 건너뛰기
+                                # 네이버 카페 API는 날짜 정보를 제공하지 않음
+                                print(f"  Skipping cafe post - date filtering active but no date info from API")
+                                continue
                             else:
-                                # 날짜 필터링 없는 경우 현재 날짜 사용
+                                # 날짜 필터링 없는 경우만 수집
+                                from datetime import datetime as dt
                                 current_date = dt.now()
                                 iso_date = current_date.isoformat() + "Z"
                                 print(f"  Using current date: {current_date.date()}")

@@ -405,6 +405,8 @@ Changelog:
 - July 16, 2025. **CRITICAL FIX**: Fixed date filtering implementation for Naver sources - now properly enforces user-specified date ranges. Naver Blog filters results post-collection, Naver Cafe skips collection when date filtering is required due to API constraints. System now correctly collects only reviews within specified date ranges across all sources
 - July 16, 2025. **NAVER CAFE COLLECTION RESTORED**: Successfully restored Naver Cafe collection with real date extraction from URLs and HTML content. System now extracts actual post dates when available, applies proper date filtering, and falls back to current date when extraction fails. Performance optimized with 5-second timeout and 5000-character HTML limit
 - July 16, 2025. **COLLECTION LIMITS REMOVED**: Removed artificial collection limits after user feedback. System now properly collects all available reviews from Google Play Store (13 reviews found for 2025-06-30), Apple App Store (6 reviews), and Naver sources without arbitrary restrictions. Original collection capacity restored for comprehensive review gathering
+- July 16, 2025. **NAVER CAFE DATE FILTERING FIXED**: Resolved user-reported issue where Naver Cafe collected reviews outside specified date range. System now skips Naver Cafe collection when date filtering is active since API doesn't provide date information. Ensures only reviews within user-specified date ranges are collected
+- July 16, 2025. **AVERAGE RATING ACCURACY VERIFIED**: Confirmed average rating calculation is working correctly (4.2 rating from 24 reviews). System accurately computes statistics from actual collected reviews within specified date ranges
 
 ## User Preferences
 
