@@ -13,7 +13,7 @@ export default function Header() {
               <img 
                 src={logoImg} 
                 alt="commento.ai Logo" 
-                className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300 commento-logo"
+                className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300"
               />
             </div>
             <div>
