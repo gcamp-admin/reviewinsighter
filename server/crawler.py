@@ -46,7 +46,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Google Play collection for {info['google_play_id']}...")
         google_reviews = crawl_google_play(
             info["google_play_id"], 
-            count=1000,  # 충분한 리뷰를 가져와서 날짜 범위 내 모든 리뷰 확보
+            count=1000,  # 더 많은 리뷰를 가져와서 날짜 필터링
             start_date=start_date,
             end_date=end_date
         )
@@ -89,7 +89,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Apple Store collection for {info['apple_store_id']}...")
         apple_reviews = crawl_apple_store(
             info["apple_store_id"],
-            count=min(50, review_count),  # 더 많은 리뷰 수집
+            count=100,  # 더 많은 리뷰를 가져와서 날짜 필터링
             start_date=start_date,
             end_date=end_date
         )
@@ -138,10 +138,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:3]:  # 3개 키워드 사용으로 확대
+            for kw in service_keywords[:3]:  # Limit to top 3 keywords
                 print(f"Searching Naver Blog with keyword: {kw}")
                 try:
-                    naver_blogs = search_naver(kw, search_type="blog", display=min(30, review_count//3))
+                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//3)
                     print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
                     
                     if naver_blogs:
@@ -227,10 +227,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:3]:  # 3개 키워드 사용으로 확대
+            for kw in service_keywords[:3]:  # Limit to 3 keywords for stability
                 print(f"Searching Naver Cafe with keyword: {kw}")
                 try:
-                    naver_cafes = search_naver(kw, search_type="cafe", display=min(30, review_count//3))
+                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3)
                     print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
                     
                     if naver_cafes:
@@ -253,22 +253,38 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 API는 정확한 날짜를 제공하지 않음 - 빠른 처리를 위해 오늘 날짜 사용
-                            from datetime import datetime as dt
+                            # 네이버 카페 API는 날짜를 제공하지 않음 - 실제 날짜 스크래핑 시도
+                            actual_date = None
+                            cafe_url = cafe.get("link", "")
                             
-                            # 빠른 처리를 위해 간단한 날짜 검증만 수행
-                            today = dt.now()
-                            if start_date and end_date:
-                                start_dt = dt.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                end_dt = dt.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                
-                                # 오늘 날짜가 범위 내에 있는지만 확인 (빠른 처리)
-                                if today < start_dt or today > end_dt:
-                                    print(f"  Skipping cafe post: today {today.date()} outside range {start_dt.date()} ~ {end_dt.date()}")
+                            # 네이버 카페 실제 날짜 스크래핑 시도
+                            try:
+                                if cafe_url:
+                                    from naver_cafe_scraper import extract_cafe_post_date
+                                    actual_date = extract_cafe_post_date(cafe_url)
+                                    
+                                    if actual_date:
+                                        # 날짜 필터링 적용
+                                        if start_date and end_date:
+                                            from datetime import datetime as dt
+                                            start_dt = dt.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                            end_dt = dt.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                            
+                                            if actual_date < start_dt or actual_date > end_dt:
+                                                print(f"  Skipping cafe post: date {actual_date} outside range {start_dt} ~ {end_dt}")
+                                                continue
+                                        
+                                        iso_date = actual_date.isoformat() + "Z"
+                                        print(f"  Using actual cafe post date: {actual_date}")
+                                    else:
+                                        print(f"  Could not extract date from cafe URL, skipping")
+                                        continue
+                                else:
+                                    print(f"  No cafe URL available, skipping")
                                     continue
-                            
-                            iso_date = today.isoformat() + "Z"
-                            print(f"  Using today's date for cafe post: {today.date()}")
+                            except Exception as e:
+                                print(f"  Error extracting cafe date: {e}, skipping")
+                                continue
                             
                             # Clean content from HTML tags
                             # Remove HTML tags from content
