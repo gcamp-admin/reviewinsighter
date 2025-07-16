@@ -15,9 +15,6 @@ export default function Header() {
                   src={logoImg} 
                   alt="commento.ai Logo" 
                   className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300"
-                  style={{
-                    filter: 'sepia(1) saturate(1.8) hue-rotate(300deg) brightness(1.2)'
-                  }}
                 />
               </div>
             </div>
