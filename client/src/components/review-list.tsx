@@ -76,7 +76,6 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
 
       const url = `/api/reviews?${params}`;
-      console.log('Fetching reviews from:', url);
       
       const response = await fetch(url, {
         headers: {
@@ -88,12 +87,16 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         throw new Error("Failed to fetch reviews");
       }
       const result = await response.json();
-      console.log('Reviews result:', result);
       return result;
     },
     enabled: !!filters?.service?.id, // Only fetch when service is selected
     staleTime: 0,
     gcTime: 0,
+    refetchInterval: (data, query) => {
+      // Poll every 2 seconds if there are reviews with "분석중" status
+      const hasAnalyzingReviews = data?.reviews?.some(review => review.sentiment === "분석중");
+      return hasAnalyzingReviews ? 2000 : false;
+    },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
@@ -105,28 +108,6 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
 
   // Check if there are any reviews with "분석중" status
   const hasAnalyzingReviews = data?.reviews?.some(review => review.sentiment === "분석중") || false;
-  
-  // If analysis is in progress, don't show review list - show analyzing message instead
-  if (hasAnalyzingReviews) {
-    return (
-      <Card className="mb-8 border-0 shadow-md bg-white/95 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            리뷰 분석 중
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <div className="text-center space-y-2">
-              <p className="text-lg font-medium text-gray-700">감정 분석을 진행하고 있습니다</p>
-              <p className="text-sm text-gray-500">분석이 완료되면 리뷰 목록이 표시됩니다</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
   
   // Filter reviews locally based on sentiment
   const filteredReviews = data?.reviews?.filter(review => {
