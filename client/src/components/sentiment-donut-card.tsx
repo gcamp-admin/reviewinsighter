@@ -94,6 +94,20 @@ export default function SentimentDonutCard({ filters }: Props) {
       <div className="relative h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
+            <defs>
+              <linearGradient id="positiveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fce7f3" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+              <linearGradient id="negativeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ddd6fe" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+              </linearGradient>
+              <linearGradient id="neutralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f9fafb" />
+                <stop offset="100%" stopColor="#9ca3af" />
+              </linearGradient>
+            </defs>
             <Pie
               data={chartData}
               cx="50%"
@@ -104,7 +118,14 @@ export default function SentimentDonutCard({ filters }: Props) {
               dataKey="value"
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={
+                    entry.name === '긍정' ? 'url(#positiveGradient)' :
+                    entry.name === '부정' ? 'url(#negativeGradient)' :
+                    'url(#neutralGradient)'
+                  }
+                />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
@@ -129,7 +150,11 @@ export default function SentimentDonutCard({ filters }: Props) {
               <div className="flex items-center">
                 <div 
                   className="w-3 h-3 rounded-full mr-2" 
-                  style={{ backgroundColor: item.color }}
+                  style={{ 
+                    background: item.name === '긍정' ? 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)' :
+                               item.name === '부정' ? 'linear-gradient(135deg, #ddd6fe 0%, #8b5cf6 100%)' :
+                               'linear-gradient(135deg, #f9fafb 0%, #9ca3af 100%)'
+                  }}
                 />
                 <IconComponent className="w-4 h-4 mr-1 text-gray-600" />
                 <span className="text-gray-700">{item.name}</span>
