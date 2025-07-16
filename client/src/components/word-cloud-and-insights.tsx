@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Cloud, TrendingUp, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Cloud, TrendingUp, AlertCircle, CheckCircle, Clock, X } from "lucide-react";
 import type { ReviewFilters } from "@/types";
 
 interface WordCloudAndInsightsProps {
@@ -11,6 +12,7 @@ interface WordCloudAndInsightsProps {
 }
 
 export default function WordCloudAndInsights({ filters, activeSection }: WordCloudAndInsightsProps) {
+  const [isHeartPopupOpen, setIsHeartPopupOpen] = useState(false);
   const { data: positiveWords = [], isLoading: positiveLoading } = useQuery({
     queryKey: ["/api/wordcloud", "긍정", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
     queryFn: async () => {
@@ -183,6 +185,12 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         <h2 className="text-2xl font-bold text-gray-900 flex items-center">
           <TrendingUp className="w-6 h-6 mr-2 text-purple-600" />
           HEART 프레임워크 분석
+          <span 
+            className="ml-4 text-sm text-gray-500 hover:text-[#7CF3C4] cursor-pointer transition-colors duration-300"
+            onClick={() => setIsHeartPopupOpen(true)}
+          >
+            💡 왜 HEART 분석을 하나요?
+          </span>
         </h2>
         
         <div className="grid grid-cols-1 gap-4">
@@ -220,6 +228,75 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           ))}
         </div>
       </div>
+
+      {/* HEART 분석 설명 팝업 */}
+      {isHeartPopupOpen && (
+        <div className="popup-overlay" onClick={() => setIsHeartPopupOpen(false)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setIsHeartPopupOpen(false)}
+              className="popup-close-btn"
+            >
+              <X size={24} />
+            </button>
+            
+            {/* 팝업 내용 */}
+            <div className="text-center">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-purple-600 font-bold text-2xl">💡</span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">💡 왜 HEART 분석을 하나요?</h2>
+              </div>
+              
+              <div className="text-left space-y-4 text-sm text-gray-600">
+                <p>
+                  <strong className="text-purple-600">HEART</strong>는 Google이 만든 UX 평가 프레임워크로,<br/>
+                  리뷰 내용을 사용자 경험의 5가지 요소로 나눠 분석합니다:
+                </p>
+                
+                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-600 font-bold">H</span>
+                    <div>
+                      <strong>Happiness</strong> – 얼마나 만족했는지
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-600 font-bold">E</span>
+                    <div>
+                      <strong>Engagement</strong> – 얼마나 자주·깊게 사용했는지
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-600 font-bold">A</span>
+                    <div>
+                      <strong>Adoption</strong> – 처음 쓸 때 얼마나 잘 적응했는지
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-600 font-bold">R</span>
+                    <div>
+                      <strong>Retention</strong> – 다시 돌아올 만큼 좋았는지
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-600 font-bold">T</span>
+                    <div>
+                      <strong>Task Success</strong> – 하고자 한 행동을 잘 마쳤는지
+                    </div>
+                  </div>
+                </div>
+                
+                <p className="text-center text-purple-600 font-medium pt-4 border-t">
+                  👉 이렇게 분석하면, 리뷰 속 불편함이 구체적인 UX 개선 항목으로 드러납니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
