@@ -10,14 +10,22 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center space-x-4 group">
             <div className="flex items-center">
-              <img 
-                src={logoImg} 
-                alt="commento.ai Logo" 
-                className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300"
-                style={{
-                  filter: 'hue-rotate(260deg) saturate(1.2) brightness(1.1)'
-                }}
-              />
+              <div className="relative inline-block">
+                <img 
+                  src={logoImg} 
+                  alt="commento.ai Logo" 
+                  className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300 opacity-0"
+                />
+                <div 
+                  className="absolute top-0 left-0 h-16 w-full group-hover:scale-105 transform transition-all duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, #c97cff, #f9a4bc)',
+                    WebkitMask: `url(${logoImg}) no-repeat center/contain`,
+                    mask: `url(${logoImg}) no-repeat center/contain`,
+                    maskSize: 'contain'
+                  }}
+                />
+              </div>
             </div>
             <div>
               <p className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors duration-300 mt-1">
