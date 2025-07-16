@@ -3,8 +3,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 
 const SENTIMENT_COLORS = {
-  긍정: "#10B981",
-  부정: "#EF4444", 
+  긍정: "#059669", // 더 진한 연두색
+  부정: "#DC2626", // 더 진한 레드
   중립: "#6B7280"
 };
 

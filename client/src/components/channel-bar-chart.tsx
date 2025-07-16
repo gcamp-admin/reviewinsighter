@@ -85,29 +85,27 @@ const ChannelBarChart = ({ data }: Props) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">수집 채널별 분포</h3>
-      <div className="flex flex-col" style={{ height: '320px' }}>
-        <div className="h-48 mb-4">
-          <canvas ref={canvasRef}></canvas>
-        </div>
-        {/* 범례를 감정분석 카드와 동일한 스타일로 */}
-        <div className="mt-4 space-y-2">
-          {data.map((item, i) => (
-            <div key={i} className="flex items-center justify-between text-sm">
-              <div className="flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-gray-700" style={{ fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-                  {item.label}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="font-medium">{Math.round(item.value)}%</span>
-              </div>
+      <div className="relative h-64">
+        <canvas ref={canvasRef}></canvas>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {data.map((item, i) => (
+          <div key={i} className="flex items-center justify-between text-sm">
+            <div className="flex items-center">
+              <div 
+                className="w-3 h-3 rounded-full mr-2" 
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="text-gray-700" style={{ fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+                {item.label}
+              </span>
             </div>
-          ))}
-        </div>
+            <div className="flex items-center space-x-2">
+              <span className="font-medium">{Math.round(item.value)}%</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
