@@ -393,6 +393,7 @@ Changelog:
 - July 16, 2025. **NAVER CAFE NEWS FILTERING**: Added comprehensive news article filtering system to exclude news content from Naver cafe crawling with keyword detection for "뉴스", "기사", "보도", "언론", "미디어" etc.
 - July 16, 2025. **PYTHON HEART ANALYSIS SYSTEM**: Implemented comprehensive Python-based HEART framework analysis system with UX expert methodology, service case studies, and concrete improvement suggestions following user-provided system prompt specifications
 - July 16, 2025. **SENTIMENT ANALYSIS BUG FIX**: Fixed review list display issue where first page showed "중립" by default - changed initial sentiment from "중립" to "분석중" and improved sentiment analysis workflow with better logging and status tracking
+- July 16, 2025. **UI IMPROVEMENT**: Removed collection progress box and moved progress percentage display to collection button for cleaner UI - button now shows "수집 중... X%" during collection process
 
 ## User Preferences
 
