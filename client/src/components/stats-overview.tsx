@@ -3,6 +3,8 @@ import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { motion } from "framer-motion";
 import type { ReviewStats, ReviewFilters } from "@/types";
 
 interface StatsOverviewProps {
@@ -102,103 +104,202 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
     );
   }
 
+  // 도넛차트 데이터 준비
+  const donutData = [
+    { name: '구글플레이', value: stats.countsBySource.googlePlay, color: '#34A853' },
+    { name: '애플앱스토어', value: stats.countsBySource.appleStore, color: '#333333' },
+    { name: '네이버블로그', value: stats.countsBySource.naverBlog, color: '#03C75A' },
+    { name: '네이버카페', value: stats.countsBySource.naverCafe, color: '#06B6D4' },
+  ].filter(item => item.value > 0);
+
+  // 수평 막대 그래프 데이터
+  const maxSentimentValue = Math.max(stats.positive, stats.negative, stats.neutral || 0);
+  const positivePercentage = (stats.positive / maxSentimentValue) * 100;
+  const negativePercentage = (stats.negative / maxSentimentValue) * 100;
+  const neutralPercentage = ((stats.neutral || 0) / maxSentimentValue) * 100;
+
   return (
-    <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-      <Card className="glassmorphism-card glow-indigo-hover card-hover group cursor-pointer">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">총 리뷰 수</p>
-              <p className="text-2xl font-bold text-indigo-600 text-glow group-hover:text-indigo-700 transition-colors">{stats.total.toLocaleString()}</p>
-              <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                {stats.countsBySource.googlePlay > 0 && (
-                  <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
-                    <StoreIcon source="google_play" />
-                    <span>구글플레이 {stats.countsBySource.googlePlay}건</span>
-                  </div>
-                )}
-                {stats.countsBySource.appleStore > 0 && (
-                  <div className="flex items-center gap-1 hover:text-gray-600 transition-colors">
-                    <StoreIcon source="app_store" />
-                    <span>애플앱스토어 {stats.countsBySource.appleStore}건</span>
-                  </div>
-                )}
-                {stats.countsBySource.naverBlog > 0 && (
-                  <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
-                    <StoreIcon source="naver_blog" />
-                    <span>네이버블로그 {stats.countsBySource.naverBlog}건</span>
-                  </div>
-                )}
-                {stats.countsBySource.naverCafe > 0 && (
-                  <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
-                    <StoreIcon source="naver_cafe" />
-                    <span>네이버카페 {stats.countsBySource.naverCafe}건</span>
-                  </div>
-                )}
+    <section className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+      {/* 총 리뷰 수 - 도넛차트 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white/50 backdrop-blur rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">총 리뷰 수</p>
+            <p className="text-3xl font-bold text-gray-900 glow-number">{stats.total.toLocaleString()}</p>
+          </div>
+          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <MessageSquare className="w-5 h-5 text-indigo-600" />
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={donutData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={20}
+                  outerRadius={32}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {donutData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="text-xs text-gray-600 space-y-1">
+            {donutData.map((item, index) => (
+              <div key={index} className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
+                <span>{item.name} {item.value}건</span>
               </div>
-            </div>
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 group-hover:scale-110 transition-all duration-300">
-              <MessageSquare className="w-6 h-6 text-indigo-600" />
-            </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </motion.div>
       
-      <Card className="glassmorphism-card glow-green-hover card-hover group cursor-pointer">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">긍정 리뷰</p>
-              <p className="text-2xl font-bold text-green-600 text-glow group-hover:text-green-700 transition-colors">{stats.positive.toLocaleString()}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 group-hover:scale-110 transition-all duration-300">
-              <ThumbsUp className="w-6 h-6 text-green-600" />
-            </div>
+      {/* 긍정 리뷰 - 수평 막대 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="bg-white/50 backdrop-blur rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">긍정 리뷰</p>
+            <p className="text-3xl font-bold text-green-600 glow-number">{stats.positive.toLocaleString()}</p>
           </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="glassmorphism-card hover:shadow-[0_0_18px_rgba(239,68,68,0.5)] card-hover group cursor-pointer">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">부정 리뷰</p>
-              <p className="text-2xl font-bold text-red-600 text-glow group-hover:text-red-700 transition-colors">{stats.negative.toLocaleString()}</p>
-            </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 group-hover:scale-110 transition-all duration-300">
-              <ThumbsDown className="w-6 h-6 text-red-600" />
-            </div>
+          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <ThumbsUp className="w-5 h-5 text-green-600" />
           </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="glassmorphism-card hover:shadow-[0_0_18px_rgba(107,114,128,0.3)] card-hover group cursor-pointer">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">중립 리뷰</p>
-              <p className="text-2xl font-bold text-gray-600 text-glow group-hover:text-gray-700 transition-colors">{stats.neutral?.toLocaleString() || 0}</p>
-            </div>
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 group-hover:scale-110 transition-all duration-300">
-              <Minus className="w-6 h-6 text-gray-600" />
-            </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <motion.div
+              className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${positivePercentage}%` }}
+              transition={{ duration: 1, delay: 0.5 }}
+            />
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-xs text-gray-500">전체 대비 {Math.round((stats.positive / stats.total) * 100)}%</p>
+        </div>
+      </motion.div>
       
-      <Card className="glassmorphism-card hover:shadow-[0_0_18px_rgba(245,158,11,0.5)] card-hover group cursor-pointer">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
+      {/* 부정 리뷰 - 수평 막대 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="bg-white/50 backdrop-blur rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">부정 리뷰</p>
+            <p className="text-3xl font-bold text-red-600 glow-number">{stats.negative.toLocaleString()}</p>
+          </div>
+          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <ThumbsDown className="w-5 h-5 text-red-600" />
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <motion.div
+              className="bg-gradient-to-r from-red-400 to-red-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${negativePercentage}%` }}
+              transition={{ duration: 1, delay: 0.7 }}
+            />
+          </div>
+          <p className="text-xs text-gray-500">전체 대비 {Math.round((stats.negative / stats.total) * 100)}%</p>
+        </div>
+      </motion.div>
+      
+      {/* 중립 리뷰 - 수평 막대 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="bg-white/50 backdrop-blur rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">중립 리뷰</p>
+            <p className="text-3xl font-bold text-yellow-600 glow-number">{(stats.neutral || 0).toLocaleString()}</p>
+          </div>
+          <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Minus className="w-5 h-5 text-yellow-600" />
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <motion.div
+              className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${neutralPercentage}%` }}
+              transition={{ duration: 1, delay: 0.9 }}
+            />
+          </div>
+          <p className="text-xs text-gray-500">전체 대비 {Math.round(((stats.neutral || 0) / stats.total) * 100)}%</p>
+        </div>
+      </motion.div>
+      
+      {/* 평균 평점 - 글로우 효과 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="bg-white/50 backdrop-blur rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group relative overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        <div className="relative">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">평균 평점</p>
-              <p className="text-2xl font-bold text-yellow-600 text-glow group-hover:text-yellow-700 transition-colors">{stats.averageRating}</p>
+              <p className="text-3xl font-bold text-amber-600 glow-number">{stats.averageRating}</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 group-hover:scale-110 transition-all duration-300">
-              <Star className="w-6 h-6 text-yellow-600" />
+            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Star className="w-5 h-5 text-amber-600 group-hover:text-amber-500 transition-colors" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="flex items-center space-x-1">
+            {[...Array(5)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.3, delay: 1.1 + i * 0.1 }}
+              >
+                <Star 
+                  className={`w-4 h-4 ${
+                    i < Math.floor(stats.averageRating) 
+                      ? 'text-amber-400 fill-amber-400' 
+                      : 'text-gray-300'
+                  }`} 
+                />
+              </motion.div>
+            ))}
+            <span className="text-xs text-gray-500 ml-2">5점 만점</span>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 }
