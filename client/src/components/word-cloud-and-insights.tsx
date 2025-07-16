@@ -214,13 +214,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4 text-sm text-gray-500 mt-4">
-                  <span>언급 횟수: {insight.mention_count}건</span>
-                  <span>•</span>
-                  <span>트렌드: {insight.trend}</span>
-                  <span>•</span>
-                  <span>카테고리: {insight.category}</span>
-                </div>
+                
               </CardContent>
             </Card>
           ))}
