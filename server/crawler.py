@@ -238,12 +238,35 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     if naver_cafes:
                         api_success = True
                         
-                        # 날짜 필터링 적용 - 데이터 무결성 원칙 준수
+                        # 날짜 필터링 적용 - 고급 날짜 추출 시스템 사용
                         if start_date and end_date:
-                            print(f"  네이버 카페 API는 날짜 정보를 제공하지 않습니다.")
-                            print(f"  데이터 무결성 원칙에 따라 날짜 필터링 시 네이버 카페 수집을 건너뜁니다.")
-                            print(f"  정확한 날짜 정보 없이는 수집하지 않습니다.")
-                            # 네이버 카페는 날짜 필터링 시 수집하지 않음
+                            try:
+                                from naver_cafe_advanced_date import filter_cafe_by_advanced_date
+                                from datetime import datetime as dt_parser
+                                
+                                # ISO 날짜를 date 객체로 변환
+                                start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).date()
+                                end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).date()
+                                
+                                print(f"  고급 날짜 추출 시스템 사용: {start_dt} ~ {end_dt}")
+                                
+                                # 고급 날짜 추출을 통한 필터링
+                                filtered_results = filter_cafe_by_advanced_date(
+                                    naver_cafes, 
+                                    start_dt, 
+                                    end_dt, 
+                                    search_keyword=service_name,
+                                    max_results=review_count//3
+                                )
+                                
+                                cafe_results.extend(filtered_results)
+                                print(f"  고급 날짜 추출 성공: {len(filtered_results)}개 카페 리뷰 수집")
+                                
+                            except Exception as e:
+                                print(f"  고급 날짜 추출 오류: {e}")
+                                print(f"  URL 패턴 분석, 모바일 접근, 맥락 분석 모두 실패")
+                                import traceback
+                                traceback.print_exc()
                         else:
                             # 날짜 필터링 없는 경우 모든 카페 글 수집
                             for cafe in naver_cafes:
