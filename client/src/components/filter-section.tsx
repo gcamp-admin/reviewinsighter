@@ -335,54 +335,33 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             </Select>
           </div>
 
-          {/* Row 2: Store Selection (Checkboxes) */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">수집 채널 선택 <span className="text-red-500">*</span></Label>
-            <div className="flex flex-wrap gap-3 sm:gap-4">
-              <div className="flex items-center space-x-2 group">
-                <Checkbox 
-                  id="google-play"
-                  checked={localFilters.source.includes("google_play")}
-                  onCheckedChange={(checked) => handleSourceChange("google_play", checked as boolean)}
-                />
-                <Label htmlFor="google-play" className="flex items-center space-x-2 cursor-pointer hover:text-green-600 transition-colors duration-300">
-                  <FaGooglePlay className="w-4 h-4 text-green-600 group-hover:scale-110 transform transition-transform duration-300" />
-                  <span className="text-sm">Google Play Store</span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 group">
-                <Checkbox 
-                  id="app-store"
-                  checked={localFilters.source.includes("app_store")}
-                  onCheckedChange={(checked) => handleSourceChange("app_store", checked as boolean)}
-                />
-                <Label htmlFor="app-store" className="flex items-center space-x-2 cursor-pointer hover:text-gray-800 transition-colors duration-300">
-                  <FaApple className="w-4 h-4 text-gray-600 group-hover:scale-110 transform transition-transform duration-300" />
-                  <span className="text-sm">Apple App Store</span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 group">
-                <Checkbox 
-                  id="naver-blog"
-                  checked={localFilters.source.includes("naver_blog")}
-                  onCheckedChange={(checked) => handleSourceChange("naver_blog", checked as boolean)}
-                />
-                <Label htmlFor="naver-blog" className="flex items-center space-x-2 cursor-pointer hover:text-green-600 transition-colors duration-300">
-                  <FaPenNib className="w-4 h-4 text-green-500 group-hover:scale-110 transform transition-transform duration-300" />
-                  <span className="text-sm">Naver Blog</span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 group">
-                <Checkbox 
-                  id="naver-cafe"
-                  checked={localFilters.source.includes("naver_cafe")}
-                  onCheckedChange={(checked) => handleSourceChange("naver_cafe", checked as boolean)}
-                />
-                <Label htmlFor="naver-cafe" className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition-colors duration-300">
-                  <FaMugHot className="w-4 h-4 text-blue-500 group-hover:scale-110 transform transition-transform duration-300" />
-                  <span className="text-sm">Naver Cafe</span>
-                </Label>
-              </div>
+          {/* Row 2: Channel Selection (Cards) */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">리뷰 수집 채널을 선택하세요 <span className="text-red-500">*</span></Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { id: "google_play", name: "구글플레이", icon: "📱", color: "bg-green-100" },
+                { id: "app_store", name: "애플앱스토어", icon: "🍎", color: "bg-blue-100" },
+                { id: "naver_blog", name: "네이버블로그", icon: "✍️", color: "bg-yellow-100" },
+                { id: "naver_cafe", name: "네이버카페", icon: "☕", color: "bg-pink-100" },
+              ].map((channel) => {
+                const isActive = localFilters.source.includes(channel.id);
+                return (
+                  <button
+                    key={channel.id}
+                    onClick={() => handleSourceChange(channel.id, !isActive)}
+                    className={`flex flex-col items-center justify-center p-4 rounded-xl transition border-2 relative hover:shadow-md
+                      ${isActive ? "border-purple-500" : "border-transparent"}
+                      ${channel.color}`}
+                  >
+                    <span className="text-3xl">{channel.icon}</span>
+                    <p className="mt-2 text-sm text-gray-800">{channel.name}</p>
+                    {isActive && (
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-purple-500 text-white rounded-full text-xs flex items-center justify-center">✓</div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
