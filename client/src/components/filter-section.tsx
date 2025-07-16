@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play, Calendar } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -375,26 +375,32 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="date-from" className="text-sm text-gray-600">시작 날짜 <span className="text-red-500">*</span></Label>
-                <Input
-                  id="date-from"
-                  type="date"
-                  value={formatDateForInput(localFilters.dateFrom)}
-                  onChange={(e) => handleDateChange('dateFrom', e.target.value)}
-                  className={`w-full min-w-[200px] ${hasDateRangeError ? 'border-red-500' : ''}`}
-                  placeholder="분석 시작 날짜를 선택하세요"
-                />
+                <div className="relative">
+                  <Input
+                    id="date-from"
+                    type="date"
+                    value={formatDateForInput(localFilters.dateFrom)}
+                    onChange={(e) => handleDateChange('dateFrom', e.target.value)}
+                    className={`w-full min-w-[200px] cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    placeholder="분석 시작 날짜를 선택하세요"
+                  />
+                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="date-to" className="text-sm text-gray-600">종료 날짜 <span className="text-red-500">*</span></Label>
-                <Input
-                  id="date-to"
-                  type="date"
-                  value={formatDateForInput(localFilters.dateTo)}
-                  onChange={(e) => handleDateChange('dateTo', e.target.value)}
-                  max={getTodayDateString()}
-                  className={`w-full min-w-[200px] ${hasDateRangeError ? 'border-red-500' : ''}`}
-                  placeholder="분석 종료 날짜를 선택하세요"
-                />
+                <div className="relative">
+                  <Input
+                    id="date-to"
+                    type="date"
+                    value={formatDateForInput(localFilters.dateTo)}
+                    onChange={(e) => handleDateChange('dateTo', e.target.value)}
+                    max={getTodayDateString()}
+                    className={`w-full min-w-[200px] cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    placeholder="분석 종료 날짜를 선택하세요"
+                  />
+                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
             </div>
             {isDateRangeInvalid && (
