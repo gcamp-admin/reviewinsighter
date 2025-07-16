@@ -56,7 +56,8 @@ const ChannelBarChart = ({ data }: Props) => {
             },
             ticks: {
               font: {
-                size: 11
+                size: 11,
+                family: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
               },
               color: "#374151"
             }
@@ -69,8 +70,9 @@ const ChannelBarChart = ({ data }: Props) => {
             },
             ticks: {
               callback: function(value) {
-                return value + '%';
-              }
+                return Math.round(value as number) + '%';
+              },
+              stepSize: 1
             }
           }
         }
@@ -83,22 +85,27 @@ const ChannelBarChart = ({ data }: Props) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm h-full">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">수집 채널별 분포</h3>
-      <div className="flex items-center h-full">
-        <div className="w-2/3 h-64">
+      <div className="flex flex-col h-full">
+        <div className="flex-1 h-64 mb-4">
           <canvas ref={canvasRef}></canvas>
         </div>
-        <ul className="ml-4 space-y-2 text-sm text-gray-700">
-          {data.map((item, i) => (
-            <li key={i} className="flex items-center space-x-2">
-              <span
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
-              ></span>
-              <span>{item.label}</span>
-              <span className="ml-auto font-medium">{item.value.toFixed(1)}%</span>
-            </li>
-          ))}
-        </ul>
+        {/* 범례를 아래쪽으로 이동 */}
+        <div className="flex justify-center">
+          <ul className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
+            {data.map((item, i) => (
+              <li key={i} className="flex items-center space-x-2">
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                ></span>
+                <span style={{ fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+                  {item.label}
+                </span>
+                <span className="ml-auto font-medium">{Math.round(item.value)}%</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
