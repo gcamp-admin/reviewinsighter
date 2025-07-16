@@ -537,8 +537,30 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
-              const page = i + 1;
+            
+            {/* 첫 페이지 */}
+            {currentPage > 3 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange(1)}
+                  className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
+                >
+                  1
+                </Button>
+                {currentPage > 4 && (
+                  <span className="px-2 text-gray-500">...</span>
+                )}
+              </>
+            )}
+            
+            {/* 현재 페이지 근처 */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const startPage = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+              const page = startPage + i;
+              if (page > totalPages) return null;
+              
               return (
                 <Button
                   key={page}
@@ -551,6 +573,24 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 </Button>
               );
             })}
+            
+            {/* 마지막 페이지 */}
+            {currentPage < totalPages - 2 && (
+              <>
+                {currentPage < totalPages - 3 && (
+                  <span className="px-2 text-gray-500">...</span>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange(totalPages)}
+                  className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
+                >
+                  {totalPages}
+                </Button>
+              </>
+            )}
+            
             <Button
               variant="outline"
               size="sm"
