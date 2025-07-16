@@ -46,7 +46,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Google Play collection for {info['google_play_id']}...")
         google_reviews = crawl_google_play(
             info["google_play_id"], 
-            count=min(20, review_count),  # 매우 빠른 수집을 위해 20개 제한
+            count=1000,  # 충분한 리뷰를 가져와서 날짜 범위 내 모든 리뷰 확보
             start_date=start_date,
             end_date=end_date
         )
@@ -89,7 +89,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Apple Store collection for {info['apple_store_id']}...")
         apple_reviews = crawl_apple_store(
             info["apple_store_id"],
-            count=min(10, review_count),  # 매우 빠른 수집을 위해 10개 제한
+            count=min(50, review_count),  # 더 많은 리뷰 수집
             start_date=start_date,
             end_date=end_date
         )
@@ -138,10 +138,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:1]:  # 1개 키워드만 사용 (빠른 수집)
+            for kw in service_keywords[:3]:  # 3개 키워드 사용으로 확대
                 print(f"Searching Naver Blog with keyword: {kw}")
                 try:
-                    naver_blogs = search_naver(kw, search_type="blog", display=min(5, review_count//4))
+                    naver_blogs = search_naver(kw, search_type="blog", display=min(30, review_count//3))
                     print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
                     
                     if naver_blogs:
@@ -227,10 +227,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:1]:  # 1개 키워드만 사용 (빠른 수집)
+            for kw in service_keywords[:3]:  # 3개 키워드 사용으로 확대
                 print(f"Searching Naver Cafe with keyword: {kw}")
                 try:
-                    naver_cafes = search_naver(kw, search_type="cafe", display=min(5, review_count//4))
+                    naver_cafes = search_naver(kw, search_type="cafe", display=min(30, review_count//3))
                     print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
                     
                     if naver_cafes:
