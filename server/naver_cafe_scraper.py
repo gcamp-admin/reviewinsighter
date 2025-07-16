@@ -39,7 +39,7 @@ def extract_cafe_post_date(cafe_url):
         session.headers.update(headers)
         
         print(f"카페 URL 접근 시도: {cafe_url}")
-        response = session.get(cafe_url, timeout=5)
+        response = session.get(cafe_url, timeout=2)
         print(f"응답 상태: {response.status_code}")
         
         if response.status_code != 200:
@@ -81,8 +81,8 @@ def extract_cafe_post_date(cafe_url):
             r'(201[0-9])[.\-/](\d{1,2})[.\-/](\d{1,2})',
         ]
         
-        # HTML 텍스트에서 날짜 추출 (처음 5000자만 사용)
-        html_text = soup.get_text()[:5000]
+        # HTML 텍스트에서 날짜 추출 (처음 2000자만 사용)
+        html_text = soup.get_text()[:2000]
         
         for pattern in date_patterns:
             matches = re.findall(pattern, html_text)

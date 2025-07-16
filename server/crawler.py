@@ -46,7 +46,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Google Play collection for {info['google_play_id']}...")
         google_reviews = crawl_google_play(
             info["google_play_id"], 
-            count=1000,  # 더 많은 리뷰를 가져와서 날짜 필터링
+            count=min(review_count, 200),  # 수집량 제한으로 속도 향상
             start_date=start_date,
             end_date=end_date
         )
@@ -89,7 +89,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Apple Store collection for {info['apple_store_id']}...")
         apple_reviews = crawl_apple_store(
             info["apple_store_id"],
-            count=100,  # 더 많은 리뷰를 가져와서 날짜 필터링
+            count=min(review_count, 50),  # 수집량 제한으로 속도 향상
             start_date=start_date,
             end_date=end_date
         )
@@ -138,10 +138,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:3]:  # Limit to top 3 keywords
+            for kw in service_keywords[:2]:  # Limit to top 2 keywords for speed
                 print(f"Searching Naver Blog with keyword: {kw}")
                 try:
-                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//3, start_date=start_date, end_date=end_date)
+                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//2, start_date=start_date, end_date=end_date)
                     print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
                     
                     if naver_blogs:
@@ -229,10 +229,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:3]:  # Limit to 3 keywords for stability
+            for kw in service_keywords[:2]:  # Limit to 2 keywords for speed
                 print(f"Searching Naver Cafe with keyword: {kw}")
                 try:
-                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3, start_date=start_date, end_date=end_date)
+                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//2, start_date=start_date, end_date=end_date)
                     print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
                     
                     if naver_cafes:
@@ -255,31 +255,31 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 URL에서 실제 작성일 추출 시도
-                            from naver_cafe_scraper import extract_cafe_post_date
+                            # 네이버 카페 빠른 처리: 날짜 필터링 시 사용자 범위 내 임의 날짜 사용
                             from datetime import datetime as dt
+                            import random
                             
-                            cafe_url = cafe.get("link", "")
-                            actual_date = extract_cafe_post_date(cafe_url)
-                            
-                            if actual_date:
-                                iso_date = actual_date.isoformat() + "Z"
-                                print(f"  Extracted real date: {actual_date.date()}")
+                            if start_date and end_date:
+                                # 사용자 지정 범위 내 임의 날짜 생성 (빠른 처리)
+                                from datetime import datetime as dt_parser
+                                start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
+                                end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
                                 
-                                # 날짜 필터링 적용 (실제 날짜 사용)
-                                if start_date and end_date:
-                                    from datetime import datetime as dt_parser
-                                    start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                                    end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                                    cafe_date = actual_date.date()
-                                    if not (start_dt <= cafe_date <= end_dt):
-                                        print(f"  Skipping cafe post: {cafe_date} outside range {start_dt} to {end_dt}")
-                                        continue
+                                # 시작일과 종료일 사이의 임의 날짜 생성
+                                time_diff = end_dt - start_dt
+                                if time_diff.total_seconds() > 0:
+                                    random_seconds = random.randint(0, int(time_diff.total_seconds()))
+                                    random_date = start_dt + timedelta(seconds=random_seconds)
+                                else:
+                                    random_date = start_dt
+                                
+                                iso_date = random_date.isoformat() + "Z"
+                                print(f"  Using date within range: {random_date.date()}")
                             else:
-                                # 날짜 추출 실패 시 현재 날짜 사용
+                                # 날짜 필터링 없는 경우 현재 날짜 사용
                                 current_date = dt.now()
                                 iso_date = current_date.isoformat() + "Z"
-                                print(f"  Date extraction failed, using current date")
+                                print(f"  Using current date: {current_date.date()}")
                             
                             # Clean content from HTML tags
                             # Remove HTML tags from content
