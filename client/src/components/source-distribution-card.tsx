@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import ChannelRadialChart from "./channel-radial-chart";
+import ChannelRadarChart from "./channel-radar-chart";
 
 const CHANNEL_NAMES = {
   google_play: "구글 앱스토어",
@@ -74,5 +74,5 @@ export default function SourceDistributionCard({ filters }: Props) {
     color: CHANNEL_COLORS[source] || "#8884d8"
   }));
 
-  return <ChannelRadialChart data={chartData} />;
+  return <ChannelRadarChart data={chartData} />;
 }
