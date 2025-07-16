@@ -338,8 +338,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     for (let i = 0; i < reviewsToAnalyze.length; i++) {
                       const sentiment = sentimentData.sentiments[i];
                       await storage.updateReview(reviewsToAnalyze[i].id, { sentiment });
+                      console.log(`Updated review ${reviewsToAnalyze[i].id} with sentiment: ${sentiment}`);
                     }
-                    console.log(`Batch sentiment analysis completed for ${reviewsToAnalyze.length} reviews`);
+                    console.log(`✅ Batch sentiment analysis completed for ${reviewsToAnalyze.length} reviews`);
                   } else {
                     console.error('Batch sentiment analysis failed, falling back to individual analysis');
                     // Fallback to individual analysis (only for filtered reviews)

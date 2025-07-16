@@ -52,7 +52,7 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
   content: true,
   link: true,
 }).extend({
-  sentiment: z.string().optional().default("중립"),
+  sentiment: z.string().optional().default("분석중"),
   createdAt: z.string().optional(),
 });
 

@@ -152,6 +152,8 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">긍정</Badge>;
     } else if (sentiment === "부정") {
       return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">부정</Badge>;
+    } else if (sentiment === "분석중") {
+      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">분석중</Badge>;
     } else {
       return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">중립</Badge>;
     }
