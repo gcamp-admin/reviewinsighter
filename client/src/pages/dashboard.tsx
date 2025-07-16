@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Header from "@/components/header";
 import FilterSection from "@/components/filter-section";
-import StatsOverview from "@/components/stats-overview";
-import AdvancedCharts from "@/components/advanced-charts";
+import SourceDistributionCard from "@/components/source-distribution-card";
+import SentimentDonutCard from "@/components/sentiment-donut-card";
+import AverageRatingCard from "@/components/average-rating-card";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
@@ -48,14 +49,10 @@ export default function Dashboard() {
         </div>
         
         {hasCollectedReviews && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-            <StatsOverview filters={filters} />
-          </div>
-        )}
-        
-        {hasCollectedReviews && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-250">
-            <AdvancedCharts filters={filters} />
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_1fr] gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+            <SourceDistributionCard />
+            <SentimentDonutCard />
+            <AverageRatingCard />
           </div>
         )}
         
@@ -75,15 +72,27 @@ export default function Dashboard() {
           </div>
         )}
         
-        {hasCollectedReviews && activeAnalysisSection && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 space-y-4">
-            {activeAnalysisSection === 'comprehensive' && (
-              <WordCloudAndInsights 
-                filters={filters}
-                activeSection={'comprehensive'}
-              />
-            )}
+        {activeAnalysisSection === 'wordcloud' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+            <WordCloudAndInsights filters={filters} />
           </div>
+        )}
+        
+        {activeAnalysisSection === 'heart' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+            <KeywordNetworkPortfolio filters={filters} />
+          </div>
+        )}
+        
+        {activeAnalysisSection === 'comprehensive' && (
+          <>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+              <KeywordNetworkPortfolio filters={filters} />
+            </div>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-600">
+              <WordCloudAndInsights filters={filters} />
+            </div>
+          </>
         )}
       </main>
     </div>
