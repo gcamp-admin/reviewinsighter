@@ -379,18 +379,19 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
               <Label className="text-sm font-medium">수집 기간 선택</Label>
               <span className="text-xs text-amber-600">(최대 31일)</span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="w-full">
+            <div className="date-picker-grid">
+              <div style={{ width: '100%' }}>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   시작 날짜 <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
+                <div className="relative" style={{ width: '100%' }}>
                   <DatePicker
                     selected={localFilters.dateFrom}
                     onChange={(date) => handleDateChange('dateFrom', date)}
                     placeholderText="년-월-일"
                     dateFormat="yyyy-MM-dd"
                     className={`w-full p-2 pl-4 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    wrapperClassName="w-full"
                     style={{ width: '100%' }}
                     popperPlacement="bottom-start"
                     showIcon={false}
@@ -398,11 +399,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                   />
                 </div>
               </div>
-              <div className="w-full">
+              <div style={{ width: '100%' }}>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   종료 날짜 <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
+                <div className="relative" style={{ width: '100%' }}>
                   <DatePicker
                     selected={localFilters.dateTo}
                     onChange={(date) => handleDateChange('dateTo', date)}
@@ -410,6 +411,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     dateFormat="yyyy-MM-dd"
                     maxDate={new Date()}
                     className={`w-full p-2 pl-4 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    wrapperClassName="w-full"
                     style={{ width: '100%' }}
                     popperPlacement="bottom-start"
                     showIcon={false}
