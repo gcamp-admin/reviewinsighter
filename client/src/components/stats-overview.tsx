@@ -1,9 +1,27 @@
-import { MessageSquare, ThumbsUp, ThumbsDown, Star, Minus } from "lucide-react";
+import { MessageSquare, ThumbsUp, ThumbsDown, Star, Minus, PieChart as PieChartIcon, Target, BarChart3 } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  RadarChart, 
+  Radar, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  PolarRadiusAxis, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend 
+} from 'recharts';
 import { motion } from "framer-motion";
 import type { ReviewStats, ReviewFilters } from "@/types";
 

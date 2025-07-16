@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "@/components/header";
 import FilterSection from "@/components/filter-section";
 import StatsOverview from "@/components/stats-overview";
+import AdvancedCharts from "@/components/advanced-charts";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
@@ -49,6 +50,12 @@ export default function Dashboard() {
         {hasCollectedReviews && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             <StatsOverview filters={filters} />
+          </div>
+        )}
+        
+        {hasCollectedReviews && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-250">
+            <AdvancedCharts filters={filters} />
           </div>
         )}
         
