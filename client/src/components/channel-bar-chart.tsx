@@ -20,6 +20,28 @@ const ChannelBarChart = ({ data }: Props) => {
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
+    // 그라데이션 생성
+    const gradients = data.map((item) => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      
+      // 버튼 톤에 맞춘 그라데이션
+      if (item.label === '구글 앱스토어') {
+        gradient.addColorStop(0, '#A5B4FC'); // 연한 보라
+        gradient.addColorStop(1, '#667eea'); // 진한 보라
+      } else if (item.label === '애플 앱스토어') {
+        gradient.addColorStop(0, '#8B5CF6'); // 연한 보라
+        gradient.addColorStop(1, '#4F46E5'); // 진한 보라
+      } else if (item.label === '네이버 블로그') {
+        gradient.addColorStop(0, '#C4B5FD'); // 연한 보라
+        gradient.addColorStop(1, '#764ba2'); // 진한 보라
+      } else if (item.label === '네이버 카페') {
+        gradient.addColorStop(0, '#DDD6FE'); // 연한 보라
+        gradient.addColorStop(1, '#8B5CF6'); // 진한 보라
+      }
+      
+      return gradient;
+    });
+
     const chart = new Chart(ctx, {
       type: "bar",
       data: {
@@ -27,10 +49,10 @@ const ChannelBarChart = ({ data }: Props) => {
         datasets: [{
           label: "수집 채널별 분포",
           data: data.map((item) => item.value),
-          backgroundColor: data.map((item) => item.color),
+          backgroundColor: gradients,
           borderColor: data.map((item) => item.color),
           borderWidth: 1,
-          borderRadius: 4,
+          borderRadius: 8,
           borderSkipped: false,
         }]
       },
@@ -95,7 +117,13 @@ const ChannelBarChart = ({ data }: Props) => {
             <div className="flex items-center">
               <div 
                 className="w-3 h-3 rounded-full mr-2" 
-                style={{ backgroundColor: item.color }}
+                style={{ 
+                  background: item.label === '구글 앱스토어' ? 'linear-gradient(135deg, #A5B4FC 0%, #667eea 100%)' :
+                             item.label === '애플 앱스토어' ? 'linear-gradient(135deg, #8B5CF6 0%, #4F46E5 100%)' :
+                             item.label === '네이버 블로그' ? 'linear-gradient(135deg, #C4B5FD 0%, #764ba2 100%)' :
+                             item.label === '네이버 카페' ? 'linear-gradient(135deg, #DDD6FE 0%, #8B5CF6 100%)' : 
+                             item.color
+                }}
               />
               <span className="text-gray-700" style={{ fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
                 {item.label}

@@ -3,9 +3,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 
 const SENTIMENT_COLORS = {
-  긍정: "#059669", // 더 진한 연두색
-  부정: "#DC2626", // 더 진한 레드
-  중립: "#6B7280"
+  긍정: "#4F46E5", // 버튼 톤에 맞춘 보라색
+  부정: "#764ba2", // 버튼 톤에 맞춘 진보라색
+  중립: "#9CA3AF"
 };
 
 const SENTIMENT_ICONS = {

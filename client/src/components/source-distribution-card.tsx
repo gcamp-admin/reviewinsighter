@@ -9,10 +9,10 @@ const CHANNEL_NAMES = {
 };
 
 const CHANNEL_COLORS = {
-  google_play: "#059669", // 깊은 에메랄드
-  app_store: "#2563EB", // 깊은 파랑
-  naver_blog: "#DC2626", // 깊은 빨강
-  naver_cafe: "#D97706" // 깊은 주황
+  google_play: "#667eea", // 버튼 톤에 맞춘 연보라색
+  app_store: "#4F46E5", // 진보라색
+  naver_blog: "#764ba2", // 진보라색
+  naver_cafe: "#8B5CF6" // 중간 보라색
 };
 
 interface Props {
