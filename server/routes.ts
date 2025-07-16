@@ -483,48 +483,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Store insights (only for heart analysis or full analysis)
           if (result.insights && result.insights.length > 0 && (analysisType === 'heart' || !analysisType)) {
-            // For HEART analysis, use GPT-based analysis
+            // For HEART analysis, use Python-based HEART analysis
             if (analysisType === 'heart') {
               try {
-                const { analyzeHeartFrameworkExpert } = await import('./heart_analysis_expert');
-                const gptInsights = await analyzeHeartFrameworkExpert(reviewsForAnalysis);
+                // Write reviews to temporary file for Python HEART analysis
+                const heartTempFile = '/tmp/heart_reviews.json';
+                fs.writeFileSync(heartTempFile, JSON.stringify(reviewsForAnalysis, null, 2));
                 
-                for (const insight of gptInsights) {
+                // Run Python HEART analysis
+                const heartProcess = spawn('python3', ['server/heart_analysis_python.py', heartTempFile]);
+                let heartOutput = '';
+                let heartError = '';
+                
+                heartProcess.stdout.on('data', (data) => {
+                  heartOutput += data.toString();
+                });
+                
+                heartProcess.stderr.on('data', (data) => {
+                  heartError += data.toString();
+                });
+                
+                await new Promise((resolve, reject) => {
+                  heartProcess.on('close', (code) => {
+                    if (code === 0) {
+                      resolve(null);
+                    } else {
+                      reject(new Error(`Python HEART analysis failed with code ${code}: ${heartError}`));
+                    }
+                  });
+                });
+                
+                // Parse Python HEART analysis output
+                const heartResult = JSON.parse(heartOutput);
+                
+                // Store HEART insights
+                for (const insight of heartResult.insights) {
                   try {
                     await storage.createInsight({
                       title: insight.title,
-                      description: insight.problem_summary,
+                      description: insight.ux_suggestions,
                       priority: insight.priority,
-                      mentionCount: insight.mention_count,
-                      trend: insight.trend,
-                      category: insight.category,
+                      mentionCount: 0,
+                      trend: 'stable',
+                      category: insight.heart_category,
                       serviceId: serviceId,
                       problem_summary: insight.problem_summary,
                       ux_suggestions: insight.ux_suggestions,
                     });
                     insightsStored++;
                   } catch (err) {
-                    console.error("Error storing GPT insight:", err);
+                    console.error("Error storing HEART insight:", err);
                   }
                 }
-              } catch (gptError) {
-                console.error("GPT analysis failed, falling back to Python analysis:", gptError);
-                // Fallback to Python analysis
-                for (const insight of result.insights) {
-                  try {
-                    await storage.createInsight({
-                      title: insight.title,
-                      description: insight.description,
-                      priority: insight.priority,
-                      mentionCount: insight.mentionCount,
-                      trend: insight.trend,
-                      category: insight.category,
-                      serviceId: serviceId,
-                    });
-                    insightsStored++;
-                  } catch (err) {
-                    console.error("Error storing insight:", err);
+                
+                // Clean up temporary file
+                try {
+                  fs.unlinkSync(heartTempFile);
+                } catch (cleanupError) {
+                  console.error("Failed to cleanup HEART temp file:", cleanupError);
+                }
+                
+              } catch (heartError) {
+                console.error("Python HEART analysis failed, falling back to GPT:", heartError);
+                // Fallback to GPT analysis
+                try {
+                  const { analyzeHeartFrameworkExpert } = await import('./heart_analysis_expert');
+                  const gptInsights = await analyzeHeartFrameworkExpert(reviewsForAnalysis);
+                  
+                  for (const insight of gptInsights) {
+                    try {
+                      await storage.createInsight({
+                        title: insight.title,
+                        description: insight.problem_summary,
+                        priority: insight.priority,
+                        mentionCount: 0,
+                        trend: 'stable',
+                        category: insight.heart_category,
+                        serviceId: serviceId,
+                        problem_summary: insight.problem_summary,
+                        ux_suggestions: insight.ux_suggestions,
+                      });
+                      insightsStored++;
+                    } catch (err) {
+                      console.error("Error storing GPT insight:", err);
+                    }
                   }
+                } catch (gptError) {
+                  console.error("Both Python and GPT HEART analysis failed:", gptError);
                 }
               }
             } else {

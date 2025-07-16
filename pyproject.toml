@@ -11,6 +11,7 @@ dependencies = [
     "matplotlib>=3.10.3",
     "networkx>=3.5",
     "nltk>=3.9.1",
+    "openai>=1.96.1",
     "pandas>=2.3.0",
     "requests>=2.32.4",
     "wordcloud>=1.9.4",
