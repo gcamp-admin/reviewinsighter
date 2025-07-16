@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play, Calendar, Check } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play, Calendar, Check, CalendarDays } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -378,33 +378,37 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
               <span className="text-xs text-amber-600">(최대 31일)</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="date-from" className="text-sm text-gray-600">시작 날짜 <span className="text-red-500">*</span></Label>
+              <div className="w-full">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  시작 날짜 <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
-                  <Input
+                  <input
                     id="date-from"
                     type="date"
                     value={formatDateForInput(localFilters.dateFrom)}
                     onChange={(e) => handleDateChange('dateFrom', e.target.value)}
-                    className={`w-full min-w-[200px] cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
-                    placeholder="분석 시작 날짜를 선택하세요"
+                    className={`w-full p-2 pl-4 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    placeholder="년-월-일"
                   />
-                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <CalendarDays className="w-5 h-5 text-gray-500 absolute right-3 top-2.5 pointer-events-none" />
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="date-to" className="text-sm text-gray-600">종료 날짜 <span className="text-red-500">*</span></Label>
+              <div className="w-full">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  종료 날짜 <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
-                  <Input
+                  <input
                     id="date-to"
                     type="date"
                     value={formatDateForInput(localFilters.dateTo)}
                     onChange={(e) => handleDateChange('dateTo', e.target.value)}
                     max={getTodayDateString()}
-                    className={`w-full min-w-[200px] cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
-                    placeholder="분석 종료 날짜를 선택하세요"
+                    className={`w-full p-2 pl-4 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    placeholder="년-월-일"
                   />
-                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <CalendarDays className="w-5 h-5 text-gray-500 absolute right-3 top-2.5 pointer-events-none" />
                 </div>
               </div>
             </div>
