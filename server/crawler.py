@@ -253,38 +253,14 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 API는 날짜를 제공하지 않음 - 실제 날짜 스크래핑 시도
-                            actual_date = None
-                            cafe_url = cafe.get("link", "")
+                            # 네이버 카페 API는 날짜를 제공하지 않음 - 필터링 없이 수집
+                            # 실제 날짜 스크래핑은 성능상 문제가 있어 제외
+                            print(f"  Processing cafe post (no date filtering available for API results)")
                             
-                            # 네이버 카페 실제 날짜 스크래핑 시도
-                            try:
-                                if cafe_url:
-                                    from naver_cafe_scraper import extract_cafe_post_date
-                                    actual_date = extract_cafe_post_date(cafe_url)
-                                    
-                                    if actual_date:
-                                        # 날짜 필터링 적용
-                                        if start_date and end_date:
-                                            from datetime import datetime as dt
-                                            start_dt = dt.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                            end_dt = dt.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None)
-                                            
-                                            if actual_date < start_dt or actual_date > end_dt:
-                                                print(f"  Skipping cafe post: date {actual_date} outside range {start_dt} ~ {end_dt}")
-                                                continue
-                                        
-                                        iso_date = actual_date.isoformat() + "Z"
-                                        print(f"  Using actual cafe post date: {actual_date}")
-                                    else:
-                                        print(f"  Could not extract date from cafe URL, skipping")
-                                        continue
-                                else:
-                                    print(f"  No cafe URL available, skipping")
-                                    continue
-                            except Exception as e:
-                                print(f"  Error extracting cafe date: {e}, skipping")
-                                continue
+                            # 현재 날짜 사용 (실제 날짜가 아님을 표시)
+                            from datetime import datetime as dt
+                            current_date = dt.now()
+                            iso_date = current_date.isoformat() + "Z"
                             
                             # Clean content from HTML tags
                             # Remove HTML tags from content

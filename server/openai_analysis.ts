@@ -166,7 +166,95 @@ export async function generateClusterLabel(keywords: string[]): Promise<string> 
   }
 }
 
-// Removed: generateKeywordNetworkWithGPT - keyword network analysis is no longer used
+export async function generateKeywordNetworkWithGPT(reviews: any[]): Promise<any> {
+  if (!reviews || reviews.length === 0) {
+    return { positive: [], negative: [], neutral: [], nodes: [], links: [] };
+  }
+
+  try {
+    // Separate reviews by sentiment
+    const positiveReviews = reviews.filter(r => r.sentiment === '긍정');
+    const negativeReviews = reviews.filter(r => r.sentiment === '부정');
+    const neutralReviews = reviews.filter(r => r.sentiment === '중립');
+
+    // Generate positive keywords
+    const positiveKeywords = await generateKeywordsForSentiment(positiveReviews, '긍정');
+    
+    // Generate negative keywords
+    const negativeKeywords = await generateKeywordsForSentiment(negativeReviews, '부정');
+    
+    // Generate neutral keywords
+    const neutralKeywords = await generateKeywordsForSentiment(neutralReviews, '중립');
+
+    return {
+      positive: positiveKeywords,
+      negative: negativeKeywords,
+      neutral: neutralKeywords,
+      nodes: [...positiveKeywords, ...negativeKeywords, ...neutralKeywords].map(k => ({
+        id: k.word,
+        label: k.word,
+        size: k.frequency,
+        color: k.sentiment === '긍정' ? '#10B981' : k.sentiment === '부정' ? '#EF4444' : '#6B7280'
+      })),
+      links: [] // No links for simple word cloud
+    };
+  } catch (error) {
+    console.error("Error generating keyword network:", error);
+    return { positive: [], negative: [], neutral: [], nodes: [], links: [] };
+  }
+}
+
+async function generateKeywordsForSentiment(reviews: any[], sentiment: string): Promise<any[]> {
+  if (!reviews || reviews.length === 0) {
+    return [];
+  }
+
+  try {
+    const reviewTexts = reviews.map(r => r.content).join('\n');
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `당신은 한국어 텍스트 분석 전문가입니다. 리뷰 텍스트에서 ${sentiment} 감정과 관련된 핵심 키워드를 추출하고 빈도를 분석해주세요.`
+        },
+        {
+          role: "user",
+          content: `다음 ${sentiment} 리뷰들에서 가장 자주 언급되는 핵심 키워드 10개를 추출하고 빈도를 분석해주세요:
+
+${reviewTexts}
+
+다음 JSON 형식으로 응답해주세요:
+{
+  "keywords": [
+    {
+      "word": "키워드",
+      "frequency": 빈도수,
+      "sentiment": "${sentiment}"
+    }
+  ]
+}
+
+키워드 추출 규칙:
+- 한국어 명사/형용사 위주로 추출
+- 의미 있는 키워드만 선택 (불용어 제외)
+- 빈도수는 1-10 사이로 설정
+- 정확히 10개 키워드 추출`
+        }
+      ],
+      max_tokens: 500,
+      temperature: 0,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{"keywords": []}');
+    return result.keywords || [];
+  } catch (error) {
+    console.error(`Error generating ${sentiment} keywords:`, error);
+    return [];
+  }
+}
 
 export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promise<('긍정' | '부정' | '중립')[]> {
   const results: ('긍정' | '부정' | '중립')[] = [];

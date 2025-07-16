@@ -396,6 +396,10 @@ Changelog:
 - July 16, 2025. **UI IMPROVEMENT**: Removed collection progress box and moved progress percentage display to collection button for cleaner UI - button now shows "수집 중... X%" during collection process
 - July 16, 2025. **REVIEW LIST OPTIMIZATION**: Changed review list to show 5 items per page instead of 10, implemented analysis completion detection - list only shows after sentiment analysis is complete, displays "분석 중" message during processing
 - July 16, 2025. **BUTTON LAYOUT ENHANCEMENT**: Updated both "리뷰 수집" and "코멘토에게 분석 요청하기" buttons to full width (100%), added progress percentage display to analysis button matching collection button format
+- July 16, 2025. **CRITICAL FIX**: Fixed Naver cafe date filtering issue - removed random date assignment that was causing wrong dates to be collected, now uses current date with clear indication it's not actual post date
+- July 16, 2025. **WORD CLOUD DISPLAY FIX**: Restored missing generateKeywordNetworkWithGPT function in openai_analysis.ts and enhanced word cloud analysis with proper GPT integration and fallback mechanisms
+- July 16, 2025. **PERFORMANCE OPTIMIZATION**: Simplified Naver cafe date handling to avoid slow scraping operations, improved collection speed significantly
+- July 16, 2025. **CHANNEL VISUALIZATION FIX**: Updated channel distribution chart to show all 4 channels consistently with proper horizontal layout and Korean labels
 
 ## User Preferences
 

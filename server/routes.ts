@@ -561,43 +561,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // For wordcloud analysis, use GPT-based analysis
             if (analysisType === 'wordcloud') {
               try {
+                console.log("Starting GPT word cloud analysis...");
+                const { generateKeywordNetworkWithGPT } = await import('./openai_analysis.js');
                 const gptNetwork = await generateKeywordNetworkWithGPT(reviewsForAnalysis);
                 
-                // Store positive words
-                for (const wordData of gptNetwork.positive) {
-                  try {
-                    await storage.createWordCloudData({
-                      word: wordData.word,
-                      frequency: wordData.frequency,
-                      sentiment: "긍정",
-                      serviceId: serviceId,
-                    });
-                    wordCloudStored++;
-                  } catch (err) {
-                    console.error("Error storing GPT positive word cloud data:", err);
+                if (gptNetwork.positive && gptNetwork.positive.length > 0) {
+                  console.log(`Generated ${gptNetwork.positive.length} positive keywords`);
+                  // Store positive words
+                  for (const wordData of gptNetwork.positive) {
+                    try {
+                      await storage.createWordCloudData({
+                        word: wordData.word,
+                        frequency: wordData.frequency,
+                        sentiment: "긍정",
+                        serviceId: serviceId,
+                      });
+                      wordCloudStored++;
+                    } catch (err) {
+                      console.error("Error storing GPT positive word cloud data:", err);
+                    }
                   }
                 }
                 
-                // Store negative words
-                for (const wordData of gptNetwork.negative) {
-                  try {
-                    await storage.createWordCloudData({
-                      word: wordData.word,
-                      frequency: wordData.frequency,
-                      sentiment: "부정",
-                      serviceId: serviceId,
-                    });
-                    wordCloudStored++;
-                  } catch (err) {
-                    console.error("Error storing GPT negative word cloud data:", err);
+                if (gptNetwork.negative && gptNetwork.negative.length > 0) {
+                  console.log(`Generated ${gptNetwork.negative.length} negative keywords`);
+                  // Store negative words
+                  for (const wordData of gptNetwork.negative) {
+                    try {
+                      await storage.createWordCloudData({
+                        word: wordData.word,
+                        frequency: wordData.frequency,
+                        sentiment: "부정",
+                        serviceId: serviceId,
+                      });
+                      wordCloudStored++;
+                    } catch (err) {
+                      console.error("Error storing GPT negative word cloud data:", err);
+                    }
                   }
                 }
 
-                // Store keyword network data (nodes and links)
-                if (gptNetwork.nodes && gptNetwork.links) {
-                  await storage.storeKeywordNetwork(serviceId, gptNetwork.nodes, gptNetwork.links);
-                  console.log(`Stored keyword network with ${gptNetwork.nodes.length} nodes and ${gptNetwork.links.length} links`);
-                }
+                console.log(`Stored ${wordCloudStored} word cloud items via GPT`);
               } catch (gptError) {
                 console.error("GPT word cloud analysis failed, falling back to Python analysis:", gptError);
                 // Fallback to Python analysis
