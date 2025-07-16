@@ -381,6 +381,11 @@ Changelog:
 - July 15, 2025. **PORTFOLIO-STYLE VISUALIZATION**: Created new KeywordNetworkPortfolio component with professional UX diagram styling - circular clusters, pastel colors, grid backgrounds
 - July 15, 2025. **COMPLETE WORKFLOW INTEGRATION**: "코멘토에게 분석 요청하기" button now triggers comprehensive negative review analysis with top 20 keyword extraction and UX clustering
 - July 15, 2025. **AUTHENTIC DATA ENFORCEMENT**: Ensured all analysis uses only authentic review data with proper sentiment classification and real-time keyword extraction
+- July 16, 2025. **HEART FRAMEWORK CORRECTION**: Completely rewrote HEART framework analysis based on user's detailed explanations - Happiness (만족도), Engagement (참여도), Adoption (채택률), Retention (재방문률), Task Success (과업 성공률)
+- July 16, 2025. **REPLACED KEYWORD NETWORK WITH WORD CLOUDS**: Changed analysis display from keyword network visualization to traditional positive/negative word cloud format as requested by user
+- July 16, 2025. **EXPERT-LEVEL UX ANALYSIS**: Implemented professional UX researcher methodology with GPT-4o-mini for authentic user quote extraction and specific improvement suggestions
+- July 16, 2025. **PRIORITY-BASED DISPLAY**: Modified insights display to show results in priority order (critical → major → minor) with removal of mention count "(3건)" format
+- July 16, 2025. **ENHANCED HEART CATEGORIES**: Updated system prompts with detailed HEART framework definitions including specific UX examples for each category
 
 ## User Preferences
 
