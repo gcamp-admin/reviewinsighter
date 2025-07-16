@@ -166,21 +166,21 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             <Skeleton className="h-10 w-32" />
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-4">
+          <div className="space-y-1">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Skeleton className="w-8 h-8 rounded-full" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-3 w-32" />
+              <div key={i} className="p-2 border rounded-md">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center space-x-2">
+                    <Skeleton className="w-6 h-6 rounded-full" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-3 w-24" />
                     </div>
                   </div>
-                  <Skeleton className="h-6 w-12 rounded-full" />
+                  <Skeleton className="h-5 w-10 rounded-full" />
                 </div>
-                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-8 w-full" />
               </div>
             ))}
           </div>
@@ -464,15 +464,15 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="p-4">
+        <div className="space-y-1">
           {filteredReviews.map((review) => (
-            <div key={review.id} className="p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-lg border border-gray-100 hover:border-blue-200 hover:shadow-md group">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-3 text-sm">
-                  <span className="text-lg group-hover:scale-110 transform transition-transform duration-300">{getSourceIcon(review.source)}</span>
-                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{getSourceName(review.source)}</span>
-                  <span className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors">{review.userId}</span>
+            <div key={review.id} className="p-2 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 rounded-md border border-gray-100 hover:border-blue-200 group">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center space-x-2 text-sm">
+                  <span className="text-sm group-hover:scale-105 transform transition-transform duration-200">{getSourceIcon(review.source)}</span>
+                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors min-w-16">{getSourceName(review.source)}</span>
+                  <span className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors text-sm">{review.userId}</span>
                   <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{formatDate(review.createdAt)}</span>
                   {/* Show rating for app stores only */}
                   {(review.source === "google_play" || review.source === "app_store") && (
@@ -482,26 +482,26 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                     </div>
                   )}
                 </div>
-                <div className="group-hover:scale-105 transform transition-transform duration-300">
+                <div className="group-hover:scale-105 transform transition-transform duration-200">
                   {getSentimentBadge(review.sentiment)}
                 </div>
               </div>
-              <div className="text-gray-700 text-sm leading-5 group-hover:text-gray-800 transition-colors">
+              <div className="text-gray-700 text-sm leading-4 group-hover:text-gray-800 transition-colors">
                 <span>
-                  {review.content.length > 200 ? review.content.slice(0, 200) + '...' : review.content}
+                  {review.content.length > 150 ? review.content.slice(0, 150) + '...' : review.content}
                 </span>
                 {/* Add link for Naver reviews */}
                 {(review.source === 'naver_blog' || review.source === 'naver_cafe') && (review as any).link && (
-                  <div className="mt-2">
+                  <span className="ml-2">
                     <a 
                       href={(review as any).link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm underline hover:bg-blue-50 px-1 py-0.5 rounded transition-all duration-300"
+                      className="text-blue-600 hover:text-blue-800 text-xs underline hover:bg-blue-50 px-1 py-0.5 rounded transition-all duration-200"
                     >
                       원문 보기 →
                     </a>
-                  </div>
+                  </span>
                 )}
               </div>
             </div>
@@ -509,23 +509,23 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
         
         {/* AI Analysis Disclaimer */}
-        <div className="mt-6 mb-6 px-4 py-3 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200 hover:border-blue-200 transition-all duration-300">
+        <div className="mt-3 mb-3 px-3 py-2 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-blue-50 rounded-md border border-gray-200">
           ※ 본 리뷰의 감정 분석은 HuggingFace 기반 AI 모델로 자동 처리되며, 일부 결과에는 오차가 포함될 수 있습니다.
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t">
           <div className="text-sm text-gray-500">
             총 <span className="font-medium">{data.total.toLocaleString()}</span>개 중{" "}
             <span className="font-medium">{startItem}-{endItem}</span>개 표시
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"
+              className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -537,7 +537,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   variant={currentPage === page ? "default" : "outline"}
                   size="sm"
                   onClick={() => onPageChange(page)}
-                  className={currentPage === page ? "bg-primary hover:bg-primary/90" : "hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"}
+                  className={currentPage === page ? "bg-primary hover:bg-primary/90 h-8" : "hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"}
                 >
                   {page}
                 </Button>
@@ -548,7 +548,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"
+              className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
