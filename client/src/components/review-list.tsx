@@ -167,10 +167,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
           </div>
         </CardHeader>
         <CardContent className="p-4">
-          <div className="space-y-1">
+          <div className="space-y-2">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="p-2 border rounded-md">
-                <div className="flex items-center justify-between mb-1">
+              <div key={i} className="p-3 border rounded-md">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <Skeleton className="w-6 h-6 rounded-full" />
                     <div className="space-y-1">
@@ -180,7 +180,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   </div>
                   <Skeleton className="h-5 w-10 rounded-full" />
                 </div>
-                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-10 w-full" />
               </div>
             ))}
           </div>
@@ -465,10 +465,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        <div className="space-y-1">
+        <div className="space-y-2">
           {filteredReviews.map((review) => (
-            <div key={review.id} className="p-2 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 rounded-md border border-gray-100 hover:border-blue-200 group">
-              <div className="flex items-center justify-between mb-1">
+            <div key={review.id} className="p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 rounded-md border border-gray-100 hover:border-blue-200 group">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2 text-sm">
                   <span className="text-sm group-hover:scale-105 transform transition-transform duration-200">{getSourceIcon(review.source)}</span>
                   <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors min-w-16">{getSourceName(review.source)}</span>
@@ -486,7 +486,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   {getSentimentBadge(review.sentiment)}
                 </div>
               </div>
-              <div className="text-gray-700 text-sm leading-4 group-hover:text-gray-800 transition-colors">
+              <div className="text-gray-700 text-sm leading-5 group-hover:text-gray-800 transition-colors">
                 <span>
                   {review.content.length > 150 ? review.content.slice(0, 150) + '...' : review.content}
                 </span>
