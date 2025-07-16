@@ -95,7 +95,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     const maxFrequency = Math.max(...words.map(w => w.frequency));
     
     return (
-      <Card className="hover:shadow-md transition-shadow duration-300">
+      <Card className="glassmorphism-card glow-indigo-hover card-hover">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center">
             <Cloud className="w-5 h-5 mr-2" />
@@ -109,8 +109,11 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
               return (
                 <span
                   key={index}
-                  className={`inline-block px-3 py-1 rounded-full text-white font-medium ${colorClass} transition-all duration-300 hover:scale-110`}
-                  style={{ fontSize: `${fontSize}px` }}
+                  className={`inline-block px-3 py-1 rounded-full text-white font-medium ${colorClass} transition-all duration-300 hover:scale-110 shadow-lg`}
+                  style={{ 
+                    fontSize: `${fontSize}px`,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }}
                 >
                   {word.word} ({word.frequency})
                 </span>
@@ -166,12 +169,12 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Word Cloud Section */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-          <Cloud className="w-6 h-6 mr-2 text-blue-600" />
-          감정 워드클라우드
+          <Cloud className="w-6 h-6 mr-2 text-indigo-600" />
+          <span className="gradient-text">감정 워드클라우드</span>
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -184,7 +187,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center">
           <TrendingUp className="w-6 h-6 mr-2 text-purple-600" />
-          HEART 프레임워크 분석
+          <span className="gradient-text">HEART 프레임워크 분석</span>
           <span 
             className="ml-4 text-sm text-gray-500 hover:text-[#7CF3C4] cursor-pointer transition-colors duration-300"
             onClick={() => setIsHeartPopupOpen(true)}
@@ -195,7 +198,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         
         <div className="grid grid-cols-1 gap-4">
           {insights.map((insight, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow duration-300">
+            <Card key={index} className="glassmorphism-card glow-indigo-hover card-hover">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center">

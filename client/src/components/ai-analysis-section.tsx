@@ -157,11 +157,11 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
   }
 
   return (
-    <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
+    <Card className="mb-6 glassmorphism-card glow-purple-hover card-hover">
       <CardHeader>
         <CardTitle className="text-lg flex items-center">
           <Brain className="w-5 h-5 mr-2 text-purple-600 group-hover:scale-110 transform transition-transform duration-300" />
-          <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">AI 분석</span>
+          <span className="gradient-text">AI 분석</span>
         </CardTitle>
         <CardDescription className="text-gray-600">
           수집된 {stats.total}개의 리뷰를 바탕으로 감정 워드클라우드 및 HEART 프레임워크 UX 개선 분석을 실행합니다
@@ -173,7 +173,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
             <Button 
               onClick={() => handleComprehensiveAnalysis()}
               disabled={comprehensiveAnalysisMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
-              className="flex-1 bg-gradient-to-r from-[#7CF3C4] to-[#5DE3A8] hover:from-[#6BE3B5] hover:to-[#4CD499] text-black px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+              className="flex-1 gradient-bg hover:shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {comprehensiveAnalysisMutation.isPending ? (

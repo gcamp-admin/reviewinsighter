@@ -103,13 +103,13 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
   }
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
+    <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <Card className="glassmorphism-card glow-indigo-hover card-hover group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">총 리뷰 수</p>
-              <p className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{stats.total.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-indigo-600 text-glow group-hover:text-indigo-700 transition-colors">{stats.total.toLocaleString()}</p>
               <div className="text-xs text-gray-400 mt-1 space-y-0.5">
                 {stats.countsBySource.googlePlay > 0 && (
                   <div className="flex items-center gap-1 hover:text-green-600 transition-colors">
@@ -137,19 +137,19 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
                 )}
               </div>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 group-hover:scale-110 transition-all duration-300">
-              <MessageSquare className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 group-hover:scale-110 transition-all duration-300">
+              <MessageSquare className="w-6 h-6 text-indigo-600" />
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
+      <Card className="glassmorphism-card glow-green-hover card-hover group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">긍정 리뷰</p>
-              <p className="text-2xl font-bold text-green-600 group-hover:text-green-700 transition-colors">{stats.positive.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-600 text-glow group-hover:text-green-700 transition-colors">{stats.positive.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 group-hover:scale-110 transition-all duration-300">
               <ThumbsUp className="w-6 h-6 text-green-600" />
@@ -158,12 +158,12 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
         </CardContent>
       </Card>
       
-      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
+      <Card className="glassmorphism-card hover:shadow-[0_0_18px_rgba(239,68,68,0.5)] card-hover group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">부정 리뷰</p>
-              <p className="text-2xl font-bold text-red-600 group-hover:text-red-700 transition-colors">{stats.negative.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-red-600 text-glow group-hover:text-red-700 transition-colors">{stats.negative.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 group-hover:scale-110 transition-all duration-300">
               <ThumbsDown className="w-6 h-6 text-red-600" />
@@ -172,12 +172,12 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
         </CardContent>
       </Card>
       
-      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
+      <Card className="glassmorphism-card hover:shadow-[0_0_18px_rgba(107,114,128,0.3)] card-hover group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">중립 리뷰</p>
-              <p className="text-2xl font-bold text-gray-600 group-hover:text-gray-700 transition-colors">{stats.neutral?.toLocaleString() || 0}</p>
+              <p className="text-2xl font-bold text-gray-600 text-glow group-hover:text-gray-700 transition-colors">{stats.neutral?.toLocaleString() || 0}</p>
             </div>
             <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 group-hover:scale-110 transition-all duration-300">
               <Minus className="w-6 h-6 text-gray-600" />
@@ -186,12 +186,12 @@ export default function StatsOverview({ filters }: StatsOverviewProps) {
         </CardContent>
       </Card>
       
-      <Card className="hover:shadow-lg hover:scale-105 transition-all duration-300 group cursor-pointer">
+      <Card className="glassmorphism-card hover:shadow-[0_0_18px_rgba(245,158,11,0.5)] card-hover group cursor-pointer">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">평균 평점</p>
-              <p className="text-2xl font-bold text-yellow-600 group-hover:text-yellow-700 transition-colors">{stats.averageRating}</p>
+              <p className="text-2xl font-bold text-yellow-600 text-glow group-hover:text-yellow-700 transition-colors">{stats.averageRating}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 group-hover:scale-110 transition-all duration-300">
               <Star className="w-6 h-6 text-yellow-600" />
