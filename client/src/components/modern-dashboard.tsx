@@ -163,13 +163,32 @@ export default function ModernDashboard({ filters }: ModernDashboardProps) {
     }
   ];
 
-  // 소스별 리뷰 분포 데이터
-  const sourceData = [
-    { name: 'Google Play', value: Math.floor((stats?.total || 0) * 0.4), color: '#34D399' },
-    { name: 'App Store', value: Math.floor((stats?.total || 0) * 0.3), color: '#60A5FA' },
-    { name: 'Naver Blog', value: Math.floor((stats?.total || 0) * 0.2), color: '#F472B6' },
-    { name: 'Naver Cafe', value: Math.floor((stats?.total || 0) * 0.1), color: '#FBBF24' }
-  ];
+  // 소스별 리뷰 분포 데이터 (실제 데이터 기반)
+  const { data: allReviews } = useQuery({
+    queryKey: ['/api/reviews'],
+    queryFn: () => apiRequest(`/api/reviews?limit=1000`),
+    staleTime: 30000
+  });
+
+  const sourceData = React.useMemo(() => {
+    if (!allReviews?.reviews) return [];
+    
+    const sourceCounts = allReviews.reviews.reduce((acc: any, review: any) => {
+      const source = review.source;
+      if (source === 'google_play') acc['Google Play'] = (acc['Google Play'] || 0) + 1;
+      else if (source === 'app_store') acc['App Store'] = (acc['App Store'] || 0) + 1;
+      else if (source === 'naver_blog') acc['Naver Blog'] = (acc['Naver Blog'] || 0) + 1;
+      else if (source === 'naver_cafe') acc['Naver Cafe'] = (acc['Naver Cafe'] || 0) + 1;
+      return acc;
+    }, {});
+    
+    return [
+      { name: 'Google Play', value: sourceCounts['Google Play'] || 0, color: '#34D399' },
+      { name: 'App Store', value: sourceCounts['App Store'] || 0, color: '#60A5FA' },
+      { name: 'Naver Blog', value: sourceCounts['Naver Blog'] || 0, color: '#F472B6' },
+      { name: 'Naver Cafe', value: sourceCounts['Naver Cafe'] || 0, color: '#FBBF24' }
+    ];
+  }, [allReviews]);
 
   if (!stats) {
     return (
@@ -428,16 +447,38 @@ export default function ModernDashboard({ filters }: ModernDashboardProps) {
             </Badge>
           </div>
           
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={sourceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={sourceData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <XAxis 
+                dataKey="name" 
+                tick={{ 
+                  fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 12
+                }}
+              />
+              <YAxis 
+                tickFormatter={(value) => Math.round(value).toString()}
+                tick={{ fontSize: 12 }}
+              />
               <Tooltip 
                 formatter={(value: number) => [value, '리뷰 수']}
                 labelStyle={{ color: '#374151' }}
               />
-              <Bar dataKey="value" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+              <Legend 
+                verticalAlign="bottom"
+                height={36}
+                iconType="rect"
+                wrapperStyle={{
+                  paddingTop: '20px',
+                  fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }}
+              />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {sourceData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
