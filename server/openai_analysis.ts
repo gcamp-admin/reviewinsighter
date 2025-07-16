@@ -166,136 +166,7 @@ export async function generateClusterLabel(keywords: string[]): Promise<string> 
   }
 }
 
-// GPT-based keyword network analysis
-export async function generateKeywordNetworkWithGPT(reviews: any[]): Promise<{
-  nodes: any[];
-  links: any[];
-  positive: { word: string; frequency: number; sentiment: string }[];
-  negative: { word: string; frequency: number; sentiment: string }[];
-}> {
-  if (!reviews || reviews.length === 0) {
-    return { nodes: [], links: [], positive: [], negative: [] };
-  }
-
-  try {
-    // Prepare review texts for analysis
-    const reviewTexts = reviews.map(review => ({
-      content: review.content,
-      sentiment: review.sentiment,
-      source: review.source
-    }));
-
-    // Create prompt for keyword network analysis
-    const prompt = `
-다음 리뷰들에서 키워드 간 연관성을 분석하여 네트워크 그래프를 생성해주세요.
-
-리뷰 데이터:
-${reviewTexts.map((review, index) => `${index + 1}. [${review.sentiment}] [${review.source}] ${review.content}`).join('\n\n')}
-
-분석 결과를 다음 JSON 형식으로 반환해주세요:
-{
-  "nodes": [
-    {
-      "id": "키워드",
-      "word": "키워드",
-      "frequency": 빈도수,
-      "sentiment": "긍정|부정|중립",
-      "category": "기능|품질|사용성|감정|기타",
-      "size": 노드크기 (20-100)
-    }
-  ],
-  "links": [
-    {
-      "source": "키워드1",
-      "target": "키워드2", 
-      "weight": 연관강도 (1-10),
-      "context": "연관 맥락",
-      "distance": 거리 (50-150)
-    }
-  ],
-  "positive_keywords": [
-    {
-      "word": "키워드",
-      "frequency": 빈도수,
-      "sentiment": "positive"
-    }
-  ],
-  "negative_keywords": [
-    {
-      "word": "키워드", 
-      "frequency": 빈도수,
-      "sentiment": "negative"
-    }
-  ]
-}
-
-요구사항:
-- 총 15-20개의 핵심 키워드 추출
-- 키워드 간 연관성 분석 (동시 등장, 의미적 연관성)
-- 노드 크기는 언급 빈도에 비례 (20-100)
-- 링크 거리는 연관강도에 반비례 (50-150)
-- 연관강도는 1-10 스케일 (10이 가장 강한 연관성)
-- 실제 리뷰에서 언급된 키워드만 포함
-- 한국어 키워드 우선, 의미 있는 키워드만 선택
-- 각 감정별로 최대 10개의 키워드 추출
-`;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "당신은 텍스트 분석 전문가입니다. 사용자 리뷰에서 의미 있는 키워드를 추출하고 키워드 간 연관성을 분석합니다. 응답은 반드시 유효한 JSON 형태로 해주세요."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 3000,
-      response_format: { type: "json_object" }
-    });
-
-    const result = JSON.parse(response.choices[0].message.content || '{}');
-    
-    // Transform to expected format
-    const nodes = (result.nodes || []).map((node: any) => ({
-      id: node.id || node.word,
-      text: node.word || node.id,
-      sentiment: node.sentiment === 'positive' ? '긍정' : node.sentiment === 'negative' ? '부정' : '중립',
-      frequency: node.frequency || 1
-    }));
-
-    const links = (result.links || []).map((link: any) => ({
-      source: link.source,
-      target: link.target,
-      strength: Math.min(1, (link.weight || 1) / 10) // Normalize to 0-1 range
-    }));
-
-    // Transform to expected format for backward compatibility
-    const positiveWords = (result.positive_keywords || []).map((item: any) => ({
-      word: item.word,
-      frequency: item.frequency || 1
-    }));
-
-    const negativeWords = (result.negative_keywords || []).map((item: any) => ({
-      word: item.word,
-      frequency: item.frequency || 1
-    }));
-
-    return {
-      nodes,
-      links,
-      positive: positiveWords,
-      negative: negativeWords
-    };
-
-  } catch (error) {
-    console.error('Error generating keyword network with GPT:', error);
-    return { nodes: [], links: [], positive: [], negative: [] };
-  }
-}
+// Removed: generateKeywordNetworkWithGPT - keyword network analysis is no longer used
 
 export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promise<('긍정' | '부정' | '중립')[]> {
   const results: ('긍정' | '부정' | '중립')[] = [];
@@ -329,40 +200,68 @@ export async function analyzeReviewSentimentBatch(reviewTexts: string[]): Promis
   const ruleResolved = results.filter(r => r).length;
   console.log(`Rule-based analysis resolved ${ruleResolved}/${reviewTexts.length} reviews (${Math.round(ruleResolved/reviewTexts.length*100)}%)`);
   
-  // Process remaining reviews with GPT in batches
+  // Process remaining reviews with GPT in parallel batches for maximum speed
   if (needsGPTAnalysis.length > 0) {
-    console.log(`Processing ${needsGPTAnalysis.length} reviews with GPT`);
+    console.log(`Processing ${needsGPTAnalysis.length} reviews with GPT in parallel batches`);
     
-    const batchSize = 15;
+    const batchSize = 20; // Increased batch size
+    const batches = [];
+    
+    // Create batches
     for (let i = 0; i < needsGPTAnalysis.length; i += batchSize) {
-      const batch = needsGPTAnalysis.slice(i, i + batchSize);
-      
+      batches.push(needsGPTAnalysis.slice(i, i + batchSize));
+    }
+    
+    // Process all batches in parallel
+    const batchPromises = batches.map(async (batch, batchIndex) => {
       try {
-        const prompt = `당신은 감정 분석 전문가입니다. 
-다음 문장들을 '긍정', '부정', '중립' 중 하나로 분류하세요.
-**문장 내 감정 단어가 아닌 전체 맥락을 기준으로 판단해야 하며, 
-문장의 후반부나 결말이 부정적인 경우에는 반드시 '부정'으로 분류합니다.**
+        const prompt = `감정 분석: 다음 리뷰들을 '긍정', '부정', '중립'으로 분류하세요.
 
-분석 예시:
-1. "깔끔하고 좋아요. 그런데 너무 자주 끊깁니다." → 부정 (결말이 부정적)
-2. "녹음 잘 되고 기능도 괜찮아요." → 긍정 (전체적으로 긍정적)
-3. "기대 이하네요." → 부정 (명확한 부정적 감정)
-4. "그럭저럭 쓸만합니다." → 중립 (보통 수준의 평가)
-5. "정말 좋은 앱이에요. 그런데 최근 들어 계속 튕겨서 너무 짜증납니다." → 부정 (결말이 부정적)
-6. "처음엔 괜찮았는데 지금은 너무 느려요." → 부정 (현재 상태가 부정적)
-7. "보통 수준입니다." → 중립 (명확한 중립적 표현)
-8. "안되는 기능이 많아요." → 부정 (기능 부족에 대한 불만)
+규칙:
+- 전체 맥락 우선 (단일 감정 단어보다 문장 전체 의미)
+- 접속사('그런데', '하지만') 뒤의 내용이 더 중요
+- '안되다', '못하다' 등 = 강한 부정
+- '괜찮다', '보통' 등 = 중립
 
-중요 규칙:
-- 문장에 '좋다', '빠르다' 같은 긍정 단어가 있어도 **전체 맥락이 부정적이면 '부정'**
-- '그런데', '하지만', '근데' 뒤에 오는 부정적 내용이 더 중요함
-- '안되다', '못하다', '안돼다' 등은 강한 부정 신호
-- '괜찮다', '보통', '그럭저럭' 등은 중립 신호
-
-리뷰 텍스트들:
+리뷰:
 ${batch.map((item, idx) => `${idx + 1}. ${item.text}`).join('\n')}
 
-각 리뷰를 전체 맥락과 결말을 고려하여 분석한 후 JSON 형식으로 응답해주세요:
+JSON 형식으로 응답:
+{"sentiments": ["긍정", "부정", "중립", ...]}`
+
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 200,
+          temperature: 0,
+          response_format: { type: "json_object" }
+        });
+
+        const result = JSON.parse(response.choices[0].message.content || '{}');
+        const sentiments = result.sentiments || [];
+        
+        console.log(`Completed GPT batch ${batchIndex + 1}/${batches.length}`);
+        return { batch, sentiments };
+        
+      } catch (error) {
+        console.error(`GPT batch ${batchIndex + 1} error:`, error);
+        return { batch, sentiments: batch.map(() => '중립') };
+      }
+    });
+    
+    // Wait for all batches to complete
+    const batchResults = await Promise.all(batchPromises);
+    
+    // Process results
+    for (const { batch, sentiments } of batchResults) {
+      for (let j = 0; j < batch.length; j++) {
+        const sentiment = sentiments[j] || '중립';
+        const item = batch[j];
+        results[item.index] = sentiment;
+        sentimentCache.set(item.text.trim().toLowerCase(), sentiment);
+      }
+    }
+  }
 {"sentiments": ["긍정", "부정", "중립", ...]}`;
 
         const response = await openai.chat.completions.create({
@@ -522,6 +421,11 @@ function tryRuleBasedAnalysis(text: string): '긍정' | '부정' | '중립' | nu
   // Single strong indicator cases
   if (negativeCount > 0 && positiveCount === 0) return '부정';
   if (positiveCount > 0 && negativeCount === 0) return '긍정';
+  
+  // Length-based analysis for very short texts
+  if (text.length < 10) {
+    return '중립';
+  }
   
   // Rating-based analysis for app reviews
   const ratingMatch = text.match(/(\d+)점|(\d+)성|(\d+)별|rating[:\s]*(\d+)/i);

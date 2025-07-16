@@ -78,8 +78,9 @@ Duolingo는 첫 진입 시 1개의 간단한 문제를 바로 풀게 하여 '내
 이 앱에서도 첫 진입 시, 주요 기능을 간단히 체험할 수 있는 가상 시나리오(예: 샘플 리뷰 업로드 → 분석 결과 보기)를 자동 제공하면 초기 이탈률을 줄일 수 있습니다.  
 이렇게 하면 사용자는 앱을 '배워야 할 도구'가 아닌 '당장 쓸 수 있는 도구'로 인식하게 됩니다."""
 
-    # 사용자 프롬프트 생성
-    user_prompt = f"""다음은 HEART: {heart_key} 관련 사용자 리뷰입니다:\n- "{"\"\n- ".join(reviews[:10])}"\n\n위 리뷰를 기반으로 전문가처럼 HEART 분석을 작성해주세요."""
+    # 사용자 프롬프트 생성 (f-string에서 백슬래시 문제 해결)
+    review_text = '"\n- "'.join(reviews[:10])
+    user_prompt = f"""다음은 HEART: {heart_key} 관련 사용자 리뷰입니다:\n- "{review_text}"\n\n위 리뷰를 기반으로 전문가처럼 HEART 분석을 작성해주세요."""
     
     try:
         response = client.chat.completions.create(
