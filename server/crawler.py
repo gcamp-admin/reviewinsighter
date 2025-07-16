@@ -238,80 +238,12 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     if naver_cafes:
                         api_success = True
                         
-                        # 날짜 필터링 적용 - 간단한 방법으로 수정
+                        # 날짜 필터링 적용 - 데이터 무결성 원칙 준수
                         if start_date and end_date:
-                            # 선택한 날짜 범위 내에서 임의 날짜 생성
-                            try:
-                                from datetime import datetime as dt_parser, timedelta
-                                import random
-                                
-                                # ISO 날짜를 date 객체로 변환
-                                start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).date()
-                                end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).date()
-                                
-                                print(f"  Processing cafe posts with date range: {start_dt} to {end_dt}")
-                                
-                                # 모든 카페 글을 처리하고 선택한 날짜 범위 내에서 임의 날짜 할당
-                                for cafe in naver_cafes:
-                                    # 뉴스기사 필터링 체크
-                                    title = cafe.get("title", "")
-                                    description = cafe.get("description", "")
-                                    text_content = (title + " " + description).lower()
-                                    
-                                    # 뉴스기사 제외 키워드 체크
-                                    news_indicators = [
-                                        "뉴스", "기사", "보도", "보도자료", "press", "뉴스기사", "언론", "미디어", 
-                                        "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
-                                        "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드"
-                                    ]
-                                    
-                                    if any(indicator in text_content for indicator in news_indicators):
-                                        print(f"  Skipping news article: {title[:30]}...")
-                                        continue
-                                    
-                                    # 선택한 날짜 범위 내에서 임의 날짜 생성
-                                    days_diff = (end_dt - start_dt).days
-                                    if days_diff <= 0:
-                                        post_date = start_dt
-                                    else:
-                                        random_days = random.randint(0, days_diff)
-                                        post_date = start_dt + timedelta(days=random_days)
-                                    
-                                    # HTML 태그 제거 및 엔티티 디코딩
-                                    clean_title = re.sub(r'<[^>]+>', '', title)
-                                    clean_description = re.sub(r'<[^>]+>', '', description)
-                                    
-                                    clean_title = clean_title.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
-                                    clean_title = clean_title.replace('&quot;', '"').replace('&#39;', "'")
-                                    clean_description = clean_description.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
-                                    clean_description = clean_description.replace('&quot;', '"').replace('&#39;', "'")
-                                    
-                                    # 카페 리뷰 객체 생성
-                                    cafe_review = {
-                                        "userId": cafe.get("extracted_user_id") or f"카페_{cafe.get('cafename', 'unknown')}",
-                                        "source": "naver_cafe",
-                                        "serviceId": "ixio",
-                                        "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
-                                        "rating": 5,  # 카페 글 기본 평점
-                                        "content": f"{clean_title} {clean_description}".strip(),
-                                        "createdAt": post_date.isoformat() + "Z",
-                                        "link": cafe.get("link", ""),
-                                        "platform": "naver_cafe"
-                                    }
-                                    
-                                    cafe_results.append(cafe_review)
-                                    print(f"  Added cafe review: {clean_title[:30]}... (date: {post_date})")
-                                    
-                                    # 최대 수집 개수 제한
-                                    if len(cafe_results) >= review_count // 3:
-                                        break
-                                
-                                print(f"  Date filtering successful: {len(cafe_results)} cafe results processed")
-                                
-                            except Exception as e:
-                                print(f"  Date filtering error: {e}")
-                                import traceback
-                                traceback.print_exc()
+                            print(f"  네이버 카페 API는 날짜 정보를 제공하지 않습니다.")
+                            print(f"  데이터 무결성 원칙에 따라 날짜 필터링 시 네이버 카페 수집을 건너뜁니다.")
+                            print(f"  정확한 날짜 정보 없이는 수집하지 않습니다.")
+                            # 네이버 카페는 날짜 필터링 시 수집하지 않음
                         else:
                             # 날짜 필터링 없는 경우 모든 카페 글 수집
                             for cafe in naver_cafes:

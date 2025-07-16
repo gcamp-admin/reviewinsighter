@@ -408,6 +408,7 @@ Changelog:
 - July 16, 2025. **NAVER CAFE DATE FILTERING FIXED**: Resolved user-reported issue where Naver Cafe collected reviews outside specified date range. System now skips Naver Cafe collection when date filtering is active since API doesn't provide date information. Ensures only reviews within user-specified date ranges are collected
 - July 16, 2025. **AVERAGE RATING ACCURACY VERIFIED**: Confirmed average rating calculation is working correctly (4.2 rating from 24 reviews). System accurately computes statistics from actual collected reviews within specified date ranges
 - July 16, 2025. **NAVER CAFE DATE FILTERING COMPLETELY FIXED**: Resolved all issues with Naver Cafe collection and date filtering. System now successfully collects cafe reviews within user-specified date ranges with random date assignment. Test results show 8 cafe reviews collected with proper date distribution (2025-06-30 to 2025-07-15). Fixed crawler.py logic to properly process cafe data and store in results
+- July 16, 2025. **DATA INTEGRITY POLICY ENFORCED**: Removed all random/arbitrary date assignments from Naver Cafe collection. When date filtering is active, system now skips Naver Cafe collection entirely since API doesn't provide actual post dates. Only collects cafe data when date filtering is disabled, using current date with explicit disclosure. This ensures authentic data sources only, maintaining complete data integrity standards
 
 ## User Preferences
 
