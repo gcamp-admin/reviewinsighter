@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -340,7 +340,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <Label className="text-sm font-medium">리뷰 수집 채널을 선택하세요 <span className="text-red-500">*</span></Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { id: "google_play", name: "구글플레이", icon: Grid3X3 },
+                { id: "google_play", name: "구글 앱스토어", icon: Play },
                 { id: "app_store", name: "애플앱스토어", icon: Apple },
                 { id: "naver_blog", name: "네이버블로그", icon: PenLine },
                 { id: "naver_cafe", name: "네이버카페", icon: Coffee },
@@ -352,10 +352,10 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     key={channel.id}
                     onClick={() => handleSourceChange(channel.id, !isActive)}
                     className={`flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-200 border-2 relative hover:scale-[1.02] hover:shadow-md
-                      ${isActive ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white"}
+                      ${isActive ? "border-indigo-500 bg-gray-50" : "border-gray-200 bg-white"}
                       hover:border-indigo-300`}
                   >
-                    <IconComponent className={`w-8 h-8 mb-3 ${isActive ? "text-indigo-600" : "text-gray-600"}`} />
+                    <IconComponent className={`w-6 h-6 mb-3 ${isActive ? "text-indigo-500" : "text-gray-700"} hover:text-indigo-500 transition-colors`} />
                     <span className="text-sm font-medium text-gray-800">{channel.name}</span>
                     {isActive && (
                       <CheckCircle className="absolute top-2 right-2 w-5 h-5 text-indigo-500" fill="currentColor" />
