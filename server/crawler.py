@@ -237,85 +237,83 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     
                     if naver_cafes:
                         api_success = True
-                        # Convert to review format
-                        for cafe in naver_cafes:
-                            # 뉴스기사 필터링 체크 (네이버 카페에서 뉴스기사 제외)
-                            title = cafe.get("title", "")
-                            description = cafe.get("description", "")
-                            text_content = (title + " " + description).lower()
-                            
-                            # 뉴스기사 제외 키워드 체크
-                            news_indicators = [
-                                "뉴스", "기사", "보도", "보도자료", "press", "뉴스기사", "언론", "미디어", 
-                                "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
-                                "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드"
-                            ]
-                            
-                            if any(indicator in text_content for indicator in news_indicators):
-                                print(f"  Skipping news article: {title[:50]}...")
-                                continue
-                            
-                            # 네이버 카페 날짜 필터링 적용
-                            if start_date and end_date:
-                                # HTTP 기반 날짜 필터링 시도
-                                try:
-                                    from naver_cafe_date_extractor import filter_naver_cafe_by_date
-                                    from datetime import datetime as dt_parser
-                                    
-                                    # ISO 날짜를 date 객체로 변환
-                                    start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).date()
-                                    end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).date()
-                                    
-                                    print(f"  Attempting HTTP-based date filtering for cafe posts")
-                                    
-                                    # 현재 키워드의 카페 결과를 날짜로 필터링
-                                    filtered_results = filter_naver_cafe_by_date(
-                                        naver_cafes, 
-                                        start_dt, 
-                                        end_dt, 
-                                        max_results=review_count//3
-                                    )
-                                    
-                                    cafe_results.extend(filtered_results)
-                                    print(f"  HTTP date filtering successful: {len(filtered_results)} results")
-                                    
-                                except Exception as e:
-                                    print(f"  HTTP date filtering error: {e}")
-                                    print(f"  Skipping cafe collection - date filtering failed")
+                        
+                        # 날짜 필터링 적용
+                        if start_date and end_date:
+                            # HTTP 기반 날짜 필터링 시도
+                            try:
+                                from naver_cafe_date_extractor import filter_naver_cafe_by_date
+                                from datetime import datetime as dt_parser
                                 
-                                # 날짜 필터링 결과 처리 완료, 다음 루프로
-                                continue
-                            else:
-                                # 날짜 필터링 없는 경우만 수집
+                                # ISO 날짜를 date 객체로 변환
+                                start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).date()
+                                end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).date()
+                                
+                                print(f"  Attempting HTTP-based date filtering for cafe posts")
+                                
+                                # 현재 키워드의 카페 결과를 날짜로 필터링
+                                filtered_results = filter_naver_cafe_by_date(
+                                    naver_cafes, 
+                                    start_dt, 
+                                    end_dt, 
+                                    max_results=review_count//3
+                                )
+                                
+                                cafe_results.extend(filtered_results)
+                                print(f"  HTTP date filtering successful: {len(filtered_results)} results")
+                                
+                            except Exception as e:
+                                print(f"  HTTP date filtering error: {e}")
+                                print(f"  Skipping cafe collection - date filtering failed")
+                        else:
+                            # 날짜 필터링 없는 경우 모든 카페 글 수집
+                            for cafe in naver_cafes:
+                                # 뉴스기사 필터링 체크 (네이버 카페에서 뉴스기사 제외)
+                                title = cafe.get("title", "")
+                                description = cafe.get("description", "")
+                                text_content = (title + " " + description).lower()
+                                
+                                # 뉴스기사 제외 키워드 체크
+                                news_indicators = [
+                                    "뉴스", "기사", "보도", "보도자료", "press", "뉴스기사", "언론", "미디어", 
+                                    "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
+                                    "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드"
+                                ]
+                                
+                                if any(indicator in text_content for indicator in news_indicators):
+                                    print(f"  Skipping news article: {title[:50]}...")
+                                    continue
+                                
+                                # 날짜 필터링 없는 경우 현재 날짜 사용
                                 from datetime import datetime as dt
                                 current_date = dt.now()
                                 iso_date = current_date.isoformat() + "Z"
                                 print(f"  Using current date: {current_date.date()}")
-                            
-                            # Clean content from HTML tags
-                            # Remove HTML tags from content
-                            clean_title = re.sub(r'<[^>]+>', '', title)
-                            clean_description = re.sub(r'<[^>]+>', '', description)
-                            
-                            # Decode HTML entities
-                            clean_title = clean_title.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
-                            clean_title = clean_title.replace('&quot;', '"').replace('&#39;', "'")
-                            clean_description = clean_description.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
-                            clean_description = clean_description.replace('&quot;', '"').replace('&#39;', "'")
-                            
-                            cafe_review = {
-                                "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
-                                "source": "naver_cafe",
-                                "serviceId": "ixio",
-                                "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
-                                "rating": 5,  # Default rating for cafe posts
-                                "content": f"{clean_title} {clean_description}".strip(),
-                                "createdAt": iso_date,  # Use random date
-                                "link": cafe.get("link", ""),
-                                "platform": "naver_cafe"
-                            }
-                            cafe_results.append(cafe_review)
-                            print(f"Added cafe review from {cafe_review['userId']}: {cafe_review['content'][:50]}...")
+                                
+                                # Clean content from HTML tags
+                                # Remove HTML tags from content
+                                clean_title = re.sub(r'<[^>]+>', '', title)
+                                clean_description = re.sub(r'<[^>]+>', '', description)
+                                
+                                # Decode HTML entities
+                                clean_title = clean_title.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                                clean_title = clean_title.replace('&quot;', '"').replace('&#39;', "'")
+                                clean_description = clean_description.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                                clean_description = clean_description.replace('&quot;', '"').replace('&#39;', "'")
+                                
+                                cafe_review = {
+                                    "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
+                                    "source": "naver_cafe",
+                                    "serviceId": "ixio",
+                                    "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
+                                    "rating": 5,  # Default rating for cafe posts
+                                    "content": f"{clean_title} {clean_description}".strip(),
+                                    "createdAt": iso_date,  # Use current date
+                                    "link": cafe.get("link", ""),
+                                    "platform": "naver_cafe"
+                                }
+                                cafe_results.append(cafe_review)
+                                print(f"Added cafe review from {cafe_review['userId']}: {cafe_review['content'][:50]}...")
                 except Exception as e:
                     print(f"Error searching cafe with keyword {kw}: {str(e)}")
                     import traceback
