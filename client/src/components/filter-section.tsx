@@ -355,15 +355,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                       ${isActive ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white"}
                       hover:border-indigo-300`}
                   >
-                    {channel.id === "google_play" ? (
-                      <img
-                        src="/images/google-play.png"
-                        alt="구글플레이"
-                        className="w-8 h-8 mb-3"
-                      />
-                    ) : (
-                      <IconComponent className={`w-8 h-8 mb-3 ${isActive ? "text-indigo-600" : "text-gray-600"}`} />
-                    )}
+                    <IconComponent className={`w-8 h-8 mb-3 ${isActive ? "text-indigo-600" : "text-gray-600"}`} />
                     <span className="text-sm font-medium text-gray-800">{channel.name}</span>
                     {isActive && (
                       <CheckCircle className="absolute top-2 right-2 w-5 h-5 text-indigo-500" fill="currentColor" />
