@@ -24,19 +24,19 @@ const ChannelBarChart = ({ data }: Props) => {
     const gradients = data.map((item) => {
       const gradient = ctx.createLinearGradient(0, 0, 0, 400);
       
-      // 버튼 톤에 맞춘 그라데이션
+      // 핑크-퍼플 그라데이션
       if (item.label === '구글 앱스토어') {
-        gradient.addColorStop(0, '#A5B4FC'); // 연한 보라
-        gradient.addColorStop(1, '#667eea'); // 진한 보라
+        gradient.addColorStop(0, '#fce7f3'); // 연한 핑크
+        gradient.addColorStop(1, '#ec4899'); // 진한 핑크
       } else if (item.label === '애플 앱스토어') {
-        gradient.addColorStop(0, '#8B5CF6'); // 연한 보라
-        gradient.addColorStop(1, '#4F46E5'); // 진한 보라
+        gradient.addColorStop(0, '#f3e8ff'); // 연한 핑크-퍼플
+        gradient.addColorStop(1, '#d946ef'); // 진한 핑크-퍼플
       } else if (item.label === '네이버 블로그') {
-        gradient.addColorStop(0, '#C4B5FD'); // 연한 보라
-        gradient.addColorStop(1, '#764ba2'); // 진한 보라
+        gradient.addColorStop(0, '#e9d5ff'); // 연한 퍼플
+        gradient.addColorStop(1, '#a855f7'); // 진한 퍼플
       } else if (item.label === '네이버 카페') {
-        gradient.addColorStop(0, '#DDD6FE'); // 연한 보라
-        gradient.addColorStop(1, '#8B5CF6'); // 진한 보라
+        gradient.addColorStop(0, '#ddd6fe'); // 연한 진퍼플
+        gradient.addColorStop(1, '#8b5cf6'); // 진한 진퍼플
       }
       
       return gradient;
@@ -118,10 +118,10 @@ const ChannelBarChart = ({ data }: Props) => {
               <div 
                 className="w-3 h-3 rounded-full mr-2" 
                 style={{ 
-                  background: item.label === '구글 앱스토어' ? 'linear-gradient(135deg, #A5B4FC 0%, #667eea 100%)' :
-                             item.label === '애플 앱스토어' ? 'linear-gradient(135deg, #8B5CF6 0%, #4F46E5 100%)' :
-                             item.label === '네이버 블로그' ? 'linear-gradient(135deg, #C4B5FD 0%, #764ba2 100%)' :
-                             item.label === '네이버 카페' ? 'linear-gradient(135deg, #DDD6FE 0%, #8B5CF6 100%)' : 
+                  background: item.label === '구글 앱스토어' ? 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)' :
+                             item.label === '애플 앱스토어' ? 'linear-gradient(135deg, #f3e8ff 0%, #d946ef 100%)' :
+                             item.label === '네이버 블로그' ? 'linear-gradient(135deg, #e9d5ff 0%, #a855f7 100%)' :
+                             item.label === '네이버 카페' ? 'linear-gradient(135deg, #ddd6fe 0%, #8b5cf6 100%)' : 
                              item.color
                 }}
               />
