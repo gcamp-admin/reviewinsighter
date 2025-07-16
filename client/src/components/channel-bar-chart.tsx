@@ -83,10 +83,10 @@ const ChannelBarChart = ({ data }: Props) => {
   }, [data]);
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm h-full">
+    <div className="bg-white rounded-xl p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">수집 채널별 분포</h3>
-      <div className="flex flex-col h-full">
-        <div className="flex-1 h-64 mb-4">
+      <div className="flex flex-col" style={{ height: '320px' }}>
+        <div className="h-48 mb-4">
           <canvas ref={canvasRef}></canvas>
         </div>
         {/* 범례를 아래쪽으로 이동 */}
