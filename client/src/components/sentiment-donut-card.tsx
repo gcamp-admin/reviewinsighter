@@ -14,13 +14,35 @@ const SENTIMENT_ICONS = {
   중립: Minus
 };
 
-export default function SentimentDonutCard() {
-  // Get all reviews to calculate accurate sentiment distribution
+interface Props {
+  filters?: {
+    dateFrom?: Date;
+    dateTo?: Date;
+    source?: string[];
+    serviceId?: string;
+  };
+}
+
+export default function SentimentDonutCard({ filters }: Props) {
+  // Get filtered reviews to calculate accurate sentiment distribution
   const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews', 'all'],
+    queryKey: ['/api/reviews', 'sentiment-distribution', filters],
     queryFn: async () => {
-      // Fetch all reviews without any filters
-      const response = await fetch('/api/reviews?limit=10000&page=1');
+      const params = new URLSearchParams();
+      params.append('limit', '10000');
+      params.append('page', '1');
+      
+      if (filters?.dateFrom) {
+        params.append('dateFrom', filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append('dateTo', filters.dateTo.toISOString());
+      }
+      if (filters?.serviceId) {
+        params.append('serviceId', filters.serviceId);
+      }
+      
+      const response = await fetch(`/api/reviews?${params}`);
       return response.json();
     },
     enabled: true

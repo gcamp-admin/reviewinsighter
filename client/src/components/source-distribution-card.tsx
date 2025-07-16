@@ -24,19 +24,35 @@ const CHANNEL_COLORS = {
   naver_cafe: "#FF6B35"
 };
 
-export default function SourceDistributionCard() {
-  // Get statistics for accurate source distribution
-  const { data: stats } = useQuery({
-    queryKey: ['/api/reviews/stats'],
-    enabled: true
-  });
+interface Props {
+  filters?: {
+    dateFrom?: Date;
+    dateTo?: Date;
+    source?: string[];
+    serviceId?: string;
+  };
+}
 
-  // Get all reviews to calculate accurate source distribution
+export default function SourceDistributionCard({ filters }: Props) {
+  // Get filtered reviews to calculate accurate source distribution
   const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews', 'all'],
+    queryKey: ['/api/reviews', 'source-distribution', filters],
     queryFn: async () => {
-      // Fetch all reviews without any filters - only specify limit and page
-      const response = await fetch('/api/reviews?limit=10000&page=1');
+      const params = new URLSearchParams();
+      params.append('limit', '10000');
+      params.append('page', '1');
+      
+      if (filters?.dateFrom) {
+        params.append('dateFrom', filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append('dateTo', filters.dateTo.toISOString());
+      }
+      if (filters?.serviceId) {
+        params.append('serviceId', filters.serviceId);
+      }
+      
+      const response = await fetch(`/api/reviews?${params}`);
       return response.json();
     },
     enabled: true

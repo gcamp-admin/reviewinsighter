@@ -16,13 +16,35 @@ const getLabel = (score: number) => {
   return "매우 불만족";
 };
 
-export default function AverageRatingCard() {
-  // Get all reviews to calculate accurate average rating
+interface Props {
+  filters?: {
+    dateFrom?: Date;
+    dateTo?: Date;
+    source?: string[];
+    serviceId?: string;
+  };
+}
+
+export default function AverageRatingCard({ filters }: Props) {
+  // Get filtered reviews to calculate accurate average rating
   const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews', 'all'],
+    queryKey: ['/api/reviews', 'average-rating', filters],
     queryFn: async () => {
-      // Fetch all reviews without any filters
-      const response = await fetch('/api/reviews?limit=10000&page=1');
+      const params = new URLSearchParams();
+      params.append('limit', '10000');
+      params.append('page', '1');
+      
+      if (filters?.dateFrom) {
+        params.append('dateFrom', filters.dateFrom.toISOString());
+      }
+      if (filters?.dateTo) {
+        params.append('dateTo', filters.dateTo.toISOString());
+      }
+      if (filters?.serviceId) {
+        params.append('serviceId', filters.serviceId);
+      }
+      
+      const response = await fetch(`/api/reviews?${params}`);
       return response.json();
     },
     enabled: true

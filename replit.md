@@ -389,6 +389,7 @@ Changelog:
 - July 16, 2025. **CRITICAL DATA ACCURACY FIX**: Fixed source distribution chart data accuracy issue - charts now display actual review counts from all collected reviews (373 total) instead of limited sample data
 - July 16, 2025. **CHART VISUALIZATION IMPROVEMENTS**: Changed source distribution to horizontal bar chart for better readability with multiple sources, updated all dashboard cards to fetch complete datasets
 - July 16, 2025. **UNIFIED DATA FETCHING**: All dashboard cards (SourceDistributionCard, SentimentDonutCard, AverageRatingCard) now fetch complete review datasets to ensure accurate statistics display
+- July 16, 2025. **FILTER-BASED STATISTICS**: Updated all dashboard cards to use date-filtered data instead of all reviews - cards now display statistics only for the selected date range as requested by user
 
 ## User Preferences
 

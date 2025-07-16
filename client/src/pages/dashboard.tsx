@@ -50,9 +50,9 @@ export default function Dashboard() {
         
         {hasCollectedReviews && (
           <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_1fr] gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-            <SourceDistributionCard />
-            <SentimentDonutCard />
-            <AverageRatingCard />
+            <SourceDistributionCard filters={filters} />
+            <SentimentDonutCard filters={filters} />
+            <AverageRatingCard filters={filters} />
           </div>
         )}
         
