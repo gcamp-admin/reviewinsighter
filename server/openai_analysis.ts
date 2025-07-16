@@ -262,6 +262,25 @@ JSON 형식으로 응답:
       }
     }
   }
+
+  // Return results
+  return results;
+}
+
+export async function analyzeReviewSentimentBatchLegacy(reviewTexts: string[]): Promise<('긍정' | '부정' | '중립')[]> {
+  const results: ('긍정' | '부정' | '중립')[] = [];
+  const batchSize = 15;
+  
+  for (let i = 0; i < reviewTexts.length; i += batchSize) {
+    const batch = reviewTexts.slice(i, i + batchSize);
+    
+    try {
+      const prompt = `다음 리뷰들의 감정을 분석해주세요. 각 리뷰에 대해 "긍정", "부정", "중립" 중 하나로 분류해주세요.
+
+리뷰 텍스트:
+${batch.map((text, index) => `${index + 1}. ${text}`).join('\n')}
+
+다음 JSON 형식으로 응답해주세요:
 {"sentiments": ["긍정", "부정", "중립", ...]}`;
 
         const response = await openai.chat.completions.create({
@@ -280,22 +299,19 @@ JSON 형식으로 응답:
         
         for (let j = 0; j < batch.length; j++) {
           const sentiment = sentiments[j] || '중립';
-          const item = batch[j];
-          results[item.index] = sentiment;
-          sentimentCache.set(item.text.trim().toLowerCase(), sentiment);
+          results.push(sentiment);
         }
         
-        console.log(`Processed GPT batch ${Math.ceil((i + batchSize) / batchSize)}/${Math.ceil(needsGPTAnalysis.length / batchSize)}`);
+        console.log(`Processed GPT batch ${Math.ceil((i + batchSize) / batchSize)}/${Math.ceil(batch.length / batchSize)}`);
         
       } catch (error) {
         console.error(`GPT batch error:`, error);
         // Fallback to neutral for failed batch
-        for (const item of batch) {
-          results[item.index] = '중립';
+        for (let j = 0; j < batch.length; j++) {
+          results.push('중립');
         }
       }
     }
-  }
   
   // Fill any remaining gaps
   for (let i = 0; i < reviewTexts.length; i++) {

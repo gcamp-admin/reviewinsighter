@@ -6,7 +6,7 @@ import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateKeywordNetworkWithGPT, generateClusterLabel } from "./openai_analysis";
+import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateClusterLabel } from "./openai_analysis";
 import { insertReviewSchema } from "../shared/schema";
 
 const __filename = fileURLToPath(import.meta.url);
