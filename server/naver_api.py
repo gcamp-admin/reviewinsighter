@@ -194,35 +194,63 @@ def is_likely_user_review(item, service_keywords):
     Returns:
         Boolean indicating if this is likely a user review
     """
-    # HTML 제거
-    title = strip_html(item.get("title", "")).lower()
-    desc = strip_html(item.get("description", "")).lower()
-    text = title + " " + desc
+    try:
+        # HTML 제거
+        title = strip_html(item.get("title", "")).lower()
+        desc = strip_html(item.get("description", "")).lower()
+        text = title + " " + desc
 
-    # 1. 뉴스기사 제외 (네이버 카페 크롤링 시 뉴스기사 필터링)
-    news_indicators = [
-        "뉴스", "기사", "보도", "보도자료", "press", "뉴스기사", "언론", "미디어", 
-        "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
-        "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드"
-    ]
-    if any(indicator in text for indicator in news_indicators):
+        # 1. 강화된 뉴스기사 및 정보성 글 제외
+        exclusion_keywords = [
+            "뉴스", "기사", "보도", "보도자료", "press", "언론", "미디어", 
+            "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
+            "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드",
+            # 서평/도서 관련 (네이버 카페에서 흔함)
+            "서평", "도서", "책", "독서", "독후감", "리뷰 이벤트", "서평단",
+            # 배경화면/테마 관련
+            "배경화면", "테마", "다운로드", "라이브 배경화면", "플라밍고",
+            # 일반적인 정보성 포스트
+            "정보", "소식", "업데이트", "버전", "기능", "특징", "서비스 소개",
+            "스펙", "사양", "가격", "요금", "플랜", "구독", "설치", "출시",
+            # 홍보/마케팅
+            "이벤트", "프로모션", "광고", "홍보", "마케팅", "런칭", "공식",
+            "캠페인", "안내", "알림", "공지", "발표"
+        ]
+        
+        if any(keyword in text for keyword in exclusion_keywords):
+            return False
+
+        # 2. 서비스 키워드 포함 확인
+        if not any(sk.lower() in text for sk in service_keywords):
+            return False
+
+        # 3. 강화된 리뷰 지표 확인
+        review_indicators = [
+            # 사용 경험 관련
+            "사용해보니", "써보니", "체험해보니", "테스트해보니", "사용기", "체험기", "사용후기",
+            # 평가 관련
+            "후기", "리뷰", "평가", "평점", "별점", "만족", "불만족", "만족도",
+            # 추천/비추천
+            "추천", "비추천", "권장", "비권장", "좋아요", "싫어요", "괜찮아요",
+            # 장단점
+            "장점", "단점", "아쉬운", "좋은점", "나쁜점", "문제점", "개선점",
+            # 감정적 반응
+            "편리", "불편", "유용", "도움", "짜증", "답답", "만족스럽", "실망",
+            # 구체적인 사용 상황
+            "통화", "전화", "녹음", "음성", "보이스피싱", "비서",
+            # 일반적인 사용자 리뷰 표현
+            "정말", "너무", "완전", "진짜", "솔직히", "개인적으로"
+        ]
+        
+        if not any(indicator in text for indicator in review_indicators):
+            return False
+
+        # 4. 길이 제한 (너무 짧으면 제외)
+        if len(text) < 30:
+            return False
+
+        return True
+        
+    except Exception as e:
+        print(f"Error in review filtering: {e}")
         return False
-
-    # 2. 키워드 포함 문장
-    review_signals = ["후기", "리뷰", "사용기", "써봤어요", "추천", "단점", "장점", "불편", "좋았던 점"]
-    if not any(kw in text for kw in review_signals):
-        return False
-
-    # 3. 기사/브랜드 중심 키워드 반복 → 제외
-    if text.count("press") > 0 or text.count("보도자료") > 0:
-        return False
-
-    # 4. 길이 제한 (너무 짧으면 제외)
-    if len(text) < 30:
-        return False
-
-    # 5. 서비스 키워드가 포함된 고객 언어로 쓰였는지 확인 (보완)
-    if not any(sk.lower() in text for sk in service_keywords):
-        return False
-
-    return True
