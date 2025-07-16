@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play, Calendar, Check, CalendarDays } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -256,10 +258,10 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
     onFiltersChange(newFilters);
   };
 
-  const handleDateChange = (field: 'dateFrom' | 'dateTo', value: string) => {
+  const handleDateChange = (field: 'dateFrom' | 'dateTo', value: string | Date | null) => {
     const newFilters = { 
       ...localFilters, 
-      [field]: value ? new Date(value) : undefined 
+      [field]: value ? (typeof value === 'string' ? new Date(value) : value) : undefined 
     };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
@@ -383,13 +385,15 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                   시작 날짜 <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
-                    id="date-from"
-                    type="date"
-                    value={formatDateForInput(localFilters.dateFrom)}
-                    onChange={(e) => handleDateChange('dateFrom', e.target.value)}
-                    className={`w-full p-2 pl-4 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
-                    placeholder="년-월-일"
+                  <DatePicker
+                    selected={localFilters.dateFrom}
+                    onChange={(date) => handleDateChange('dateFrom', date)}
+                    placeholderText="년-월-일"
+                    dateFormat="yyyy-MM-dd"
+                    className={`w-full p-2 pl-4 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    popperPlacement="bottom-start"
+                    showIcon={false}
+                    onFocus={(e) => e.target.click()}
                   />
                   <CalendarDays className="w-5 h-5 text-gray-500 absolute right-3 top-2.5 pointer-events-none" />
                 </div>
@@ -399,14 +403,16 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                   종료 날짜 <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
-                    id="date-to"
-                    type="date"
-                    value={formatDateForInput(localFilters.dateTo)}
-                    onChange={(e) => handleDateChange('dateTo', e.target.value)}
-                    max={getTodayDateString()}
-                    className={`w-full p-2 pl-4 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer ${hasDateRangeError ? 'border-red-500' : ''}`}
-                    placeholder="년-월-일"
+                  <DatePicker
+                    selected={localFilters.dateTo}
+                    onChange={(date) => handleDateChange('dateTo', date)}
+                    placeholderText="년-월-일"
+                    dateFormat="yyyy-MM-dd"
+                    maxDate={new Date()}
+                    className={`w-full p-2 pl-4 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    popperPlacement="bottom-start"
+                    showIcon={false}
+                    onFocus={(e) => e.target.click()}
                   />
                   <CalendarDays className="w-5 h-5 text-gray-500 absolute right-3 top-2.5 pointer-events-none" />
                 </div>
