@@ -15,12 +15,18 @@ const SENTIMENT_ICONS = {
 };
 
 export default function SentimentDonutCard() {
-  const { data: stats } = useQuery({
-    queryKey: ['/api/reviews/stats'],
+  // Get all reviews to calculate accurate sentiment distribution
+  const { data: reviewsData } = useQuery({
+    queryKey: ['/api/reviews', 'all'],
+    queryFn: async () => {
+      // Fetch all reviews by requesting a large page size
+      const response = await fetch('/api/reviews?limit=10000');
+      return response.json();
+    },
     enabled: true
   });
 
-  if (!stats) {
+  if (!reviewsData?.reviews || reviewsData.reviews.length === 0) {
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm h-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">감정 분석</h3>
@@ -31,13 +37,19 @@ export default function SentimentDonutCard() {
     );
   }
 
+  // Count sentiments from actual reviews
+  const sentimentCounts = reviewsData.reviews.reduce((acc, review) => {
+    acc[review.sentiment] = (acc[review.sentiment] || 0) + 1;
+    return acc;
+  }, { '긍정': 0, '부정': 0, '중립': 0 });
+
   const chartData = [
-    { name: '긍정', value: stats.positive, color: SENTIMENT_COLORS.긍정 },
-    { name: '부정', value: stats.negative, color: SENTIMENT_COLORS.부정 },
-    { name: '중립', value: stats.neutral, color: SENTIMENT_COLORS.중립 }
+    { name: '긍정', value: sentimentCounts['긍정'], color: SENTIMENT_COLORS.긍정 },
+    { name: '부정', value: sentimentCounts['부정'], color: SENTIMENT_COLORS.부정 },
+    { name: '중립', value: sentimentCounts['중립'], color: SENTIMENT_COLORS.중립 }
   ];
 
-  const total = stats.positive + stats.negative + stats.neutral;
+  const total = sentimentCounts['긍정'] + sentimentCounts['부정'] + sentimentCounts['중립'];
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {

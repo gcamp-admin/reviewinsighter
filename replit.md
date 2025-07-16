@@ -386,6 +386,9 @@ Changelog:
 - July 16, 2025. **EXPERT-LEVEL UX ANALYSIS**: Implemented professional UX researcher methodology with GPT-4o-mini for authentic user quote extraction and specific improvement suggestions
 - July 16, 2025. **PRIORITY-BASED DISPLAY**: Modified insights display to show results in priority order (critical → major → minor) with removal of mention count "(3건)" format
 - July 16, 2025. **ENHANCED HEART CATEGORIES**: Updated system prompts with detailed HEART framework definitions including specific UX examples for each category
+- July 16, 2025. **CRITICAL DATA ACCURACY FIX**: Fixed source distribution chart data accuracy issue - charts now display actual review counts from all collected reviews (373 total) instead of limited sample data
+- July 16, 2025. **CHART VISUALIZATION IMPROVEMENTS**: Changed source distribution to horizontal bar chart for better readability with multiple sources, updated all dashboard cards to fetch complete datasets
+- July 16, 2025. **UNIFIED DATA FETCHING**: All dashboard cards (SourceDistributionCard, SentimentDonutCard, AverageRatingCard) now fetch complete review datasets to ensure accurate statistics display
 
 ## User Preferences
 

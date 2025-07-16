@@ -25,17 +25,18 @@ const CHANNEL_COLORS = {
 };
 
 export default function SourceDistributionCard() {
-  const { data: stats } = useQuery({
-    queryKey: ['/api/reviews/stats'],
-    enabled: true
-  });
-
+  // Get all reviews to calculate accurate source distribution
   const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews'],
+    queryKey: ['/api/reviews', 'all'],
+    queryFn: async () => {
+      // Fetch all reviews by requesting a large page size
+      const response = await fetch('/api/reviews?limit=10000');
+      return response.json();
+    },
     enabled: true
   });
 
-  if (!stats || !reviewsData?.reviews) {
+  if (!reviewsData?.reviews || reviewsData.reviews.length === 0) {
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm h-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">소스별 분포</h3>
@@ -46,7 +47,7 @@ export default function SourceDistributionCard() {
     );
   }
 
-  // Group reviews by source
+  // Group reviews by source - count all reviews, not just current page
   const sourceCounts = reviewsData.reviews.reduce((acc, review) => {
     acc[review.source] = (acc[review.source] || 0) + 1;
     return acc;
@@ -78,18 +79,24 @@ export default function SourceDistributionCard() {
       
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <BarChart 
+            data={chartData} 
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+            layout="horizontal"
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
-              dataKey="name" 
+              type="number"
               tick={{ fontSize: 12 }}
-              angle={-45}
-              textAnchor="end"
-              height={80}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis 
+              type="category"
+              dataKey="name" 
+              tick={{ fontSize: 11 }}
+              width={80}
+            />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="count" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="count" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

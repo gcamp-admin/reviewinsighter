@@ -17,8 +17,14 @@ const getLabel = (score: number) => {
 };
 
 export default function AverageRatingCard() {
+  // Get all reviews to calculate accurate average rating
   const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews'],
+    queryKey: ['/api/reviews', 'all'],
+    queryFn: async () => {
+      // Fetch all reviews by requesting a large page size
+      const response = await fetch('/api/reviews?limit=10000');
+      return response.json();
+    },
     enabled: true
   });
 
