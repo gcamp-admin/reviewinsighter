@@ -72,6 +72,16 @@
     background-clip: text;
   }
   
+  /* Force DatePicker to use full width */
+  .react-datepicker__input-container {
+    width: 100% !important;
+  }
+  
+  .react-datepicker__input-container input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
   .gradient-border {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 1px;

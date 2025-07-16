@@ -391,6 +391,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     placeholderText="년-월-일"
                     dateFormat="yyyy-MM-dd"
                     className={`w-full p-2 pl-4 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    style={{ width: '100%' }}
                     popperPlacement="bottom-start"
                     showIcon={false}
                     onFocus={(e) => e.target.click()}
@@ -409,6 +410,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     dateFormat="yyyy-MM-dd"
                     maxDate={new Date()}
                     className={`w-full p-2 pl-4 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
+                    style={{ width: '100%' }}
                     popperPlacement="bottom-start"
                     showIcon={false}
                     onFocus={(e) => e.target.click()}
