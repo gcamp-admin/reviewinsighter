@@ -130,6 +130,19 @@
   .animate-pulse-slow {
     animation: pulse 3s infinite;
   }
+  
+  .commento-logo {
+    filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.3)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.2));
+    transition: all 0.3s ease;
+  }
+  
+  .commento-logo:hover {
+    filter: drop-shadow(0 0 15px rgba(236, 72, 153, 0.5)) drop-shadow(0 0 25px rgba(139, 92, 246, 0.3));
+  }
+  
+  .glow-ai {
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.3), 0 0 25px rgba(139, 92, 246, 0.2);
+  }
 }
 
 /* 팝업 애니메이션 */

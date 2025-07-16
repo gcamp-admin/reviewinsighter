@@ -13,7 +13,7 @@ export default function Header() {
               <img 
                 src={logoImg} 
                 alt="commento.ai Logo" 
-                className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300"
+                className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300 commento-logo"
               />
             </div>
             <div>
@@ -48,15 +48,15 @@ export default function Header() {
             {/* 팝업 내용 */}
             <div className="text-center">
               <div className="mb-6">
-                <div className="w-20 h-20 bg-[#7CF3C4] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-gray-800 font-bold text-2xl">AI</span>
+                <div className="w-20 h-20 bg-gradient-to-br from-[#ec4899] to-[#8b5cf6] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg glow-ai">
+                  <span className="text-white font-bold text-2xl">AI</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">코멘토는 누구?</h2>
               </div>
               
               <div className="text-left space-y-4 text-sm text-gray-600">
                 <p>
-                  <strong className="text-[#7CF3C4]">코멘토(commento.ai)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
+                  <strong className="text-[#ec4899]">코멘토(commento.ai)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
                 </p>
                 <p>
                   📊 <strong>전문 분야:</strong> 앱 리뷰, 고객 피드백, 감정 분석
