@@ -1,6 +1,8 @@
 import logoImg from "/assets/commento_logo_transparent.png";
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, BarChart3, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function Header() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -23,6 +25,17 @@ export default function Header() {
             </div>
           </div>
           <div className="flex items-center space-x-6">
+            <Link to="/modern">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-purple-600 transition-colors duration-300 group"
+              >
+                <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <span className="group-hover:font-medium transition-all duration-300">모던 대시보드</span>
+              </Button>
+            </Link>
+            
             <div 
               className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-[#7CF3C4] transition-colors duration-300 cursor-pointer group"
               onClick={() => setIsPopupOpen(true)}
