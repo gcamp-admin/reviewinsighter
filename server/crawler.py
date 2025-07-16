@@ -46,7 +46,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Google Play collection for {info['google_play_id']}...")
         google_reviews = crawl_google_play(
             info["google_play_id"], 
-            count=min(review_count, 200),  # 수집량 제한으로 속도 향상
+            count=1000,  # 더 많은 리뷰를 가져와서 날짜 필터링
             start_date=start_date,
             end_date=end_date
         )
@@ -89,7 +89,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         print(f"Starting Apple Store collection for {info['apple_store_id']}...")
         apple_reviews = crawl_apple_store(
             info["apple_store_id"],
-            count=min(review_count, 50),  # 수집량 제한으로 속도 향상
+            count=100,  # 더 많은 리뷰를 가져와서 날짜 필터링
             start_date=start_date,
             end_date=end_date
         )
@@ -138,10 +138,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:2]:  # Limit to top 2 keywords for speed
+            for kw in service_keywords[:3]:  # Limit to top 3 keywords
                 print(f"Searching Naver Blog with keyword: {kw}")
                 try:
-                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//2, start_date=start_date, end_date=end_date)
+                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//3, start_date=start_date, end_date=end_date)
                     print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
                     
                     if naver_blogs:
@@ -229,10 +229,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:2]:  # Limit to 2 keywords for speed
+            for kw in service_keywords[:3]:  # Limit to 3 keywords for stability
                 print(f"Searching Naver Cafe with keyword: {kw}")
                 try:
-                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//2, start_date=start_date, end_date=end_date)
+                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3, start_date=start_date, end_date=end_date)
                     print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
                     
                     if naver_cafes:
