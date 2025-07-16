@@ -25,12 +25,18 @@ const CHANNEL_COLORS = {
 };
 
 export default function SourceDistributionCard() {
+  // Get statistics for accurate source distribution
+  const { data: stats } = useQuery({
+    queryKey: ['/api/reviews/stats'],
+    enabled: true
+  });
+
   // Get all reviews to calculate accurate source distribution
   const { data: reviewsData } = useQuery({
     queryKey: ['/api/reviews', 'all'],
     queryFn: async () => {
-      // Fetch all reviews by requesting a large page size
-      const response = await fetch('/api/reviews?limit=10000');
+      // Fetch all reviews without any filters - only specify limit and page
+      const response = await fetch('/api/reviews?limit=10000&page=1');
       return response.json();
     },
     enabled: true

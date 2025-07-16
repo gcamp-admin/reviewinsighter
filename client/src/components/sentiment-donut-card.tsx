@@ -19,8 +19,8 @@ export default function SentimentDonutCard() {
   const { data: reviewsData } = useQuery({
     queryKey: ['/api/reviews', 'all'],
     queryFn: async () => {
-      // Fetch all reviews by requesting a large page size
-      const response = await fetch('/api/reviews?limit=10000');
+      // Fetch all reviews without any filters
+      const response = await fetch('/api/reviews?limit=10000&page=1');
       return response.json();
     },
     enabled: true
