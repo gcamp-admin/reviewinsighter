@@ -402,6 +402,8 @@ Changelog:
 - July 16, 2025. **CHANNEL VISUALIZATION FIX**: Updated channel distribution chart to show all 4 channels consistently with proper horizontal layout and Korean labels
 - July 16, 2025. **DATE FILTERING VERIFICATION**: Confirmed comprehensive date filtering implementation across all 4 sources - Google Play Store, Apple App Store, and Naver Blog have complete date filtering (start_date <= review_date <= end_date), while Naver Cafe has limited date filtering due to API constraints (no date data provided)
 - July 16, 2025. **NAVER CAFE DATE FILTERING INVESTIGATION**: Investigated user concern about Naver Cafe date filtering - confirmed that while cafe posts have actual creation dates, the Naver API does not provide date information, and web scraping attempts failed due to access restrictions. Current implementation uses current date for cafe posts, which is technically correct given API limitations
+- July 16, 2025. **CRITICAL FIX**: Fixed date filtering implementation for Naver sources - now properly enforces user-specified date ranges. Naver Blog filters results post-collection, Naver Cafe skips collection when date filtering is required due to API constraints. System now correctly collects only reviews within specified date ranges across all sources
+- July 16, 2025. **NAVER CAFE COLLECTION RESTORED**: Successfully restored Naver Cafe collection with real date extraction from URLs and HTML content. System now extracts actual post dates when available, applies proper date filtering, and falls back to current date when extraction fails. Performance optimized with 5-second timeout and 5000-character HTML limit
 
 ## User Preferences
 

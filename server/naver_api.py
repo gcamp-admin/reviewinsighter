@@ -56,7 +56,7 @@ def extract_user_id_from_url(bloggerlink, link, search_type):
         print(f"Error extracting user ID: {str(e)}", file=sys.stderr)
         return None
 
-def search_naver(keyword, search_type="blog", display=10):
+def search_naver(keyword, search_type="blog", display=10, start_date=None, end_date=None):
     """
     Search Naver Blog or Cafe articles
     

@@ -141,7 +141,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             for kw in service_keywords[:3]:  # Limit to top 3 keywords
                 print(f"Searching Naver Blog with keyword: {kw}")
                 try:
-                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//3)
+                    naver_blogs = search_naver(kw, search_type="blog", display=review_count//3, start_date=start_date, end_date=end_date)
                     print(f"Found {len(naver_blogs)} blog results for keyword: {kw}")
                     
                     if naver_blogs:
@@ -163,10 +163,12 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                         print(f"  Skipping blog post: {blog_date} outside range {start_dt} to {end_dt}")
                                         continue  # Skip this review if outside date range
                             except:
-                                iso_date = "2025-01-01T00:00:00Z"
                                 # Skip if we can't parse the date and date filtering is required
                                 if start_date and end_date:
+                                    print(f"  Skipping blog post: unparseable date {post_date}")
                                     continue
+                                else:
+                                    iso_date = "2025-01-01T00:00:00Z"
                             
                             # Clean content from HTML tags
                             title = blog.get("title", "")
@@ -230,7 +232,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             for kw in service_keywords[:3]:  # Limit to 3 keywords for stability
                 print(f"Searching Naver Cafe with keyword: {kw}")
                 try:
-                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3)
+                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3, start_date=start_date, end_date=end_date)
                     print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
                     
                     if naver_cafes:
@@ -253,16 +255,31 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 print(f"  Skipping news article: {title[:50]}...")
                                 continue
                             
-                            # 네이버 카페 API 한계: 날짜 정보 미제공으로 인한 제한적 필터링
+                            # 네이버 카페 URL에서 실제 작성일 추출 시도
+                            from naver_cafe_scraper import extract_cafe_post_date
                             from datetime import datetime as dt
                             
-                            # 네이버 카페는 API에서 날짜를 제공하지 않음
-                            # 스크래핑으로 날짜 추출 시도하지만 성공률이 낮음
-                            print(f"  Processing cafe post (limited date filtering due to API constraints)")
+                            cafe_url = cafe.get("link", "")
+                            actual_date = extract_cafe_post_date(cafe_url)
                             
-                            # 현재 날짜 사용 (실제 글 작성일 아님을 명시)
-                            current_date = dt.now()
-                            iso_date = current_date.isoformat() + "Z"
+                            if actual_date:
+                                iso_date = actual_date.isoformat() + "Z"
+                                print(f"  Extracted real date: {actual_date.date()}")
+                                
+                                # 날짜 필터링 적용 (실제 날짜 사용)
+                                if start_date and end_date:
+                                    from datetime import datetime as dt_parser
+                                    start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                                    end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                                    cafe_date = actual_date.date()
+                                    if not (start_dt <= cafe_date <= end_dt):
+                                        print(f"  Skipping cafe post: {cafe_date} outside range {start_dt} to {end_dt}")
+                                        continue
+                            else:
+                                # 날짜 추출 실패 시 현재 날짜 사용
+                                current_date = dt.now()
+                                iso_date = current_date.isoformat() + "Z"
+                                print(f"  Date extraction failed, using current date")
                             
                             # Clean content from HTML tags
                             # Remove HTML tags from content

@@ -39,7 +39,7 @@ def extract_cafe_post_date(cafe_url):
         session.headers.update(headers)
         
         print(f"카페 URL 접근 시도: {cafe_url}")
-        response = session.get(cafe_url, timeout=15)
+        response = session.get(cafe_url, timeout=5)
         print(f"응답 상태: {response.status_code}")
         
         if response.status_code != 200:
@@ -81,19 +81,20 @@ def extract_cafe_post_date(cafe_url):
             r'(201[0-9])[.\-/](\d{1,2})[.\-/](\d{1,2})',
         ]
         
-        # HTML 텍스트에서 날짜 추출
-        html_text = soup.get_text()
-        print(f"HTML 텍스트 샘플: {html_text[:500]}...")
+        # HTML 텍스트에서 날짜 추출 (처음 5000자만 사용)
+        html_text = soup.get_text()[:5000]
         
         for pattern in date_patterns:
             matches = re.findall(pattern, html_text)
             if matches:
-                print(f"패턴 매치: {pattern} -> {matches}")
-                for match in matches:
+                print(f"패턴 매치: {pattern} -> {matches[:3]}")  # 처음 3개만 출력
+                for match in matches[:3]:  # 처음 3개만 시도
                     try:
                         if isinstance(match, tuple) and len(match) == 3:
                             year, month, day = match
-                            return datetime(int(year), int(month), int(day))
+                            # 최신 날짜 우선 (2020년 이후만)
+                            if int(year) >= 2020:
+                                return datetime(int(year), int(month), int(day))
                         elif '시간' in str(match):
                             # 상대적 시간 처리
                             hours = int(re.search(r'(\d+)', str(match)).group(1))
