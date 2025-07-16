@@ -320,19 +320,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 try {
                   console.log('🔄 Starting background sentiment analysis...');
                   
-                  // Filter reviews by date range for more efficient processing
+                  // Analyze ALL collected reviews for sentiment, not just filtered ones
                   let reviewsToAnalyze = storedReviews;
-                  if (startDate && endDate) {
-                    const fromDate = new Date(startDate);
-                    const toDate = new Date(endDate);
-                    
-                    reviewsToAnalyze = storedReviews.filter(review => {
-                      const reviewDate = new Date(review.createdAt);
-                      return reviewDate >= fromDate && reviewDate <= toDate;
-                    });
-                    
-                    console.log(`Filtering sentiment analysis to ${reviewsToAnalyze.length} reviews within date range (${startDate} to ${endDate})`);
-                  }
+                  console.log(`Starting sentiment analysis for ${reviewsToAnalyze.length} total reviews`);
+                  
+                  // Only analyze reviews that don't already have sentiment analysis
+                  reviewsToAnalyze = reviewsToAnalyze.filter(review => review.sentiment === "분석중");
+                  console.log(`Found ${reviewsToAnalyze.length} reviews requiring sentiment analysis`);
+                  
                   
                   if (reviewsToAnalyze.length > 0) {
                     // Extract review texts for batch processing (only for filtered reviews)
