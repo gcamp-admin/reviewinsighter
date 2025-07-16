@@ -237,6 +237,22 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                         api_success = True
                         # Convert to review format
                         for cafe in naver_cafes:
+                            # 뉴스기사 필터링 체크 (네이버 카페에서 뉴스기사 제외)
+                            title = cafe.get("title", "")
+                            description = cafe.get("description", "")
+                            text_content = (title + " " + description).lower()
+                            
+                            # 뉴스기사 제외 키워드 체크
+                            news_indicators = [
+                                "뉴스", "기사", "보도", "보도자료", "press", "뉴스기사", "언론", "미디어", 
+                                "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
+                                "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드"
+                            ]
+                            
+                            if any(indicator in text_content for indicator in news_indicators):
+                                print(f"  Skipping news article: {title[:50]}...")
+                                continue
+                            
                             # 네이버 카페 API는 날짜를 제공하지 않음 - 사용자 지정 날짜 범위 내 랜덤 날짜 할당
                             if start_date and end_date:
                                 # 시작~종료 날짜 범위 내에서 랜덤 날짜 생성
@@ -256,9 +272,6 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 continue
                             
                             # Clean content from HTML tags
-                            title = cafe.get("title", "")
-                            description = cafe.get("description", "")
-                            
                             # Remove HTML tags from content
                             clean_title = re.sub(r'<[^>]+>', '', title)
                             clean_description = re.sub(r'<[^>]+>', '', description)

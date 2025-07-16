@@ -390,6 +390,7 @@ Changelog:
 - July 16, 2025. **CHART VISUALIZATION IMPROVEMENTS**: Changed source distribution to horizontal bar chart for better readability with multiple sources, updated all dashboard cards to fetch complete datasets
 - July 16, 2025. **UNIFIED DATA FETCHING**: All dashboard cards (SourceDistributionCard, SentimentDonutCard, AverageRatingCard) now fetch complete review datasets to ensure accurate statistics display
 - July 16, 2025. **FILTER-BASED STATISTICS**: Updated all dashboard cards to use date-filtered data instead of all reviews - cards now display statistics only for the selected date range as requested by user
+- July 16, 2025. **NAVER CAFE NEWS FILTERING**: Added comprehensive news article filtering system to exclude news content from Naver cafe crawling with keyword detection for "뉴스", "기사", "보도", "언론", "미디어" etc.
 
 ## User Preferences
 

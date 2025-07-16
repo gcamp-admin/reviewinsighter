@@ -199,20 +199,29 @@ def is_likely_user_review(item, service_keywords):
     desc = strip_html(item.get("description", "")).lower()
     text = title + " " + desc
 
-    # 1. 키워드 포함 문장
+    # 1. 뉴스기사 제외 (네이버 카페 크롤링 시 뉴스기사 필터링)
+    news_indicators = [
+        "뉴스", "기사", "보도", "보도자료", "press", "뉴스기사", "언론", "미디어", 
+        "기자", "취재", "신문", "방송", "뉴스룸", "보도국", "편집부", "news",
+        "관련 기사", "속보", "단독", "특보", "일보", "타임즈", "헤럴드"
+    ]
+    if any(indicator in text for indicator in news_indicators):
+        return False
+
+    # 2. 키워드 포함 문장
     review_signals = ["후기", "리뷰", "사용기", "써봤어요", "추천", "단점", "장점", "불편", "좋았던 점"]
     if not any(kw in text for kw in review_signals):
         return False
 
-    # 2. 기사/브랜드 중심 키워드 반복 → 제외
+    # 3. 기사/브랜드 중심 키워드 반복 → 제외
     if text.count("press") > 0 or text.count("보도자료") > 0:
         return False
 
-    # 3. 길이 제한 (너무 짧으면 제외)
+    # 4. 길이 제한 (너무 짧으면 제외)
     if len(text) < 30:
         return False
 
-    # 4. 서비스 키워드가 포함된 고객 언어로 쓰였는지 확인 (보완)
+    # 5. 서비스 키워드가 포함된 고객 언어로 쓰였는지 확인 (보완)
     if not any(sk.lower() in text for sk in service_keywords):
         return False
 
