@@ -257,9 +257,33 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                             
                             # 네이버 카페 날짜 필터링 적용
                             if start_date and end_date:
-                                # 날짜 필터링이 활성화된 경우 수집 건너뛰기
-                                # 네이버 카페 API는 날짜 정보를 제공하지 않음
-                                print(f"  Skipping cafe post - date filtering active but no date info from API")
+                                # HTTP 기반 날짜 필터링 시도
+                                try:
+                                    from naver_cafe_date_extractor import filter_naver_cafe_by_date
+                                    from datetime import datetime as dt_parser
+                                    
+                                    # ISO 날짜를 date 객체로 변환
+                                    start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).date()
+                                    end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).date()
+                                    
+                                    print(f"  Attempting HTTP-based date filtering for cafe posts")
+                                    
+                                    # 현재 키워드의 카페 결과를 날짜로 필터링
+                                    filtered_results = filter_naver_cafe_by_date(
+                                        naver_cafes, 
+                                        start_dt, 
+                                        end_dt, 
+                                        max_results=review_count//3
+                                    )
+                                    
+                                    cafe_results.extend(filtered_results)
+                                    print(f"  HTTP date filtering successful: {len(filtered_results)} results")
+                                    
+                                except Exception as e:
+                                    print(f"  HTTP date filtering error: {e}")
+                                    print(f"  Skipping cafe collection - date filtering failed")
+                                
+                                # 날짜 필터링 결과 처리 완료, 다음 루프로
                                 continue
                             else:
                                 # 날짜 필터링 없는 경우만 수집
