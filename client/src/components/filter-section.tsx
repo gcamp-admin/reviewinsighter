@@ -479,7 +479,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           </div>
 
           {/* Error Messages */}
-          <div className="space-y-1">
+          <div className="space-y-1 text-center">
             {!localFilters.service && (
               <p className="text-xs text-red-500">
                 서비스를 먼저 선택해주세요
