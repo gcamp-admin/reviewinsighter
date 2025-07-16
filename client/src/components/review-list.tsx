@@ -556,23 +556,44 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             )}
             
             {/* 현재 페이지 근처 */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const startPage = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
-              const page = startPage + i;
-              if (page > totalPages) return null;
+            {(() => {
+              const pagesToShow = [];
+              let startPage, endPage;
               
-              return (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onPageChange(page)}
-                  className={currentPage === page ? "bg-primary hover:bg-primary/90 h-8" : "hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"}
-                >
-                  {page}
-                </Button>
-              );
-            })}
+              if (totalPages <= 7) {
+                // 전체 페이지가 7개 이하면 모두 표시
+                startPage = 1;
+                endPage = totalPages;
+              } else {
+                // 현재 페이지 기준으로 앞뒤 2개씩 표시
+                if (currentPage <= 4) {
+                  startPage = 1;
+                  endPage = 5;
+                } else if (currentPage >= totalPages - 3) {
+                  startPage = totalPages - 4;
+                  endPage = totalPages;
+                } else {
+                  startPage = currentPage - 2;
+                  endPage = currentPage + 2;
+                }
+              }
+              
+              for (let i = startPage; i <= endPage; i++) {
+                pagesToShow.push(
+                  <Button
+                    key={i}
+                    variant={currentPage === i ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onPageChange(i)}
+                    className={currentPage === i ? "bg-primary hover:bg-primary/90 h-8" : "hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"}
+                  >
+                    {i}
+                  </Button>
+                );
+              }
+              
+              return pagesToShow;
+            })()}
             
             {/* 마지막 페이지 */}
             {currentPage < totalPages - 2 && (
