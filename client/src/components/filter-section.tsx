@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play, Calendar } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle, Play, Calendar, Check } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -348,19 +348,24 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 const isActive = localFilters.source.includes(channel.id);
                 const IconComponent = channel.icon;
                 return (
-                  <button
+                  <div
                     key={channel.id}
                     onClick={() => handleSourceChange(channel.id, !isActive)}
-                    className={`flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-200 border-2 relative hover:scale-[1.02] hover:shadow-md
-                      ${isActive ? "border-indigo-500 bg-gray-50" : "border-gray-200 bg-white"}
-                      hover:border-indigo-300`}
+                    className={`relative w-full p-4 rounded-xl border text-center cursor-pointer transition 
+                      ${isActive ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white"} 
+                      hover:shadow-md`}
                   >
-                    <IconComponent className={`w-6 h-6 mb-3 ${isActive ? "text-indigo-500" : "text-gray-700"} hover:text-indigo-500 transition-colors`} />
-                    <span className="text-sm font-medium text-gray-800">{channel.name}</span>
+                    <div className="text-gray-700 flex flex-col items-center justify-center space-y-2">
+                      <IconComponent className="w-6 h-6" />
+                      <span className="text-sm">{channel.name}</span>
+                    </div>
+
                     {isActive && (
-                      <CheckCircle className="absolute top-2 right-2 w-5 h-5 text-indigo-500" fill="currentColor" />
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-indigo-500 rounded-full z-10 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
