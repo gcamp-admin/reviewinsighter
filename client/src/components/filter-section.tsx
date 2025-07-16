@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle } from "lucide-react";
+import { Filter, Search, Loader2, Smartphone, Apple, Brain, Globe, MessageCircle, Grid3X3, PenLine, Coffee, CheckCircle } from "lucide-react";
 import { FaGooglePlay, FaApple, FaPenNib, FaMugHot } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -335,29 +335,30 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             </Select>
           </div>
 
-          {/* Row 2: Channel Selection (Cards) */}
+          {/* Row 2: Channel Selection (Modern Cards) */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">리뷰 수집 채널을 선택하세요 <span className="text-red-500">*</span></Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { id: "google_play", name: "구글플레이", icon: "📱", color: "bg-green-100" },
-                { id: "app_store", name: "애플앱스토어", icon: "🍎", color: "bg-blue-100" },
-                { id: "naver_blog", name: "네이버블로그", icon: "✍️", color: "bg-yellow-100" },
-                { id: "naver_cafe", name: "네이버카페", icon: "☕", color: "bg-pink-100" },
+                { id: "google_play", name: "구글플레이", icon: Grid3X3 },
+                { id: "app_store", name: "애플앱스토어", icon: Apple },
+                { id: "naver_blog", name: "네이버블로그", icon: PenLine },
+                { id: "naver_cafe", name: "네이버카페", icon: Coffee },
               ].map((channel) => {
                 const isActive = localFilters.source.includes(channel.id);
+                const IconComponent = channel.icon;
                 return (
                   <button
                     key={channel.id}
                     onClick={() => handleSourceChange(channel.id, !isActive)}
-                    className={`flex flex-col items-center justify-center p-4 rounded-xl transition border-2 relative hover:shadow-md
-                      ${isActive ? "border-purple-500" : "border-transparent"}
-                      ${channel.color}`}
+                    className={`flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-200 border-2 relative hover:scale-[1.02] hover:shadow-md
+                      ${isActive ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white"}
+                      hover:border-indigo-300`}
                   >
-                    <span className="text-3xl">{channel.icon}</span>
-                    <p className="mt-2 text-sm text-gray-800">{channel.name}</p>
+                    <IconComponent className={`w-8 h-8 mb-3 ${isActive ? "text-indigo-600" : "text-gray-600"}`} />
+                    <span className="text-sm font-medium text-gray-800">{channel.name}</span>
                     {isActive && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-purple-500 text-white rounded-full text-xs flex items-center justify-center">✓</div>
+                      <CheckCircle className="absolute top-2 right-2 w-5 h-5 text-indigo-500" fill="currentColor" />
                     )}
                   </button>
                 );
