@@ -24,7 +24,7 @@ export default function Header() {
           </div>
           <div className="flex items-center space-x-6">
             <div 
-              className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-[#7CF3C4] transition-colors duration-300 cursor-pointer group"
+              className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-purple-500 transition-colors duration-300 cursor-pointer group"
               onClick={() => setIsPopupOpen(true)}
             >
               <span className="group-hover:font-medium transition-all duration-300">코멘토는 누구?</span>
@@ -48,15 +48,15 @@ export default function Header() {
             {/* 팝업 내용 */}
             <div className="text-center">
               <div className="mb-6">
-                <div className="w-20 h-20 bg-[#7CF3C4] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-gray-800 font-bold text-2xl">AI</span>
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)' }}>
+                  <span className="text-white font-bold text-2xl">AI</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">코멘토는 누구?</h2>
               </div>
               
               <div className="text-left space-y-4 text-sm text-gray-600">
                 <p>
-                  <strong className="text-[#7CF3C4]">코멘토(commento.ai)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
+                  <strong style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>코멘토(commento.ai)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
                 </p>
                 <p>
                   📊 <strong>전문 분야:</strong> 앱 리뷰, 고객 피드백, 감정 분석
@@ -67,7 +67,7 @@ export default function Header() {
                 <p>
                   💡 <strong>특징:</strong> HEART 프레임워크 기반 심층 분석 및 키워드 추출
                 </p>
-                <p className="text-center text-[#7CF3C4] font-medium pt-4 border-t">
+                <p className="text-center font-medium pt-4 border-t" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   "고객은 이미 말했습니다.<br/>이제는 당신이 들을 차례입니다."
                 </p>
                 
@@ -75,7 +75,7 @@ export default function Header() {
                   <p className="text-xs text-gray-500 leading-relaxed">
                     코멘토 관련 문의사항이 있으실 경우, 아래 담당자에게 연락주시기 바랍니다.<br/>
                     <strong className="text-gray-700">Innovation CoE 최아진</strong> | 
-                    <a href="mailto:ahjinchoe@lguplus.co.kr" className="text-[#7CF3C4] hover:underline ml-1">
+                    <a href="mailto:ahjinchoe@lguplus.co.kr" className="hover:underline ml-1" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                       ahjinchoe@lguplus.co.kr
                     </a>
                   </p>
