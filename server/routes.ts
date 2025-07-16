@@ -486,19 +486,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // For HEART analysis, use GPT-based analysis
             if (analysisType === 'heart') {
               try {
-                const { generateSimpleHeartInsights } = await import('./simple_heart_analysis');
-                const gptInsights = await generateSimpleHeartInsights(reviewsForAnalysis);
+                const { analyzeHeartFrameworkExpert } = await import('./heart_analysis_expert');
+                const gptInsights = await analyzeHeartFrameworkExpert(reviewsForAnalysis);
                 
                 for (const insight of gptInsights) {
                   try {
                     await storage.createInsight({
                       title: insight.title,
-                      description: `**HEART 항목**: ${insight.category}\n**문제 요약**: ${insight.problem_summary}\n**UX 개선 제안**: ${insight.ux_suggestions}\n**우선순위**: ${insight.priority.toUpperCase()}`,
+                      description: insight.problem_summary,
                       priority: insight.priority,
                       mentionCount: insight.mention_count,
                       trend: insight.trend,
                       category: insight.category,
                       serviceId: serviceId,
+                      problem_summary: insight.problem_summary,
+                      ux_suggestions: insight.ux_suggestions,
                     });
                     insightsStored++;
                   } catch (err) {

@@ -70,31 +70,11 @@ export default function Dashboard() {
         
         {hasCollectedReviews && activeAnalysisSection && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 space-y-4">
-            {activeAnalysisSection === 'wordcloud' && (
-              <KeywordNetworkPortfolio 
-                serviceId={filters.service?.id || "익시오"}
-                dateFrom={filters.dateFrom?.toISOString()}
-                dateTo={filters.dateTo?.toISOString()}
-              />
-            )}
-            {activeAnalysisSection === 'heart' && (
+            {activeAnalysisSection === 'comprehensive' && (
               <WordCloudAndInsights 
                 filters={filters}
-                activeSection={activeAnalysisSection}
+                activeSection={'comprehensive'}
               />
-            )}
-            {activeAnalysisSection === 'comprehensive' && (
-              <>
-                <KeywordNetworkPortfolio 
-                  serviceId={filters.service?.id || "익시오"}
-                  dateFrom={filters.dateFrom?.toISOString()}
-                  dateTo={filters.dateTo?.toISOString()}
-                />
-                <WordCloudAndInsights 
-                  filters={filters}
-                  activeSection={'heart'}
-                />
-              </>
             )}
           </div>
         )}
