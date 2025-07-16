@@ -42,7 +42,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const [sortOrder, setSortOrder] = useState("newest");
   const [sentimentFilter, setSentimentFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
-  const limit = 10;
+  const limit = 5;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
     queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo, sentimentFilter, sourceFilter],
@@ -103,6 +103,9 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     return null;
   }
 
+  // Check if there are any reviews with "분석중" status
+  const hasAnalyzingReviews = data?.reviews?.some(review => review.sentiment === "분석중") || false;
+  
   // Filter reviews locally based on sentiment
   const filteredReviews = data?.reviews?.filter(review => {
     if (sentimentFilter === "all") return true;
