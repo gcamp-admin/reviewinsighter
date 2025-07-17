@@ -97,21 +97,36 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     const maxFrequency = Math.max(...words.map(w => w.frequency));
     const minFrequency = Math.min(...words.map(w => w.frequency));
     
-    // 자유 배치를 위한 랜덤 위치 생성
-    const getRandomPosition = (index: number) => {
-      const positions = [
-        { top: '10%', left: '5%' },
-        { top: '25%', left: '60%' },
-        { top: '15%', left: '30%' },
-        { top: '40%', left: '20%' },
-        { top: '50%', left: '70%' },
-        { top: '30%', left: '80%' },
-        { top: '65%', left: '15%' },
-        { top: '70%', left: '50%' },
-        { top: '45%', left: '45%' },
-        { top: '80%', left: '75%' }
-      ];
-      return positions[index % positions.length];
+    // 빈도수에 따른 위치 배치 (중앙 → 방사형)
+    const getPositionByFrequency = (word: any, index: number) => {
+      const frequencyRatio = (word.frequency - minFrequency) / (maxFrequency - minFrequency);
+      
+      if (frequencyRatio > 0.7) {
+        // 높은 빈도: 중앙 근처
+        return { top: '45%', left: '50%' };
+      } else if (frequencyRatio > 0.4) {
+        // 중간 빈도: 중앙 주변
+        const positions = [
+          { top: '35%', left: '35%' },
+          { top: '35%', left: '65%' },
+          { top: '55%', left: '35%' },
+          { top: '55%', left: '65%' }
+        ];
+        return positions[index % positions.length];
+      } else {
+        // 낮은 빈도: 방사형으로 모서리 근처
+        const positions = [
+          { top: '15%', left: '15%' },
+          { top: '15%', left: '85%' },
+          { top: '85%', left: '15%' },
+          { top: '85%', left: '85%' },
+          { top: '15%', left: '50%' },
+          { top: '85%', left: '50%' },
+          { top: '50%', left: '15%' },
+          { top: '50%', left: '85%' }
+        ];
+        return positions[index % positions.length];
+      }
     };
     
     return (
@@ -123,34 +138,47 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="relative min-h-[300px] overflow-hidden">
+          <div className="relative min-h-[400px] overflow-hidden px-4 py-6">
             {words.slice(0, 10).map((word, index) => {
-              // 빈도수에 따른 글씨 크기 계산 (16px ~ 40px)
+              // 빈도수에 따른 글씨 크기 계산 (12px ~ 48px로 차이 증가)
               const fontSize = minFrequency === maxFrequency 
-                ? 28 // 모든 빈도가 같으면 중간 크기
-                : 16 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 24;
+                ? 24 // 모든 빈도가 같으면 중간 크기
+                : 12 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 36;
               
-              const position = getRandomPosition(index);
+              const position = getPositionByFrequency(word, index);
               const color = isPositive 
                 ? ['#2ECC71', '#27AE60', '#58D68D', '#48C9B0'][index % 4] // 초록색 계열
                 : ['#E74C3C', '#C0392B', '#EC7063', '#F1948A'][index % 4]; // 빨간색 계열
               
               return (
-                <span
+                <div
                   key={index}
-                  className="absolute font-medium transition-all duration-300 hover:scale-110 cursor-pointer select-none"
+                  className="absolute group transition-all duration-300 hover:scale-110 cursor-pointer select-none"
                   style={{ 
-                    fontSize: `${fontSize}px`,
-                    color: color,
                     top: position.top,
                     left: position.left,
                     transform: 'translate(-50%, -50%)',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    fontWeight: word.frequency > maxFrequency * 0.7 ? 'bold' : 'normal'
+                    maxWidth: '80%'
                   }}
                 >
-                  {word.word}
-                </span>
+                  <span
+                    className="font-medium"
+                    style={{ 
+                      fontSize: `${fontSize}px`,
+                      color: color,
+                      textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      fontWeight: word.frequency > maxFrequency * 0.7 ? 'bold' : 'normal'
+                    }}
+                  >
+                    {word.word}
+                  </span>
+                  
+                  {/* 마우스 오버 시 빈도 표시 말풍선 */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    {word.frequency}번 언급
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                  </div>
+                </div>
               );
             })}
           </div>
