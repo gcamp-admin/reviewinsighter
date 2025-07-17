@@ -97,37 +97,88 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     const maxFrequency = Math.max(...words.map(w => w.frequency));
     const minFrequency = Math.min(...words.map(w => w.frequency));
     
-    // 빈도수에 따른 위치 배치 (중앙 → 방사형)
-    const getPositionByFrequency = (word: any, index: number) => {
-      const frequencyRatio = (word.frequency - minFrequency) / (maxFrequency - minFrequency);
-      
-      if (frequencyRatio > 0.7) {
-        // 높은 빈도: 중앙 근처
-        return { top: '45%', left: '50%' };
-      } else if (frequencyRatio > 0.4) {
-        // 중간 빈도: 중앙 주변
-        const positions = [
-          { top: '35%', left: '35%' },
-          { top: '35%', left: '65%' },
-          { top: '55%', left: '35%' },
-          { top: '55%', left: '65%' }
-        ];
-        return positions[index % positions.length];
-      } else {
-        // 낮은 빈도: 방사형으로 모서리 근처
-        const positions = [
-          { top: '15%', left: '15%' },
-          { top: '15%', left: '85%' },
-          { top: '85%', left: '15%' },
-          { top: '85%', left: '85%' },
-          { top: '15%', left: '50%' },
-          { top: '85%', left: '50%' },
-          { top: '50%', left: '15%' },
-          { top: '50%', left: '85%' }
-        ];
-        return positions[index % positions.length];
-      }
+    // 빈도수 기준으로 정렬 (높은 순)
+    const sortedWords = [...words].sort((a, b) => b.frequency - a.frequency);
+    
+    // 충돌 감지 함수
+    const checkCollision = (pos1: any, pos2: any, size1: number, size2: number) => {
+      const padding = 20; // 최소 간격
+      const distance = Math.sqrt(
+        Math.pow(pos1.left - pos2.left, 2) + Math.pow(pos1.top - pos2.top, 2)
+      );
+      const minDistance = (size1 + size2) / 2 + padding;
+      return distance < minDistance;
     };
+    
+    // 위치 계산 및 충돌 회피
+    const calculatePositions = () => {
+      const positions: any[] = [];
+      const containerWidth = 100; // 퍼센트 기준
+      const containerHeight = 100;
+      
+      sortedWords.slice(0, 10).forEach((word, index) => {
+        const fontSize = minFrequency === maxFrequency 
+          ? 24 
+          : 12 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 36;
+        
+        const frequencyRatio = (word.frequency - minFrequency) / (maxFrequency - minFrequency);
+        
+        let position;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        do {
+          if (frequencyRatio > 0.7) {
+            // 높은 빈도: 중앙 근처
+            position = {
+              top: 45 + (Math.random() - 0.5) * 20,
+              left: 50 + (Math.random() - 0.5) * 20
+            };
+          } else if (frequencyRatio > 0.4) {
+            // 중간 빈도: 중앙 주변
+            const angle = (index * 45 + Math.random() * 30) * Math.PI / 180;
+            const radius = 25 + Math.random() * 15;
+            position = {
+              top: 50 + radius * Math.sin(angle),
+              left: 50 + radius * Math.cos(angle)
+            };
+          } else {
+            // 낮은 빈도: 방사형으로 모서리 근처
+            const angle = (index * 40 + Math.random() * 30) * Math.PI / 180;
+            const radius = 35 + Math.random() * 20;
+            position = {
+              top: 50 + radius * Math.sin(angle),
+              left: 50 + radius * Math.cos(angle)
+            };
+          }
+          
+          // 경계 체크
+          position.top = Math.max(15, Math.min(85, position.top));
+          position.left = Math.max(15, Math.min(85, position.left));
+          
+          // 충돌 체크
+          const hasCollision = positions.some(pos => 
+            checkCollision(position, pos.position, fontSize, pos.fontSize)
+          );
+          
+          if (!hasCollision) {
+            positions.push({ word, position, fontSize, index });
+            break;
+          }
+          
+          attempts++;
+        } while (attempts < maxAttempts);
+        
+        // 최대 시도 후에도 충돌이 있으면 강제 배치
+        if (attempts >= maxAttempts) {
+          positions.push({ word, position, fontSize, index });
+        }
+      });
+      
+      return positions;
+    };
+    
+    const wordPositions = calculatePositions();
     
     return (
       <Card className="glassmorphism-card glow-indigo-hover card-hover">
@@ -139,13 +190,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         </CardHeader>
         <CardContent>
           <div className="relative min-h-[400px] overflow-hidden px-4 py-6">
-            {words.slice(0, 10).map((word, index) => {
-              // 빈도수에 따른 글씨 크기 계산 (12px ~ 48px로 차이 증가)
-              const fontSize = minFrequency === maxFrequency 
-                ? 24 // 모든 빈도가 같으면 중간 크기
-                : 12 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 36;
-              
-              const position = getPositionByFrequency(word, index);
+            {wordPositions.map(({ word, position, fontSize, index }) => {
               const color = isPositive 
                 ? ['#2ECC71', '#27AE60', '#58D68D', '#48C9B0'][index % 4] // 초록색 계열
                 : ['#E74C3C', '#C0392B', '#EC7063', '#F1948A'][index % 4]; // 빨간색 계열
@@ -155,10 +200,10 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                   key={index}
                   className="absolute group transition-all duration-300 hover:scale-110 cursor-pointer select-none"
                   style={{ 
-                    top: position.top,
-                    left: position.left,
+                    top: `${position.top}%`,
+                    left: `${position.left}%`,
                     transform: 'translate(-50%, -50%)',
-                    maxWidth: '80%'
+                    zIndex: 10 - index // 빈도 높은 순으로 위에 표시
                   }}
                 >
                   <span
@@ -167,14 +212,15 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                       fontSize: `${fontSize}px`,
                       color: color,
                       textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      fontWeight: word.frequency > maxFrequency * 0.7 ? 'bold' : 'normal'
+                      fontWeight: word.frequency > maxFrequency * 0.7 ? 'bold' : 'normal',
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     {word.word}
                   </span>
                   
                   {/* 마우스 오버 시 빈도 표시 말풍선 */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
                     {word.frequency}번 언급
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
                   </div>
