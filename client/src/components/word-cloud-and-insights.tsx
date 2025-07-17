@@ -91,8 +91,28 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     enabled: !!filters?.service?.id,
   });
 
-  const renderWordCloud = (words: any[], title: string, colorClass: string) => {
+  const renderWordCloud = (words: any[], title: string, isPositive: boolean) => {
+    if (words.length === 0) return null;
+    
     const maxFrequency = Math.max(...words.map(w => w.frequency));
+    const minFrequency = Math.min(...words.map(w => w.frequency));
+    
+    // 자유 배치를 위한 랜덤 위치 생성
+    const getRandomPosition = (index: number) => {
+      const positions = [
+        { top: '10%', left: '5%' },
+        { top: '25%', left: '60%' },
+        { top: '15%', left: '30%' },
+        { top: '40%', left: '20%' },
+        { top: '50%', left: '70%' },
+        { top: '30%', left: '80%' },
+        { top: '65%', left: '15%' },
+        { top: '70%', left: '50%' },
+        { top: '45%', left: '45%' },
+        { top: '80%', left: '75%' }
+      ];
+      return positions[index % positions.length];
+    };
     
     return (
       <Card className="glassmorphism-card glow-indigo-hover card-hover">
@@ -103,19 +123,33 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2 min-h-[100px]">
+          <div className="relative min-h-[300px] overflow-hidden">
             {words.slice(0, 10).map((word, index) => {
-              const fontSize = Math.max(12, Math.min(24, (word.frequency / maxFrequency) * 20 + 12));
+              // 빈도수에 따른 글씨 크기 계산 (16px ~ 40px)
+              const fontSize = minFrequency === maxFrequency 
+                ? 28 // 모든 빈도가 같으면 중간 크기
+                : 16 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 24;
+              
+              const position = getRandomPosition(index);
+              const color = isPositive 
+                ? ['#2ECC71', '#27AE60', '#58D68D', '#48C9B0'][index % 4] // 초록색 계열
+                : ['#E74C3C', '#C0392B', '#EC7063', '#F1948A'][index % 4]; // 빨간색 계열
+              
               return (
                 <span
                   key={index}
-                  className={`inline-block px-3 py-1 rounded-full text-white font-medium ${colorClass} transition-all duration-300 hover:scale-110 shadow-lg`}
+                  className="absolute font-medium transition-all duration-300 hover:scale-110 cursor-pointer select-none"
                   style={{ 
                     fontSize: `${fontSize}px`,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    color: color,
+                    top: position.top,
+                    left: position.left,
+                    transform: 'translate(-50%, -50%)',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    fontWeight: word.frequency > maxFrequency * 0.7 ? 'bold' : 'normal'
                   }}
                 >
-                  {word.word} ({word.frequency})
+                  {word.word}
                 </span>
               );
             })}
@@ -178,8 +212,8 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {renderWordCloud(positiveWords, "긍정 키워드", "bg-green-500")}
-          {renderWordCloud(negativeWords, "부정 키워드", "bg-red-500")}
+          {renderWordCloud(positiveWords, "긍정 키워드", true)}
+          {renderWordCloud(negativeWords, "부정 키워드", false)}
         </div>
       </div>
 
