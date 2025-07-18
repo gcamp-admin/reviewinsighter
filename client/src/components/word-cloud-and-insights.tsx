@@ -100,14 +100,33 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     // 빈도수 기준으로 정렬 (높은 순)
     const sortedWords = [...words].sort((a, b) => b.frequency - a.frequency);
     
-    // 충돌 감지 함수
-    const checkCollision = (pos1: any, pos2: any, size1: number, size2: number) => {
-      const padding = 20; // 최소 간격
-      const distance = Math.sqrt(
-        Math.pow(pos1.left - pos2.left, 2) + Math.pow(pos1.top - pos2.top, 2)
-      );
-      const minDistance = (size1 + size2) / 2 + padding;
-      return distance < minDistance;
+    // 충돌 감지 함수 (글자 길이와 크기 고려)
+    const checkCollision = (pos1: any, pos2: any, word1: string, word2: string, size1: number, size2: number) => {
+      const padding = 30; // 최소 간격 증가
+      
+      // 글자 길이를 고려한 박스 크기 계산
+      const char1Width = word1.length * (size1 * 0.6); // 한글 평균 너비
+      const char2Width = word2.length * (size2 * 0.6);
+      
+      const box1 = {
+        left: pos1.left - char1Width / 2,
+        right: pos1.left + char1Width / 2,
+        top: pos1.top - size1 / 2,
+        bottom: pos1.top + size1 / 2
+      };
+      
+      const box2 = {
+        left: pos2.left - char2Width / 2,
+        right: pos2.left + char2Width / 2,
+        top: pos2.top - size2 / 2,
+        bottom: pos2.top + size2 / 2
+      };
+      
+      // 박스 충돌 검사
+      const horizontalOverlap = box1.right + padding > box2.left && box2.right + padding > box1.left;
+      const verticalOverlap = box1.bottom + padding > box2.top && box2.bottom + padding > box1.top;
+      
+      return horizontalOverlap && verticalOverlap;
     };
     
     // 위치 계산 및 충돌 회피
@@ -158,7 +177,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           
           // 충돌 체크
           const hasCollision = positions.some(pos => 
-            checkCollision(position, pos.position, fontSize, pos.fontSize)
+            checkCollision(position, pos.position, word.word, pos.word.word, fontSize, pos.fontSize)
           );
           
           if (!hasCollision) {
@@ -202,8 +221,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                   style={{ 
                     top: `${position.top}%`,
                     left: `${position.left}%`,
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: 10 - index // 빈도 높은 순으로 위에 표시
+                    transform: 'translate(-50%, -50%)'
                   }}
                 >
                   <span
@@ -220,7 +238,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                   </span>
                   
                   {/* 마우스 오버 시 빈도 표시 말풍선 */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                     {word.frequency}번 언급
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
                   </div>
