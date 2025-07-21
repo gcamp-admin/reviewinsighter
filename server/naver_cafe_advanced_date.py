@@ -209,7 +209,7 @@ def extract_cafe_date_advanced(cafe_info, search_keyword=""):
 
 def filter_cafe_by_advanced_date(cafe_results, start_date, end_date, search_keyword="", max_results=50):
     """
-    고급 날짜 추출을 통한 네이버 카페 필터링
+    간단한 날짜 추출을 통한 네이버 카페 필터링
     """
     filtered_results = []
     processed_count = 0
@@ -221,8 +221,9 @@ def filter_cafe_by_advanced_date(cafe_results, start_date, end_date, search_keyw
         processed_count += 1
         
         try:
-            # 고급 날짜 추출
-            extracted_date = extract_cafe_date_advanced(cafe, search_keyword)
+            # 새로운 간단한 날짜 추출 시스템 사용
+            from naver_cafe_real_date_simple import get_cafe_date_with_fallback
+            extracted_date = get_cafe_date_with_fallback(cafe)
             
             if extracted_date and start_date <= extracted_date <= end_date:
                 # 뉴스기사 필터링
@@ -260,7 +261,7 @@ def filter_cafe_by_advanced_date(cafe_results, start_date, end_date, search_keyw
                     "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
                     "rating": 5,
                     "content": f"{clean_title} {clean_description}".strip(),
-                    "createdAt": extracted_date.isoformat() + "Z",
+                    "createdAt": extracted_date.strftime('%Y-%m-%dT00:00:00.000Z'),
                     "link": cafe.get("link", ""),
                     "platform": "naver_cafe"
                 }
