@@ -105,32 +105,33 @@ const ChannelBarChart = ({ data }: Props) => {
   }, [data]);
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">수집 채널별 분포</h3>
-      <div className="relative h-64">
-        <canvas ref={canvasRef}></canvas>
+    <div className="w-full h-full flex flex-col">
+      <div className="flex-1 min-h-0">
+        <div className="relative h-48">
+          <canvas ref={canvasRef}></canvas>
+        </div>
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-2 flex-shrink-0">
         {data.map((item, i) => (
           <div key={i} className="flex items-center justify-between text-sm">
             <div className="flex items-center">
               <div 
-                className="w-3 h-3 rounded-full mr-2" 
+                className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
                 style={{ 
-                  background: item.label === '구글 앱스토어' ? 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)' :
-                             item.label === '애플 앱스토어' ? 'linear-gradient(135deg, #f3e8ff 0%, #d946ef 100%)' :
-                             item.label === '네이버 블로그' ? 'linear-gradient(135deg, #e9d5ff 0%, #a855f7 100%)' :
-                             item.label === '네이버 카페' ? 'linear-gradient(135deg, #ddd6fe 0%, #8b5cf6 100%)' : 
+                  background: item.label === '구글 앱스토어' ? 'linear-gradient(135deg, #D1FAE5 0%, #10B981 100%)' :
+                             item.label === '애플 앱스토어' ? 'linear-gradient(135deg, #E0E7FF 0%, #4F46E5 100%)' :
+                             item.label === '네이버 블로그' ? 'linear-gradient(135deg, #ECFDF5 0%, #7CF3C4 100%)' :
+                             item.label === '네이버 카페' ? 'linear-gradient(135deg, #F3F4F6 0%, #6B7280 100%)' : 
                              item.color
                 }}
               />
-              <span className="text-gray-700" style={{ fontFamily: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+              <span className="text-body text-gray-700">
                 {item.label}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="font-medium">{Math.round(item.value)}%</span>
+              <span className="text-body font-medium text-gray-900">{Math.round(item.value)}%</span>
             </div>
           </div>
         ))}
