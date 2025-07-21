@@ -44,7 +44,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const [sortOrder, setSortOrder] = useState("newest");
   const [sentimentFilter, setSentimentFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+
   const limit = 5;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
@@ -168,24 +168,57 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     }
   };
 
-  // 엑셀 다운로드 함수
-  const downloadExcel = () => {
-    console.log('Excel download started', { 
-      totalReviews: filteredReviews.length, 
-      filters, 
-      startDate: filters?.startDate, 
-      endDate: filters?.endDate 
-    });
-
-    if (!filteredReviews || filteredReviews.length === 0) {
-      console.log('No reviews to download');
-      alert('다운로드할 리뷰 데이터가 없습니다.');
-      return;
-    }
-
+  // 전체 리뷰 데이터를 가져와서 엑셀 다운로드
+  const downloadExcel = async () => {
+    console.log('Excel download started - fetching all reviews with filters');
+    
     try {
+      // 전체 리뷰 데이터 가져오기 (페이지네이션 없이)
+      const params = new URLSearchParams();
+      params.append("page", "1");
+      params.append("limit", "10000"); // 충분히 큰 수로 설정
+      
+      if (filters?.service?.id) {
+        params.append("service", filters.service.id);
+      }
+      
+      if (filters.source && filters.source.length > 0) {
+        filters.source.forEach(source => {
+          params.append("source", source);
+        });
+      }
+      
+      if (filters.dateFrom) {
+        params.append("dateFrom", filters.dateFrom.toISOString());
+      }
+      if (filters.dateTo) {
+        params.append("dateTo", filters.dateTo.toISOString());
+      }
+      
+      // 감정 필터 적용
+      if (sentimentFilter && sentimentFilter !== "all") {
+        params.append("sentiment", sentimentFilter);
+      }
+
+      const url = `/api/reviews?${params}`;
+      console.log('Fetching all reviews from:', url);
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch all reviews");
+      }
+      
+      const allData = await response.json();
+      console.log('All reviews fetched:', { total: allData.reviews.length });
+      
+      if (!allData.reviews || allData.reviews.length === 0) {
+        console.log('No reviews to download');
+        alert('다운로드할 리뷰 데이터가 없습니다.');
+        return;
+      }
+
       // 엑셀 데이터 구성
-      const excelData = filteredReviews.map((review: any) => ({
+      const excelData = allData.reviews.map((review: any) => ({
         '채널': getSourceName(review.source),
         '날짜': formatDate(review.createdAt),
         '이름/ID': review.userId,
@@ -194,7 +227,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         '감정분석': review.sentiment || '분석중'
       }));
 
-      console.log('Excel data prepared:', { rowCount: excelData.length, sampleRow: excelData[0] });
+      console.log('Excel data prepared:', { rowCount: excelData.length });
 
       // 워크북 생성
       const workbook = XLSX.utils.book_new();
@@ -213,12 +246,12 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
 
       XLSX.utils.book_append_sheet(workbook, worksheet, '리뷰데이터');
 
-      // 파일명 생성
-      const startDate = filters?.startDate ? new Date(filters.startDate).toISOString().split('T')[0] : '시작일미지정';
-      const endDate = filters?.endDate ? new Date(filters.endDate).toISOString().split('T')[0] : '종료일미지정';
+      // 파일명 생성 (날짜 정보 수정)
+      const startDate = filters?.dateFrom ? filters.dateFrom.toISOString().split('T')[0] : '시작일미지정';
+      const endDate = filters?.dateTo ? filters.dateTo.toISOString().split('T')[0] : '종료일미지정';
       const filename = `commento_${startDate}_${endDate}.xlsx`;
 
-      console.log('Downloading file:', filename);
+      console.log('Downloading file:', filename, 'with', excelData.length, 'reviews');
 
       // 파일 다운로드
       XLSX.writeFile(workbook, filename);
@@ -425,35 +458,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             </span>
           </CardTitle>
           
-          <div className="flex items-center gap-2">
-            <div className="flex items-center border rounded-lg p-1">
-              <Button
-                variant={viewMode === "cards" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("cards")}
-                className="px-3 py-1 h-8"
-              >
-                카드
-              </Button>
-              <Button
-                variant={viewMode === "table" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("table")}
-                className="px-3 py-1 h-8"
-              >
-                테이블
-              </Button>
-            </div>
-            
-            <Button
-              onClick={downloadExcel}
-              disabled={!filteredReviews || filteredReviews.length === 0}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              엑셀 다운로드
-            </Button>
-          </div>
+
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
             {/* 필터 적용 상태 표시 */}
             {(sentimentFilter !== "all" || sourceFilter !== "all") && (
@@ -562,75 +567,23 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 </Select>
               </div>
 
+              {/* 엑셀 다운로드 버튼 */}
+              <Button
+                onClick={downloadExcel}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                엑셀 다운로드
+              </Button>
+
               
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        {viewMode === "table" ? (
-          // 테이블 뷰
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">채널</TableHead>
-                  <TableHead className="w-[90px]">날짜</TableHead>
-                  <TableHead className="w-[120px]">이름/ID</TableHead>
-                  <TableHead>내용</TableHead>
-                  <TableHead className="w-[60px]">별점</TableHead>
-                  <TableHead className="w-[80px]">감정분석</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredReviews.map((review: any) => (
-                  <TableRow key={review.id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        {getSourceIcon(review.source)}
-                        <span className="text-xs">{getSourceName(review.source)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-gray-600">
-                      {formatDate(review.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {review.userId}
-                    </TableCell>
-                    <TableCell className="max-w-[300px]">
-                      <div className="text-sm text-gray-700">
-                        {review.content.length > 100 ? review.content.slice(0, 100) + '...' : review.content}
-                        {(review.source === 'naver_blog' || review.source === 'naver_cafe') && review.link && (
-                          <a 
-                            href={review.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-xs underline ml-2"
-                          >
-                            원문보기
-                          </a>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {(review.source === "google_play" || review.source === "app_store") ? (
-                        <span className="text-xs">⭐{review.rating}</span>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {getSentimentBadge(review.sentiment)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          // 카드 뷰 (기존)
-          <div className="space-y-2">
-            {filteredReviews.map((review) => (
+        <div className="space-y-2">
+          {filteredReviews.map((review) => (
             <div key={review.id} className="p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 rounded-md border border-gray-100 hover:border-blue-200 group">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2 text-sm">
@@ -670,8 +623,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
               </div>
             </div>
           ))}
-          </div>
-        )}
+        </div>
         
         {/* AI Analysis Disclaimer */}
         <div className="mt-3 mb-3 px-3 py-2 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-blue-50 rounded-md border border-gray-200">
