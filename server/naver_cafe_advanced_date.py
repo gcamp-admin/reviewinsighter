@@ -64,50 +64,91 @@ def extract_date_from_url_pattern(cafe_url):
         print(f"    URL 패턴 분석 오류: {e}")
         return None
 
-def extract_date_from_mobile_url(cafe_url):
+def extract_actual_date_from_cafe_page(cafe_url):
     """
-    모바일 네이버 카페 URL로 변환하여 날짜 추출
+    네이버 카페 실제 페이지에서 작성 날짜 추출
     """
     try:
-        # PC URL을 모바일 URL로 변환
-        if 'cafe.naver.com' in cafe_url:
-            mobile_url = cafe_url.replace('cafe.naver.com', 'm.cafe.naver.com')
+        print(f"    실제 날짜 추출 시도: {cafe_url}")
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(cafe_url, headers=headers, timeout=5)
+        if response.status_code == 200:
+            content = response.text[:10000]  # 처음 10KB만 분석
             
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1'
-            }
+            # 네이버 카페 날짜 패턴들
+            date_patterns = [
+                # JSON 데이터에서 날짜 추출
+                r'"writeDate":"([^"]+)"',
+                r'"regDate":"([^"]+)"', 
+                r'"date":"(\d{4}\.\d{1,2}\.\d{1,2})"',
+                r'"created":"(\d{4}-\d{1,2}-\d{1,2})"',
+                # HTML에서 날짜 패턴
+                r'작성일[:\s]*(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})',
+                r'등록일[:\s]*(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})',
+                r'(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\s*\d{1,2}:\d{1,2}',
+                # 다양한 형식의 날짜
+                r'(\d{4})-(\d{1,2})-(\d{1,2})',
+                r'(\d{2})\.(\d{1,2})\.(\d{1,2})',
+                # 메타 데이터에서
+                r'<meta[^>]*content="([^"]*\d{4}-\d{1,2}-\d{1,2}[^"]*)"',
+                # 시간 정보 포함
+                r'(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일',
+            ]
             
-            response = requests.get(mobile_url, headers=headers, timeout=3)
-            if response.status_code == 200:
-                # 모바일 페이지에서 날짜 패턴 검색
-                content = response.text
-                
-                # 다양한 날짜 패턴 시도
-                patterns = [
-                    r'(\d{4})\.(\d{1,2})\.(\d{1,2})',
-                    r'(\d{4})-(\d{1,2})-(\d{1,2})',
-                    r'(\d{2})\.(\d{1,2})\.(\d{1,2})',
-                ]
-                
-                for pattern in patterns:
-                    matches = re.findall(pattern, content)
-                    if matches:
-                        for match in matches:
-                            try:
+            for pattern in date_patterns:
+                matches = re.findall(pattern, content, re.IGNORECASE)
+                if matches:
+                    for match in matches:
+                        try:
+                            if isinstance(match, tuple) and len(match) >= 3:
+                                # 튜플 형태 (년, 월, 일)
                                 year = int(match[0])
-                                if year < 100:  # 2자리 연도
-                                    year = 2000 + year
-                                month = int(match[1])
+                                month = int(match[1]) 
                                 day = int(match[2])
                                 
-                                if 1 <= month <= 12 and 1 <= day <= 31 and year >= 2020:
-                                    return date(year, month, day)
-                            except ValueError:
+                                # 2자리 연도 처리
+                                if year < 100:
+                                    year = 2000 + year if year < 50 else 1900 + year
+                                    
+                            elif isinstance(match, str):
+                                # 문자열 형태에서 날짜 추출
+                                if '-' in match:
+                                    parts = match.split('-')
+                                    if len(parts) >= 3:
+                                        year = int(parts[0])
+                                        month = int(parts[1])
+                                        day = int(parts[2])
+                                elif '.' in match:
+                                    parts = match.split('.')
+                                    if len(parts) >= 3:
+                                        year = int(parts[0])
+                                        month = int(parts[1])
+                                        day = int(parts[2])
+                                else:
+                                    continue
+                            else:
                                 continue
-        
+                            
+                            # 유효성 검사
+                            if 2020 <= year <= 2025 and 1 <= month <= 12 and 1 <= day <= 31:
+                                extracted_date = date(year, month, day)
+                                print(f"    ✓ 실제 날짜 추출 성공: {extracted_date}")
+                                return extracted_date
+                                
+                        except (ValueError, IndexError) as e:
+                            continue
+            
+            print(f"    ✗ 날짜 패턴을 찾을 수 없음")
+        else:
+            print(f"    ✗ 페이지 접근 실패: {response.status_code}")
+            
         return None
     except Exception as e:
-        print(f"    모바일 URL 접근 오류: {e}")
+        print(f"    ✗ 실제 날짜 추출 오류: {e}")
         return None
 
 def estimate_date_from_cafe_context(cafe_info, search_keyword):
