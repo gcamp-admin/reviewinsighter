@@ -56,7 +56,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       });
       
       if (filters?.service?.id) {
-        params.append("serviceId", filters.service.id);
+        params.append("service", filters.service.id);
       }
       
       // 소스 필터 적용

@@ -55,8 +55,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle sentiment parameter
       const sentiment = req.query.sentiment as string;
       
-      // Handle service ID parameter
-      const serviceId = req.query.serviceId as string;
+      // Handle service ID parameter  
+      const serviceId = (req.query.serviceId || req.query.service) as string;
       
       const filters = {
         serviceId: serviceId || undefined,
@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sentiment = req.query.sentiment as string;
       
       // Handle service ID parameter
-      const serviceId = req.query.serviceId as string;
+      const serviceId = (req.query.serviceId || req.query.service) as string;
       
       const filters = {
         serviceId: serviceId || undefined,
@@ -130,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
       const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
-      const serviceId = req.query.serviceId as string | undefined;
+      const serviceId = (req.query.serviceId || req.query.service) as string | undefined;
       
       const filters = {
         serviceId: serviceId || undefined,
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
       const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
       
-      const serviceId = req.query.serviceId as string | undefined;
+      const serviceId = (req.query.serviceId || req.query.service) as string | undefined;
       
       const filters = {
         serviceId: serviceId || undefined,
