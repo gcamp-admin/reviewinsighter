@@ -3,9 +3,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 
 const SENTIMENT_COLORS = {
-  긍정: "#ec4899", // 핑크
-  부정: "#8b5cf6", // 퍼플
-  중립: "#9CA3AF"
+  긍정: "#10B981", // 브랜드 그린
+  부정: "#4F46E5", // 브랜드 인디고
+  중립: "#6B7280"  // 그레이
 };
 
 const SENTIMENT_ICONS = {
@@ -60,7 +60,7 @@ export default function SentimentDonutCard({ filters }: Props) {
   }
 
   // Count sentiments from actual reviews
-  const sentimentCounts = reviewsData.reviews.reduce((acc, review) => {
+  const sentimentCounts = reviewsData.reviews.reduce((acc: { [key: string]: number }, review: any) => {
     acc[review.sentiment] = (acc[review.sentiment] || 0) + 1;
     return acc;
   }, { '긍정': 0, '부정': 0, '중립': 0 });
@@ -73,7 +73,7 @@ export default function SentimentDonutCard({ filters }: Props) {
 
   const total = sentimentCounts['긍정'] + sentimentCounts['부정'] + sentimentCounts['중립'];
 
-  const CustomTooltip = ({ active, payload }) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const percentage = total > 0 ? ((data.value / total) * 100).toFixed(1) : 0;
@@ -88,24 +88,24 @@ export default function SentimentDonutCard({ filters }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm h-full">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">감정 분석</h3>
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
+      <h3 className="text-heading text-gray-900 mb-6">감정 분석</h3>
       
       <div className="relative h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <defs>
               <linearGradient id="positiveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#fce7f3" />
-                <stop offset="100%" stopColor="#ec4899" />
+                <stop offset="0%" stopColor="#D1FAE5" />
+                <stop offset="100%" stopColor="#10B981" />
               </linearGradient>
               <linearGradient id="negativeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ddd6fe" />
-                <stop offset="100%" stopColor="#8b5cf6" />
+                <stop offset="0%" stopColor="#E0E7FF" />
+                <stop offset="100%" stopColor="#4F46E5" />
               </linearGradient>
               <linearGradient id="neutralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f9fafb" />
-                <stop offset="100%" stopColor="#9ca3af" />
+                <stop offset="0%" stopColor="#F3F4F6" />
+                <stop offset="100%" stopColor="#6B7280" />
               </linearGradient>
             </defs>
             <Pie
@@ -128,7 +128,7 @@ export default function SentimentDonutCard({ filters }: Props) {
                 />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip active={false} payload={[]} />} />
           </PieChart>
         </ResponsiveContainer>
         
@@ -141,27 +141,27 @@ export default function SentimentDonutCard({ filters }: Props) {
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-2 flex-shrink-0">
         {chartData.map((item) => {
-          const IconComponent = SENTIMENT_ICONS[item.name];
+          const IconComponent = SENTIMENT_ICONS[item.name as keyof typeof SENTIMENT_ICONS];
           const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
           return (
             <div key={item.name} className="flex items-center justify-between text-sm">
               <div className="flex items-center">
                 <div 
-                  className="w-3 h-3 rounded-full mr-2" 
+                  className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
                   style={{ 
-                    background: item.name === '긍정' ? 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)' :
-                               item.name === '부정' ? 'linear-gradient(135deg, #ddd6fe 0%, #8b5cf6 100%)' :
-                               'linear-gradient(135deg, #f9fafb 0%, #9ca3af 100%)'
+                    background: item.name === '긍정' ? 'linear-gradient(135deg, #D1FAE5 0%, #10B981 100%)' :
+                               item.name === '부정' ? 'linear-gradient(135deg, #E0E7FF 0%, #4F46E5 100%)' :
+                               'linear-gradient(135deg, #F3F4F6 0%, #6B7280 100%)'
                   }}
                 />
                 <IconComponent className="w-4 h-4 mr-1 text-gray-600" />
-                <span className="text-gray-700">{item.name}</span>
+                <span className="text-body text-gray-700">{item.name}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="font-medium">{item.value}</span>
-                <span className="text-gray-500">({percentage}%)</span>
+                <span className="text-body font-medium text-gray-900">{item.value}</span>
+                <span className="text-body text-gray-500">({percentage}%)</span>
               </div>
             </div>
           );
