@@ -286,11 +286,25 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                     print(f"  Skipping news article: {title[:50]}...")
                                     continue
                                 
-                                # 날짜 필터링 없는 경우 현재 날짜 사용
+                                # 고급 날짜 추출 시스템 사용
                                 from datetime import datetime as dt
-                                current_date = dt.now()
-                                iso_date = current_date.isoformat() + "Z"
-                                print(f"  Using current date: {current_date.date()}")
+                                from naver_cafe_advanced_date import extract_date_from_url_pattern
+                                
+                                # URL에서 실제 날짜 추출 시도
+                                extracted_date = None
+                                cafe_link = cafe.get("link", "")
+                                if cafe_link:
+                                    extracted_date = extract_date_from_url_pattern(cafe_link)
+                                    print(f"  Extracted date from URL: {extracted_date}")
+                                
+                                # 날짜 추출에 실패한 경우 현재 날짜 사용
+                                if extracted_date:
+                                    iso_date = extracted_date.strftime('%Y-%m-%dT00:00:00.000Z')
+                                    print(f"  Using extracted date: {extracted_date}")
+                                else:
+                                    current_date = dt.now()
+                                    iso_date = current_date.isoformat() + "Z"
+                                    print(f"  Using current date: {current_date.date()}")
                                 
                                 # Clean content from HTML tags
                                 # Remove HTML tags from content
