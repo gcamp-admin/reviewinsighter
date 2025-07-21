@@ -19,10 +19,7 @@ export default function Header() {
               </div>
             </div>
             <div>
-              <h1 className="text-display font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
-                commento.ai
-              </h1>
-              <p className="text-caption text-gray-500 group-hover:text-gray-700 transition-colors duration-300 -mt-1">
+              <p className="text-caption text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
                 AI 기반 리뷰 분석 플랫폼
               </p>
             </div>
