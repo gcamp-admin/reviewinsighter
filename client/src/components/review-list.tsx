@@ -158,13 +158,13 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
 
   const getSentimentBadge = (sentiment: string) => {
     if (sentiment === "긍정") {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">긍정</Badge>;
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 font-medium">긍정</Badge>;
     } else if (sentiment === "부정") {
-      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">부정</Badge>;
+      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200 font-medium">부정</Badge>;
     } else if (sentiment === "분석중") {
-      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">분석중</Badge>;
+      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 font-medium">분석중</Badge>;
     } else {
-      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">중립</Badge>;
+      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100 border-gray-200 font-medium">중립</Badge>;
     }
   };
 
@@ -265,28 +265,28 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-white border border-gray-200/50 shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>리뷰 목록</CardTitle>
+            <CardTitle className="text-heading text-gray-900">리뷰 목록</CardTitle>
             <Skeleton className="h-10 w-32" />
           </div>
         </CardHeader>
-        <CardContent className="p-4">
-          <div className="space-y-2">
+        <CardContent className="p-6">
+          <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="p-3 border rounded-md">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
+              <div key={i} className="p-4 border rounded-lg border-gray-200/50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
                     <Skeleton className="w-6 h-6 rounded-full" />
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <Skeleton className="h-3 w-16" />
                       <Skeleton className="h-3 w-24" />
                     </div>
                   </div>
-                  <Skeleton className="h-5 w-10 rounded-full" />
+                  <Skeleton className="h-5 w-12 rounded-full" />
                 </div>
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-12 w-full" />
               </div>
             ))}
           </div>
@@ -297,9 +297,9 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
 
   if (error) {
     return (
-      <Card>
+      <Card className="bg-white border border-gray-200/50 shadow-sm">
         <CardContent className="pt-6">
-          <div className="text-center text-red-500">
+          <div className="text-center text-red-600">
             리뷰 데이터를 불러오는 중 오류가 발생했습니다.
           </div>
         </CardContent>
@@ -309,12 +309,12 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
 
   if (!data || data.reviews.length === 0) {
     return (
-      <Card>
+      <Card className="bg-white border border-gray-200/50 shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-heading text-gray-900 flex items-center gap-2">
               <span>리뷰 목록</span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-body text-gray-500">
                 {data?.total ? `총 ${data.total}개` : ""}
               </span>
             </CardTitle>
@@ -584,13 +584,13 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       <CardContent className="p-4">
         <div className="space-y-2">
           {filteredReviews.map((review) => (
-            <div key={review.id} className="p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 rounded-md border border-gray-100 hover:border-blue-200 group">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2 text-sm">
+            <div key={review.id} className="p-4 hover:bg-gradient-to-r hover:from-gray-50/70 hover:to-blue-50/70 transition-all duration-200 rounded-lg border border-gray-200/50 hover:border-blue-300/50 hover:shadow-sm group">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3 text-sm">
                   <span className="text-sm group-hover:scale-105 transform transition-transform duration-200">{getSourceIcon(review.source)}</span>
-                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors min-w-16">{getSourceName(review.source)}</span>
-                  <span className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors text-sm">{review.userId}</span>
-                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{formatDate(review.createdAt)}</span>
+                  <span className="text-caption text-gray-600 group-hover:text-gray-800 transition-colors min-w-16">{getSourceName(review.source)}</span>
+                  <span className="text-body font-medium text-gray-900 group-hover:text-blue-700 transition-colors">{review.userId}</span>
+                  <span className="text-caption text-gray-500 group-hover:text-gray-700 transition-colors">{formatDate(review.createdAt)}</span>
                   {/* Show rating for app stores only */}
                   {(review.source === "google_play" || review.source === "app_store") && (
                     <div className="flex items-center">
@@ -603,7 +603,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                   {getSentimentBadge(review.sentiment)}
                 </div>
               </div>
-              <div className="text-gray-700 text-sm leading-5 group-hover:text-gray-800 transition-colors">
+              <div className="text-body text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors">
                 <span>
                   {review.content.length > 150 ? review.content.slice(0, 150) + '...' : review.content}
                 </span>
@@ -626,15 +626,15 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
         
         {/* AI Analysis Disclaimer */}
-        <div className="mt-3 mb-3 px-3 py-2 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-blue-50 rounded-md border border-gray-200">
-          ※ 본 리뷰의 감정 분석은 HuggingFace 기반 AI 모델로 자동 처리되며, 일부 결과에는 오차가 포함될 수 있습니다.
+        <div className="mt-4 mb-3 px-4 py-3 text-caption text-gray-500 bg-gradient-to-r from-gray-50/80 to-blue-50/80 rounded-lg border border-gray-200/50">
+          ※ 본 리뷰의 감정 분석은 AI 모델로 자동 처리되며, 일부 결과에는 오차가 포함될 수 있습니다.
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t">
-          <div className="text-sm text-gray-500">
-            총 <span className="font-medium">{data.total.toLocaleString()}</span>개 중{" "}
-            <span className="font-medium">{startItem}-{endItem}</span>개 표시
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200/50">
+          <div className="text-caption text-gray-500">
+            총 <span className="font-medium text-gray-700">{data.total.toLocaleString()}</span>개 중{" "}
+            <span className="font-medium text-gray-700">{startItem}-{endItem}</span>개 표시
           </div>
           <div className="flex items-center space-x-1">
             <Button

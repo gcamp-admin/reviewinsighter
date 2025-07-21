@@ -20,23 +20,23 @@ const ChannelBarChart = ({ data }: Props) => {
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    // 그라데이션 생성
+    // 브랜드 색상 그라데이션 생성
     const gradients = data.map((item) => {
       const gradient = ctx.createLinearGradient(0, 0, 0, 400);
       
-      // 핑크-퍼플 그라데이션
+      // 브랜드 색상 그라데이션
       if (item.label === '구글 앱스토어') {
-        gradient.addColorStop(0, '#fce7f3'); // 연한 핑크
-        gradient.addColorStop(1, '#ec4899'); // 진한 핑크
+        gradient.addColorStop(0, '#D1FAE5'); // 연한 그린
+        gradient.addColorStop(1, '#10B981'); // 브랜드 그린
       } else if (item.label === '애플 앱스토어') {
-        gradient.addColorStop(0, '#f3e8ff'); // 연한 핑크-퍼플
-        gradient.addColorStop(1, '#d946ef'); // 진한 핑크-퍼플
+        gradient.addColorStop(0, '#E0E7FF'); // 연한 인디고
+        gradient.addColorStop(1, '#4F46E5'); // 브랜드 인디고
       } else if (item.label === '네이버 블로그') {
-        gradient.addColorStop(0, '#e9d5ff'); // 연한 퍼플
-        gradient.addColorStop(1, '#a855f7'); // 진한 퍼플
+        gradient.addColorStop(0, '#ECFDF5'); // 연한 메인 색상
+        gradient.addColorStop(1, '#7CF3C4'); // 브랜드 메인
       } else if (item.label === '네이버 카페') {
-        gradient.addColorStop(0, '#ddd6fe'); // 연한 진퍼플
-        gradient.addColorStop(1, '#8b5cf6'); // 진한 진퍼플
+        gradient.addColorStop(0, '#F3F4F6'); // 연한 그레이
+        gradient.addColorStop(1, '#6B7280'); // 중립 그레이
       }
       
       return gradient;

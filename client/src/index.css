@@ -1,4 +1,6 @@
-/* LG Smart UI Font support - Local TTF file */
+/* Modern Typography - Pretendard + LG Smart UI */
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 @font-face {
   font-family: 'LG Smart UI';
   src: url('/src/assets/fonts/LG-Smart-UI.ttf') format('truetype');
@@ -10,6 +12,65 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Enhanced Design System - Color Palette & Typography */
+@layer base {
+  :root {
+    /* Brand Colors - Consistent Design System */
+    --brand-primary: #7CF3C4; /* commento.ai 주요 색상 */
+    --brand-secondary: #4F46E5; /* 보조 색상 */
+    --brand-accent: #10B981; /* 강조 색상 */
+    
+    /* Semantic Colors */
+    --positive: #10B981; /* 긍정 - 그린 */
+    --negative: #EF4444; /* 부정 - 레드 */
+    --neutral: #6B7280; /* 중립 - 그레이 */
+    
+    /* Background & Surface Colors */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F9FAFB;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F3F4F6;
+    
+    /* Text Colors */
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+    
+    /* Border & Shadow */
+    --border-light: #E5E7EB;
+    --border-medium: #D1D5DB;
+    --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Typography Scale */
+  .text-display {
+    @apply text-3xl font-bold text-gray-900;
+  }
+  
+  .text-heading {
+    @apply text-xl font-semibold text-gray-900;
+  }
+  
+  .text-subheading {
+    @apply text-lg font-medium text-gray-800;
+  }
+  
+  .text-body {
+    @apply text-sm text-gray-700;
+  }
+  
+  .text-caption {
+    @apply text-xs text-gray-500;
+  }
+  
+  /* Font Family Override */
+  body {
+    font-family: 'Pretendard', 'LG Smart UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
 
 /* 최신 트렌드 스타일 - Glow, Glassmorphism, 애니메이션 */
 @layer utilities {

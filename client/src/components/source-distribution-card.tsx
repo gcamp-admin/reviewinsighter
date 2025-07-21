@@ -9,10 +9,10 @@ const CHANNEL_NAMES = {
 };
 
 const CHANNEL_COLORS = {
-  google_play: "#ec4899", // 핑크
-  app_store: "#d946ef", // 핑크-퍼플
-  naver_blog: "#a855f7", // 퍼플
-  naver_cafe: "#8b5cf6" // 진퍼플
+  google_play: "#10B981", // 브랜드 그린
+  app_store: "#4F46E5", // 브랜드 인디고  
+  naver_blog: "#7CF3C4", // 브랜드 메인
+  naver_cafe: "#6B7280" // 중립 그레이
 };
 
 interface Props {
@@ -51,10 +51,10 @@ export default function SourceDistributionCard({ filters }: Props) {
 
   if (!reviewsData?.reviews || reviewsData.reviews.length === 0) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm h-full">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">소스별 분포</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
+        <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">데이터가 없습니다</p>
+          <p className="text-body text-gray-500">데이터가 없습니다</p>
         </div>
       </div>
     );
@@ -76,5 +76,12 @@ export default function SourceDistributionCard({ filters }: Props) {
     color: CHANNEL_COLORS[channel]
   }));
 
-  return <ChannelBarChart data={chartData} />;
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
+      <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
+      <div className="h-64">
+        <ChannelBarChart data={chartData} />
+      </div>
+    </div>
+  );
 }
