@@ -116,7 +116,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     return review.sentiment === sentimentFilter;
   }) || [];
   
-  console.log('Filtered reviews:', { total: filteredReviews.length, sentimentFilter });
+  // 네이버 카페 리뷰가 포함되어 있는지 확인
+  const hasNaverCafeReviews = filteredReviews.some((review: any) => review.source === "naver_cafe");
+  
+  console.log('Filtered reviews:', { total: filteredReviews.length, sentimentFilter, hasNaverCafeReviews });
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -624,6 +627,19 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             </div>
           ))}
         </div>
+        
+        {/* 네이버 카페 날짜 안내 */}
+        {hasNaverCafeReviews && (
+          <div className="mt-4 mb-3 px-4 py-3 text-caption text-amber-700 bg-gradient-to-r from-amber-50/80 to-orange-50/80 rounded-lg border border-amber-200/50">
+            <div className="flex items-start gap-2">
+              <FaMugHot className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="font-medium text-amber-800 mb-1">네이버 카페 날짜 정보 안내</div>
+                <div>네이버 카페 API의 제약으로 정확한 작성 날짜 추출이 어려워, 표시된 날짜와 실제 카페 글의 작성 날짜가 다를 수 있습니다. 정확한 날짜는 '원문 보기'를 통해 확인하시기 바랍니다.</div>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* AI Analysis Disclaimer */}
         <div className="mt-4 mb-3 px-4 py-3 text-caption text-gray-500 bg-gradient-to-r from-gray-50/80 to-blue-50/80 rounded-lg border border-gray-200/50">
