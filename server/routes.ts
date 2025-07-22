@@ -445,109 +445,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let wordCloudStored = 0;
           
           // Store insights (only for heart analysis or full analysis)
-          if (result.insights && result.insights.length > 0 && (analysisType === 'heart' || !analysisType)) {
-            // For HEART analysis, use Python-based HEART analysis
-            if (analysisType === 'heart') {
-              try {
-                // Write reviews to temporary file for Python HEART analysis
-                const heartTempFile = '/tmp/heart_reviews.json';
-                fs.writeFileSync(heartTempFile, JSON.stringify(reviewsForAnalysis, null, 2));
-                
-                // Run Python HEART analysis
-                const heartProcess = spawn('python3', ['server/heart_analysis_python.py', heartTempFile]);
-                let heartOutput = '';
-                let heartError = '';
-                
-                heartProcess.stdout.on('data', (data) => {
-                  heartOutput += data.toString();
-                });
-                
-                heartProcess.stderr.on('data', (data) => {
-                  heartError += data.toString();
-                });
-                
-                await new Promise((resolve, reject) => {
-                  heartProcess.on('close', (code) => {
-                    if (code === 0) {
-                      resolve(null);
-                    } else {
-                      reject(new Error(`Python HEART analysis failed with code ${code}: ${heartError}`));
-                    }
+          if (analysisType === 'heart') {
+            try {
+              console.log("Starting HEART framework analysis for", reviewsForAnalysis.length, "reviews");
+              
+              // Use reviews with sentiment classification
+              const classifiedReviews = reviewsForAnalysis.map(r => ({
+                ...r,
+                sentiment: r.sentiment || '중립'
+              }));
+              
+              const positiveCount = classifiedReviews.filter(r => r.sentiment === '긍정').length;
+              const negativeCount = classifiedReviews.filter(r => r.sentiment === '부정').length;
+              console.log(`Review classification: ${positiveCount} positive, ${negativeCount} negative`);
+              
+              const { analyzeHeartFrameworkWithGPT } = await import('./openai_analysis');
+              const gptInsights = await analyzeHeartFrameworkWithGPT(classifiedReviews);
+              
+              for (const insight of gptInsights) {
+                try {
+                  await storage.createInsight({
+                    title: insight.title,
+                    description: insight.ux_suggestions,
+                    priority: insight.priority,
+                    mentionCount: 0,
+                    trend: 'stable',
+                    category: insight.category,
                   });
-                });
+                  insightsStored++;
+                } catch (err) {
+                  console.error("Error storing GPT insight:", err);
+                }
+              }
+              
+              console.log("Generated", gptInsights.length, "HEART insights");
                 
-                // Parse Python HEART analysis output
-                const heartResult = JSON.parse(heartOutput);
+            } catch (heartError) {
+              console.error("HEART analysis failed:", heartError);
+              // Use simple fallback analysis
+              try {
+                const { generateSimpleHeartInsights } = await import('./simple_heart_analysis');
+                const simpleInsights = await generateSimpleHeartInsights(reviewsForAnalysis);
                 
-                // Store HEART insights
-                for (const insight of heartResult.insights) {
+                for (const insight of simpleInsights) {
                   try {
                     await storage.createInsight({
                       title: insight.title,
                       description: insight.ux_suggestions,
                       priority: insight.priority,
-                      mentionCount: 0,
-                      trend: 'stable',
-                      category: insight.heart_category,
+                      mentionCount: insight.mention_count || 0,
+                      trend: insight.trend || 'stable',
+                      category: insight.category || 'general',
                     });
                     insightsStored++;
                   } catch (err) {
-                    console.error("Error storing HEART insight:", err);
+                    console.error("Error storing simple insight:", err);
                   }
                 }
-                
-                // Clean up temporary file
-                try {
-                  fs.unlinkSync(heartTempFile);
-                } catch (cleanupError) {
-                  console.error("Failed to cleanup HEART temp file:", cleanupError);
-                }
-                
-              } catch (heartError) {
-                console.error("Python HEART analysis failed, falling back to GPT:", heartError);
-                // Fallback to GPT analysis
-                try {
-                  const { analyzeHeartFrameworkExpert } = await import('./heart_analysis_expert');
-                  const gptInsights = await analyzeHeartFrameworkExpert(reviewsForAnalysis);
-                  
-                  for (const insight of gptInsights) {
-                    try {
-                      await storage.createInsight({
-                        title: insight.title,
-                        description: insight.problem_summary,
-                        priority: insight.priority,
-                        mentionCount: 0,
-                        trend: 'stable',
-                        category: insight.heart_category,
-                        problem_summary: insight.problem_summary,
-                        ux_suggestions: insight.ux_suggestions,
-                      });
-                      insightsStored++;
-                    } catch (err) {
-                      console.error("Error storing GPT insight:", err);
-                    }
-                  }
-                } catch (gptError) {
-                  console.error("Both Python and GPT HEART analysis failed:", gptError);
-                }
+              } catch (fallbackError) {
+                console.error("All HEART analysis methods failed:", fallbackError);
               }
-            } else {
-              // For full analysis, use Python analysis
-              for (const insight of result.insights) {
-                try {
-                  await storage.createInsight({
-                    title: insight.title,
-                    description: insight.description,
-                    priority: insight.priority,
-                    mentionCount: insight.mentionCount,
-                    trend: insight.trend,
-                    category: insight.category,
-                    serviceId: serviceId,
-                  });
-                  insightsStored++;
-                } catch (err) {
-                  console.error("Error storing insight:", err);
-                }
+            }
+          } else if (result.insights && result.insights.length > 0) {
+            // For full analysis, use Python analysis
+            for (const insight of result.insights) {
+              try {
+                await storage.createInsight({
+                  title: insight.title,
+                  description: insight.description,
+                  priority: insight.priority,
+                  mentionCount: insight.mentionCount,
+                  trend: insight.trend,
+                  category: insight.category,
+                });
+                insightsStored++;
+              } catch (err) {
+                console.error("Error storing insight:", err);
               }
             }
           }
@@ -558,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (analysisType === 'wordcloud') {
               try {
                 console.log("Starting GPT word cloud analysis...");
-                const { generateKeywordNetworkWithGPT } = await import('./openai_analysis.js');
+                const { generateKeywordNetworkWithGPT } = await import('./openai_analysis');
                 const gptNetwork = await generateKeywordNetworkWithGPT(reviewsForAnalysis);
                 
                 if (gptNetwork.positive && gptNetwork.positive.length > 0) {
@@ -633,7 +606,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     word: wordData.word,
                     frequency: wordData.frequency,
                     sentiment: wordData.sentiment,
-                    serviceId: serviceId,
                   });
                   wordCloudStored++;
                 } catch (err) {
