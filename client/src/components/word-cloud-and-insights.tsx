@@ -13,6 +13,7 @@ interface WordCloudAndInsightsProps {
 
 export default function WordCloudAndInsights({ filters, activeSection }: WordCloudAndInsightsProps) {
   const [isHeartPopupOpen, setIsHeartPopupOpen] = useState(false);
+  
   const { data: positiveWords = [], isLoading: positiveLoading } = useQuery({
     queryKey: ["/api/wordcloud", "긍정", filters.service?.id, filters.source, filters.dateFrom, filters.dateTo],
     queryFn: async () => {
@@ -91,6 +92,11 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     enabled: true,
   });
 
+  console.log("WordCloud component - positiveWords:", positiveWords);
+  console.log("WordCloud component - negativeWords:", negativeWords);
+  console.log("WordCloud component - insights:", insights);
+  console.log("WordCloud component - activeSection:", activeSection);
+
   const renderWordCloud = (words: any[], title: string, isPositive: boolean) => {
     if (words.length === 0) return null;
     
@@ -142,7 +148,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         
         const frequencyRatio = (word.frequency - minFrequency) / (maxFrequency - minFrequency);
         
-        let position;
+        let position: { top: number; left: number };
         let attempts = 0;
         const maxAttempts = 50;
         
@@ -323,7 +329,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         </h2>
         
         <div className="grid grid-cols-1 gap-4">
-          {insights.map((insight, index) => (
+          {insights.map((insight: any, index: number) => (
             <Card key={index} className="glassmorphism-card glow-indigo-hover card-hover">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -338,16 +344,17 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-900">문제 요약</h4>
-                  <p className="text-gray-700 leading-relaxed">{insight.problem_summary}</p>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
                   <h4 className="font-semibold text-gray-900">UX 개선 제안</h4>
-                  <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                    {insight.ux_suggestions}
+                  <div className="text-gray-700 leading-relaxed">
+                    {Array.isArray(insight.description) ? (
+                      <ul className="space-y-2">
+                        {insight.description.map((item: string, idx: number) => (
+                          <li key={idx} className="text-sm">{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="whitespace-pre-line">{insight.description}</p>
+                    )}
                   </div>
                 </div>
                 
