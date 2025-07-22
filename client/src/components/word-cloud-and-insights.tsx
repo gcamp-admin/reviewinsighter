@@ -354,9 +354,39 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-900">UX 개선 제안</h4>
-                  <div className="text-gray-700 leading-relaxed">
+                {/* 문제 상황 요약 */}
+                {insight.problem_summary && (
+                  <div className="space-y-2 bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                    <h4 className="font-semibold text-red-800 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      문제 상황 요약
+                    </h4>
+                    <div className="text-red-700 text-sm leading-relaxed">
+                      <p>{insight.problem_summary}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 타사 UX 벤치마킹 */}
+                {insight.competitor_benchmark && (
+                  <div className="space-y-2 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                    <h4 className="font-semibold text-blue-800 flex items-center">
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      타사 UX 벤치마킹
+                    </h4>
+                    <div className="text-blue-700 text-sm leading-relaxed">
+                      <p>{insight.competitor_benchmark}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* UX 개선 제안 */}
+                <div className="space-y-2 bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                  <h4 className="font-semibold text-green-800 flex items-center">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    UX 개선 제안
+                  </h4>
+                  <div className="text-green-700 leading-relaxed">
                     {Array.isArray(insight.description) ? (
                       <ul className="space-y-2">
                         {insight.description.map((item: string, idx: number) => (
@@ -364,12 +394,10 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                         ))}
                       </ul>
                     ) : (
-                      <p className="whitespace-pre-line">{insight.description}</p>
+                      <p className="whitespace-pre-line text-sm">{insight.description}</p>
                     )}
                   </div>
                 </div>
-                
-                
               </CardContent>
             </Card>
           ))}
