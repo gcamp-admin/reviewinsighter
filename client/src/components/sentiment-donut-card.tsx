@@ -91,15 +91,15 @@ export default function SentimentDonutCard({ filters }: Props) {
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
       <h3 className="text-heading text-gray-900 mb-6">감정 분석</h3>
       
-      <div className="relative h-64">
+      <div className="relative h-48">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={100}
+              innerRadius={45}
+              outerRadius={80}
               paddingAngle={2}
               dataKey="value"
             >
@@ -117,13 +117,13 @@ export default function SentimentDonutCard({ filters }: Props) {
         {/* Center text - 더 크고 강조된 스타일 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-4xl font-bold text-gray-900">{total}</p>
+            <p className="text-3xl font-bold text-gray-900">{total}</p>
             <p className="text-sm text-gray-500 mt-1">총 리뷰</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 space-y-2 flex-shrink-0">
+      <div className="mt-6 space-y-2 flex-shrink-0">
         {chartData.map((item) => {
           const IconComponent = SENTIMENT_ICONS[item.name as keyof typeof SENTIMENT_ICONS];
           const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
