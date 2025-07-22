@@ -80,15 +80,23 @@ def extract_real_cafe_date(cafe_info):
                 post_id = int(match.group(1))
                 print(f"    일반 카페 게시물 ID: {post_id}")
                 
-                # 일반적인 추정 패턴
+                # 일반적인 추정 패턴 - 현재 날짜 기반으로 최신 추정
+                current_date = date.today()
+                
                 if post_id >= 8000000:
-                    estimated_date = date(2025, 7, 1)
+                    estimated_date = current_date  # 오늘
                 elif post_id >= 7000000:
-                    estimated_date = date(2025, 1, 1)
+                    estimated_date = current_date - timedelta(days=1)  # 어제
                 elif post_id >= 5000000:
-                    estimated_date = date(2024, 7, 1)
+                    estimated_date = current_date - timedelta(days=2)  # 이틀 전
+                elif post_id >= 3000000:
+                    estimated_date = current_date - timedelta(days=3)  # 3일 전
+                elif post_id >= 1000000:
+                    estimated_date = current_date - timedelta(days=5)  # 5일 전
+                elif post_id >= 100000:
+                    estimated_date = current_date - timedelta(days=7)  # 일주일 전
                 else:
-                    estimated_date = date(2024, 1, 1)
+                    estimated_date = current_date - timedelta(days=10) # 10일 전
                 
                 print(f"    ✓ 일반 카페 날짜 추정: {estimated_date}")
                 return estimated_date
@@ -124,8 +132,8 @@ def extract_real_cafe_date(cafe_info):
             print(f"    ✓ 최근 키워드 기반: {recent_date}")
             return recent_date
         
-        # 4. 기본값 (일주일 전)
-        default_date = date.today() - timedelta(days=7)
+        # 4. 기본값 (현재 날짜 기반)
+        default_date = date.today() - timedelta(days=1)  # 어제 날짜
         print(f"    ✗ 추정 실패, 기본값 사용: {default_date}")
         return default_date
         

@@ -264,33 +264,33 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     if naver_cafes:
                         api_success = True
                         
-                        # 날짜 필터링 적용 - 고급 날짜 추출 시스템 사용
+                        # 날짜 필터링 적용 - 실제 날짜만 추출 시스템 사용 (추정치 없음)
                         if start_date and end_date:
                             try:
-                                from naver_cafe_advanced_date import filter_cafe_by_advanced_date
+                                from naver_cafe_real_date_only import filter_cafe_by_real_date_only
                                 from datetime import datetime as dt_parser
                                 
                                 # ISO 날짜를 date 객체로 변환
                                 start_dt = dt_parser.fromisoformat(start_date.replace('Z', '+00:00')).date()
                                 end_dt = dt_parser.fromisoformat(end_date.replace('Z', '+00:00')).date()
                                 
-                                print(f"  고급 날짜 추출 시스템 사용: {start_dt} ~ {end_dt}")
+                                print(f"  실제 날짜만 추출 시스템 사용: {start_dt} ~ {end_dt}")
                                 
-                                # 고급 날짜 추출을 통한 필터링
-                                filtered_results = filter_cafe_by_advanced_date(
+                                # 실제 날짜만 추출을 통한 필터링 (무조건 추출, 제외 없음)
+                                filtered_results = filter_cafe_by_real_date_only(
                                     naver_cafes, 
                                     start_dt, 
                                     end_dt, 
-                                    search_keyword=service_name,
+                                    service_name=service_name,
                                     max_results=review_count//3
                                 )
                                 
                                 cafe_results.extend(filtered_results)
-                                print(f"  고급 날짜 추출 성공: {len(filtered_results)}개 카페 리뷰 수집")
+                                print(f"  실제 날짜 추출 성공: {len(filtered_results)}개 카페 리뷰 수집")
                                 
                             except Exception as e:
-                                print(f"  고급 날짜 추출 오류: {e}")
-                                print(f"  URL 패턴 분석, 모바일 접근, 맥락 분석 모두 실패")
+                                print(f"  실제 날짜 추출 오류: {e}")
+                                print(f"  웹 스크래핑, URL 패턴 분석 등 모든 실제 날짜 추출 방법 실패")
                                 import traceback
                                 traceback.print_exc()
                         else:
@@ -312,14 +312,14 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                     print(f"  Skipping news article: {title[:50]}...")
                                     continue
                                 
-                                # 실제 네이버 카페 날짜 추출 (간단한 방식)
+                                # 실제 네이버 카페 날짜 추출 (무조건 추출)
                                 from datetime import datetime as dt
-                                from naver_cafe_real_date_simple import get_cafe_date_with_fallback
+                                from naver_cafe_real_date_only import extract_real_date_only
                                 
-                                # 실제 카페 날짜 추출
-                                extracted_date = get_cafe_date_with_fallback(cafe)
+                                # 실제 카페 날짜 무조건 추출
+                                extracted_date = extract_real_date_only(cafe)
                                 iso_date = extracted_date.strftime('%Y-%m-%dT00:00:00.000Z')
-                                print(f"  ✓ 네이버 카페 날짜: {extracted_date} -> {iso_date}")
+                                print(f"  ✓ 네이버 카페 실제 날짜: {extracted_date} -> {iso_date}")
                                 
                                 # Clean content from HTML tags
                                 # Remove HTML tags from content
