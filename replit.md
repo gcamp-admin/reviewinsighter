@@ -416,6 +416,7 @@ Changelog:
 - July 22, 2025. **CRITICAL SERVICE ID MAPPING FIX**: Resolved serious crawling error where "SOHO우리가게패키지" selection was showing 익시오 reviews. Implemented dynamic service mapping system (익시오→ixio, SOHO우리가게패키지→soho-package, AI비즈콜→ai-bizcall) across all crawler modules. Fixed hardcoded serviceId values in run_crawler.py and crawler.py. Restored proper serviceId filtering in frontend. Verified correct service-specific review collection and display
 - July 22, 2025. **LEGEND ALIGNMENT PERFECTION**: Fixed card legend alignment issues by implementing flex layout with justify-end positioning. Both channel distribution and sentiment analysis cards now have perfectly aligned legends at card bottom for professional UI consistency
 - July 22, 2025. **COMPREHENSIVE CRAWLING SYSTEM VERIFICATION**: Confirmed all components working correctly - service mapping (3 services configured), dynamic serviceId assignment, proper app ID routing (Google Play/Apple Store), date filtering, and authentic data collection. System successfully tested with SOHO우리가게패키지 and 익시오 showing distinct serviceId segregation
+- July 22, 2025. **SOHO 키워드 필터링 구현**: SOHO우리가게패키지 서비스 전용 고도화된 키워드 필터링 시스템 구현. 네이버 블로그와 카페에서 '우리가게' 키워드와 함께 'LG' 또는 '유플러스' 또는 'U+' 키워드가 동시에 언급된 글만 수집하도록 정밀 필터링. crawler.py와 naver_cafe_advanced_date.py 양쪽에 적용하여 완전한 키워드 정합성 확보
 
 ## User Preferences
 

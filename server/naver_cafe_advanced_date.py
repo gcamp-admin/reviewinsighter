@@ -251,13 +251,32 @@ def filter_cafe_by_advanced_date(cafe_results, start_date, end_date, search_keyw
                 clean_description = clean_description.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
                 clean_description = clean_description.replace('&quot;', '"').replace('&#39;', "'")
                 
+                # SOHO우리가게패키지 특별 필터링: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
+                if search_keyword == "SOHO우리가게패키지":
+                    full_content = (clean_title + " " + clean_description).lower()
+                    
+                    # '우리가게' 키워드 체크
+                    has_우리가게 = any(keyword in full_content for keyword in ['우리가게', '우리 가게'])
+                    
+                    # 'LG' 또는 '유플러스' 또는 'U+' 키워드 체크
+                    has_lg_or_uplus = any(keyword in full_content for keyword in [
+                        'lg', 'l g', 'lgu', 'lg u+', 'lg유플러스',
+                        '유플러스', '유 플러스', '유플', 'uplus', 'u plus', 'u+', 'u +'
+                    ])
+                    
+                    if not (has_우리가게 and has_lg_or_uplus):
+                        print(f"    ❌ 카페 제외 (키워드 불일치): {clean_title[:30]}...")
+                        continue
+                    
+                    print(f"    ✅ 카페 포함 (키워드 일치): {clean_title[:30]}...")
+                
                 # 사용자 ID 추출
                 user_id = cafe.get("extracted_user_id") or f"카페_{cafe.get('cafename', 'unknown')}"
                 
                 cafe_review = {
                     "userId": user_id,
                     "source": "naver_cafe",
-                    "serviceId": "ixio",
+                    "serviceId": "soho-package",  # 정확한 serviceId 사용
                     "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
                     "rating": 5,
                     "content": f"{clean_title} {clean_description}".strip(),

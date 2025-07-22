@@ -194,6 +194,25 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                             clean_title = clean_html(title)
                             clean_description = clean_html(description)
                             
+                            # SOHO우리가게패키지 특별 필터링: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
+                            if service_name == "SOHO우리가게패키지":
+                                full_content = (clean_title + " " + clean_description).lower()
+                                
+                                # '우리가게' 키워드 체크
+                                has_우리가게 = any(keyword in full_content for keyword in ['우리가게', '우리 가게'])
+                                
+                                # 'LG' 또는 '유플러스' 또는 'U+' 키워드 체크
+                                has_lg_or_uplus = any(keyword in full_content for keyword in [
+                                    'lg', 'l g', 'lgu', 'lg u+', 'lg유플러스',
+                                    '유플러스', '유 플러스', '유플', 'uplus', 'u plus', 'u+', 'u +'
+                                ])
+                                
+                                if not (has_우리가게 and has_lg_or_uplus):
+                                    print(f"  ❌ 블로그 제외 (키워드 불일치): {clean_title[:50]}...")
+                                    continue
+                                
+                                print(f"  ✅ 블로그 포함 (키워드 일치): {clean_title[:30]}...")
+                            
                             # Extract user ID from URL
                             user_id = extract_user_id_from_url(
                                 blog.get("bloggerlink", ""),
@@ -312,6 +331,25 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 clean_title = clean_title.replace('&quot;', '"').replace('&#39;', "'")
                                 clean_description = clean_description.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
                                 clean_description = clean_description.replace('&quot;', '"').replace('&#39;', "'")
+                                
+                                # SOHO우리가게패키지 특별 필터링: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
+                                if service_name == "SOHO우리가게패키지":
+                                    full_content = (clean_title + " " + clean_description).lower()
+                                    
+                                    # '우리가게' 키워드 체크
+                                    has_우리가게 = any(keyword in full_content for keyword in ['우리가게', '우리 가게'])
+                                    
+                                    # 'LG' 또는 '유플러스' 또는 'U+' 키워드 체크
+                                    has_lg_or_uplus = any(keyword in full_content for keyword in [
+                                        'lg', 'l g', 'lgu', 'lg u+', 'lg유플러스',
+                                        '유플러스', '유 플러스', '유플', 'uplus', 'u plus', 'u+', 'u +'
+                                    ])
+                                    
+                                    if not (has_우리가게 and has_lg_or_uplus):
+                                        print(f"  ❌ 카페 제외 (키워드 불일치): {clean_title[:50]}...")
+                                        continue
+                                    
+                                    print(f"  ✅ 카페 포함 (키워드 일치): {clean_title[:30]}...")
                                 
                                 cafe_review = {
                                     "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
