@@ -466,7 +466,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 try {
                   await storage.createInsight({
                     title: insight.title,
-                    description: insight.ux_suggestions,
+                    description: insight.ux_suggestions?.join('\n') || 'UX 개선 제안이 필요합니다.',
+                    problem_summary: insight.problem_summary,
+                    competitor_benchmark: insight.competitor_benchmark,
+                    ux_suggestions: insight.ux_suggestions,
                     priority: insight.priority,
                     mentionCount: 0,
                     trend: 'stable',

@@ -25,6 +25,9 @@ export const insights = pgTable("insights", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
+  problem_summary: text("problem_summary"),
+  competitor_benchmark: text("competitor_benchmark"),
+  ux_suggestions: text("ux_suggestions").array(),
   priority: text("priority").notNull(), // "high", "medium", "low"
   mentionCount: integer("mention_count").notNull(),
   trend: text("trend"), // "increasing", "decreasing", "stable"
@@ -61,6 +64,9 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
 export const insertInsightSchema = createInsertSchema(insights).pick({
   title: true,
   description: true,
+  problem_summary: true,
+  competitor_benchmark: true,
+  ux_suggestions: true,
   priority: true,
   mentionCount: true,
   trend: true,

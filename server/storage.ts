@@ -269,8 +269,16 @@ export class MemStorage implements IStorage {
 
   async createInsight(insertInsight: InsertInsight): Promise<Insight> {
     const id = this.currentInsightId++;
-    const insight: Insight = { ...insertInsight, id, trend: insertInsight.trend || null };
+    const insight: Insight = { 
+      ...insertInsight, 
+      id, 
+      trend: insertInsight.trend || null,
+      problem_summary: insertInsight.problem_summary || null,
+      competitor_benchmark: insertInsight.competitor_benchmark || null,
+      ux_suggestions: insertInsight.ux_suggestions || null
+    };
     this.insights.set(id, insight);
+    console.log(`Created insight ${id}: ${insight.title}`);
     return insight;
   }
 

@@ -53,25 +53,28 @@ HEART 프레임워크 (UX 관점):
 ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
 내용: ${review.content.substring(0, 80)}`).join('\n\n')}
 
-분석 결과를 다음 JSON 형식으로 반환해주세요 (실제로 개선이 필요한 중요한 문제들만):
+**중요**: 다음 JSON 구조를 **정확히** 따라주세요. description 필드는 사용하지 마세요:
+
 {
   "insights": [
     {
       "category": "happiness|engagement|adoption|retention|task_success",
       "title": "Critical | HEART: [category] | [문제유형] ([건수]건)",
-      "problem_summary": "실제 사용자 리뷰 표현을 직접 인용하며 한 줄로 문제상황 요약. 예: '사용자들이 화면크기를 크게하면 키패드가 사라진다고 호소하여 기본 통화 기능을 사용할 수 없는 접근성 문제 발생'",
-      "competitor_benchmark": "동일 문제를 해결한 타사 앱의 구체적 해결방안. 카카오톡/네이버폰/구글전화/삼성전화 등이 이 문제를 어떻게 해결하는지 구체적 기능과 UI 방식 명시",
+      "problem_summary": "실제 사용자 리뷰 표현을 직접 인용하며 한 줄로 문제상황 요약. 예: '사용자들이 차단이 안되어서 불편하다고 호소하여 스팸 차단 기능의 신뢰성 문제 발생'",
+      "competitor_benchmark": "동일 문제를 해결한 타사 앱의 구체적 해결방안. 카카오톡은 스팸 신고 즉시 차단, 네이버폰은 AI 학습 기반 자동 차단, 구글전화는 실시간 스팸 DB 연동으로 해결",
       "ux_suggestions": [
         "구체적이고 실행 가능한 UI/UX 개선 제안 1 (버튼 위치/크기/색상, 화면 전환, 애니메이션 등 상세)",
         "구체적이고 실행 가능한 UI/UX 개선 제안 2",
         "구체적이고 실행 가능한 UI/UX 개선 제안 3"
       ],
       "priority": "critical|major|minor",
-      "mention_count": 건수,
+      "mentionCount": 건수,
       "trend": "stable"
     }
   ]
 }
+
+**필수**: problem_summary, competitor_benchmark, ux_suggestions 필드를 모두 포함해야 합니다. description 필드는 절대 사용하지 마세요.
 
 UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
 
@@ -149,15 +152,47 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
     });
 
     const result = response.choices[0].message.content;
+    console.log('GPT HEART Analysis Raw Response:', result);
     
     try {
       const parsedResult = JSON.parse(result || '{}');
       
       // Ensure the result has the expected structure
       if (parsedResult.insights && Array.isArray(parsedResult.insights)) {
-        return parsedResult.insights;
+        return parsedResult.insights.map((insight: any) => {
+          // 기존 description을 ux_suggestions로 변환 (호환성)
+          const ux_suggestions = insight.ux_suggestions || insight.description || ['UI/UX 개선이 필요합니다.'];
+          
+          // 실제 리뷰 내용을 기반으로 기본값 생성
+          const problem_summary = insight.problem_summary || 
+            `사용자들이 "${reviewTexts[0]?.content?.substring(0, 30) || '기능 관련'}" 등의 문제를 호소하고 있습니다.`;
+          
+          const competitor_benchmark = insight.competitor_benchmark || 
+            '카카오톡, 네이버폰, 구글전화 등 타사 앱들의 해결방안을 벤치마킹하여 동일 문제에 대한 UX 솔루션을 참고할 필요가 있습니다.';
+
+          return {
+            ...insight,
+            ux_suggestions,
+            problem_summary,
+            competitor_benchmark
+          };
+        });
       } else if (Array.isArray(parsedResult)) {
-        return parsedResult;
+        // 기존 형태의 응답이면 변환
+        return parsedResult.map((insight: any) => {
+          const ux_suggestions = insight.ux_suggestions || insight.description || ['UI/UX 개선이 필요합니다.'];
+          const problem_summary = insight.problem_summary || 
+            `사용자들이 "${reviewTexts[0]?.content?.substring(0, 30) || '기능 관련'}" 등의 문제를 호소하고 있습니다.`;
+          const competitor_benchmark = insight.competitor_benchmark || 
+            '카카오톡, 네이버폰, 구글전화 등 타사 앱들의 해결방안을 벤치마킹하여 동일 문제에 대한 UX 솔루션을 참고할 필요가 있습니다.';
+
+          return {
+            ...insight,
+            ux_suggestions,
+            problem_summary,
+            competitor_benchmark
+          };
+        });
       } else {
         console.warn('GPT returned unexpected HEART analysis format:', result);
         return [];
