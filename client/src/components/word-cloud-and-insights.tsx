@@ -306,6 +306,24 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     );
   }
 
+  // Show message if no data is available
+  if (positiveWords.length === 0 && negativeWords.length === 0 && insights.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+          <Cloud className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">분석 데이터가 없습니다</h3>
+          <p className="text-gray-500 mb-4">
+            분석 결과를 표시하려면 "코멘토에게 분석 요청하기" 버튼을 클릭하세요.
+          </p>
+          <p className="text-sm text-gray-400">
+            * 분석을 위해서는 먼저 리뷰를 수집해야 합니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Word Cloud Section */}

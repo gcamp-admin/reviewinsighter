@@ -121,11 +121,13 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
       };
     },
     onSuccess: (data) => {
+      console.log("Analysis mutation onSuccess called with data:", data);
       toast({
         title: "코멘토 분석 완료",
         description: "워드클라우드와 HEART 프레임워크 분석이 완료되었습니다.",
       });
       setHasAnalyzedComprehensive(true);
+      console.log("Calling onAnalysisSuccess with 'comprehensive'");
       onAnalysisSuccess('comprehensive');
       
       // Reset progress after completion

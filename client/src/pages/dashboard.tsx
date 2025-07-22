@@ -32,6 +32,7 @@ export default function Dashboard() {
   };
 
   const handleAnalysisSuccess = (analysisType: 'wordcloud' | 'heart' | 'comprehensive') => {
+    console.log("handleAnalysisSuccess called with:", analysisType);
     setActiveAnalysisSection(analysisType);
   };
 
@@ -72,17 +73,12 @@ export default function Dashboard() {
           </div>
         )}
         
-        {activeAnalysisSection === 'wordcloud' && (
+
+        
+        {/* Always show WordCloudAndInsights when hasCollectedReviews is true */}
+        {hasCollectedReviews && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-            <WordCloudAndInsights filters={filters} />
-          </div>
-        )}
-        
-        
-        
-        {activeAnalysisSection === 'comprehensive' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-            <WordCloudAndInsights filters={filters} />
+            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} />
           </div>
         )}
       </main>
