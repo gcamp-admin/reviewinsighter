@@ -471,6 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     mentionCount: 0,
                     trend: 'stable',
                     category: insight.category,
+                    serviceId: serviceId,
                   });
                   insightsStored++;
                 } catch (err) {
@@ -543,6 +544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         word: wordData.word,
                         frequency: wordData.frequency,
                         sentiment: "긍정",
+                        serviceId: serviceId,
                       });
                       wordCloudStored++;
                     } catch (err) {
@@ -560,6 +562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         word: wordData.word,
                         frequency: wordData.frequency,
                         sentiment: "부정",
+                        serviceId: serviceId,
                       });
                       wordCloudStored++;
                     } catch (err) {

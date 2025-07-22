@@ -29,6 +29,7 @@ export const insights = pgTable("insights", {
   mentionCount: integer("mention_count").notNull(),
   trend: text("trend"), // "increasing", "decreasing", "stable"
   category: text("category").notNull(), // "stability", "ui_ux", "features"
+  serviceId: text("service_id"),
 });
 
 export const wordCloudData = pgTable("word_cloud_data", {
@@ -36,6 +37,7 @@ export const wordCloudData = pgTable("word_cloud_data", {
   word: text("word").notNull(),
   frequency: integer("frequency").notNull(),
   sentiment: text("sentiment").notNull(), // "positive" or "negative"
+  serviceId: text("service_id"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -63,12 +65,14 @@ export const insertInsightSchema = createInsertSchema(insights).pick({
   mentionCount: true,
   trend: true,
   category: true,
+  serviceId: true,
 });
 
 export const insertWordCloudSchema = createInsertSchema(wordCloudData).pick({
   word: true,
   frequency: true,
   sentiment: true,
+  serviceId: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
