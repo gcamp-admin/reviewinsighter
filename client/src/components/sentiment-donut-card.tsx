@@ -123,7 +123,7 @@ export default function SentimentDonutCard({ filters }: Props) {
         </div>
       </div>
 
-      <div className="mt-6 flex-shrink-0">
+      <div className="mt-4 flex-shrink-0">
         <div className="space-y-2">
           {chartData.map((item) => {
             const IconComponent = SENTIMENT_ICONS[item.name as keyof typeof SENTIMENT_ICONS];
@@ -147,8 +147,6 @@ export default function SentimentDonutCard({ filters }: Props) {
               </div>
             );
           })}
-          {/* 범례 정렬을 위한 빈 공간 추가 */}
-          <div className="h-6"></div>
         </div>
       </div>
     </div>

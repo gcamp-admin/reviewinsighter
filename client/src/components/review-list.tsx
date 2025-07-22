@@ -55,9 +55,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         limit: limit.toString(),
       });
       
-      if (filters?.service?.id) {
-        params.append("service", filters.service.id);
-      }
+      // Remove service filter temporarily to see all reviews
+      // if (filters?.service?.id) {
+      //   params.append("service", filters.service.id);
+      // }
       
       // 소스 필터 적용
       if (sourceFilter !== "all") {
@@ -92,7 +93,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       const result = await response.json();
       return result;
     },
-    enabled: !!filters?.service?.id, // Only fetch when service is selected
+    enabled: true, // Always fetch reviews regardless of service filter
     staleTime: 0,
     gcTime: 0,
     refetchInterval: 2000, // Simple 2 second polling
@@ -100,10 +101,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     refetchOnMount: true,
   });
 
-  // Don't show anything when no service is selected
-  if (!filters?.service?.id) {
-    return null;
-  }
+  // Show reviews even without service filter - useful for debugging and general display
 
   console.log('Component data:', { data, hasData: !!data, reviews: data?.reviews?.length });
   

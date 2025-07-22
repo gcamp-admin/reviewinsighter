@@ -107,10 +107,8 @@ const ChannelBarChart = ({ data }: Props) => {
         </div>
       </div>
 
-      <div className="mt-6 flex-shrink-0">
+      <div className="mt-4 flex-shrink-0">
         <div className="space-y-2">
-          {/* 정렬을 위한 빈 공간 추가 */}
-          <div className="h-6"></div>
           {data.map((item, i) => (
             <div key={i} className="flex items-center justify-between text-sm h-6">
               <div className="flex items-center">
