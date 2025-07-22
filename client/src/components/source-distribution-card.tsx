@@ -77,9 +77,9 @@ export default function SourceDistributionCard({ filters }: Props) {
   }));
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full flex flex-col">
       <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
-      <div className="h-64">
+      <div className="flex-1 flex flex-col">
         <ChannelBarChart data={chartData} />
       </div>
     </div>

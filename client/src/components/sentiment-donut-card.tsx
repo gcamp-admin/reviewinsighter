@@ -88,10 +88,10 @@ export default function SentimentDonutCard({ filters }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full flex flex-col">
       <h3 className="text-heading text-gray-900 mb-6">감정 분석</h3>
       
-      <div className="relative h-48">
+      <div className="relative h-48 flex-shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -123,7 +123,7 @@ export default function SentimentDonutCard({ filters }: Props) {
         </div>
       </div>
 
-      <div className="mt-4 flex-shrink-0">
+      <div className="flex-1 flex flex-col justify-end">
         <div className="space-y-2">
           {chartData.map((item) => {
             const IconComponent = SENTIMENT_ICONS[item.name as keyof typeof SENTIMENT_ICONS];
