@@ -102,7 +102,7 @@ const ChannelBarChart = ({ data }: Props) => {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-1 min-h-0">
-        <div className="relative h-48">
+        <div className="relative h-64">
           <canvas ref={canvasRef}></canvas>
         </div>
       </div>
