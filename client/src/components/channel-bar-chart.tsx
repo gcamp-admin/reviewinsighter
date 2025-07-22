@@ -107,7 +107,7 @@ const ChannelBarChart = ({ data }: Props) => {
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 flex-shrink-0">
+      <div className="mt-1 space-y-2 flex-shrink-0">
         {data.map((item, i) => (
           <div key={i} className="flex items-center justify-between text-sm">
             <div className="flex items-center">
