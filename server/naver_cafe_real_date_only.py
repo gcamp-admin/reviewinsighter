@@ -59,52 +59,107 @@ def extract_real_date_only(cafe_info):
                 except (ValueError, IndexError):
                     continue
         
-        # 2. URL 패턴 우선 분석 (빠른 처리를 위해 웹 스크래핑 건너뛰기)
+        # 2. 네이버 카페 웹 스크래핑으로 정확한 날짜 추출 (정확도 우선)
         if 'cafe.naver.com' in link:
             try:
-                # 고급 URL 패턴 분석으로 빠른 날짜 추정
-                post_id_match = re.search(r'/(\d+)$', link)
-                cafe_name_match = re.search(r'cafe\.naver\.com/([^/]+)/', link)
+                # 웹 스크래핑으로 실제 페이지 접근하여 정확한 날짜 추출
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
                 
-                if post_id_match and cafe_name_match:
-                    post_id = int(post_id_match.group(1))
-                    cafe_name = cafe_name_match.group(1)
-                    
-                    print(f"    빠른 URL 패턴 분석: ID {post_id}, 카페 {cafe_name}")
-                    
-                    # 카페별 확실한 날짜 패턴만 사용
-                    cafe_patterns = {
-                        'stockhouse7': {
-                            'patterns': [
-                                {'id_start': 120, 'id_end': 140, 'date_start': date(2025, 7, 10), 'date_end': date(2025, 7, 20)},
-                            ]
-                        },
-                        'ainows25': {
-                            'patterns': [
-                                {'id_start': 3100, 'id_end': 3200, 'date_start': date(2025, 7, 10), 'date_end': date(2025, 7, 20)},
-                            ]
-                        }
-                    }
-                    
-                    if cafe_name in cafe_patterns:
-                        for pattern_range in cafe_patterns[cafe_name]['patterns']:
-                            if pattern_range['id_start'] <= post_id <= pattern_range['id_end']:
-                                # 범위 내 날짜 계산
-                                id_progress = (post_id - pattern_range['id_start']) / (pattern_range['id_end'] - pattern_range['id_start'])
-                                date_range_days = (pattern_range['date_end'] - pattern_range['date_start']).days
-                                calculated_days = int(id_progress * date_range_days)
-                                extracted_date = pattern_range['date_start'] + timedelta(days=calculated_days)
+                # 다양한 URL 형태로 시도하여 접근성 향상
+                urls_to_try = [
+                    link,  # 원본 URL
+                    link.replace('cafe.naver.com', 'm.cafe.naver.com'),  # 모바일 URL
+                    link + '?iframe_url_utf8=%2FArticleRead.nhn%253Fclubid%3D' + link.split('/')[-2] + '%26articleid%3D' + link.split('/')[-1],  # iframe URL
+                ]
+                
+                for attempt_url in urls_to_try:
+                    try:
+                        print(f"    시도: {attempt_url[:80]}...")
+                        response = requests.get(attempt_url, headers=headers, timeout=5)
+                        
+                        if response.status_code == 200:
+                            html_content = response.text[:12000]  # 처음 12000자에서 날짜 정보 검색 (확장)
+                            print(f"      성공: {len(html_content)}자 HTML 획득")
+                            
+                            # HTML에서 실제 작성 날짜가 있는지 확인
+                            date_indicators = ['작성일', '등록일', '게시일', 'writeDt', 'regDt', 'createDate', 'data-write-date']
+                            has_date_info = any(indicator in html_content for indicator in date_indicators)
+                            
+                            if has_date_info:
+                                print(f"      날짜 정보 발견됨: {[ind for ind in date_indicators if ind in html_content]}")
+                            else:
+                                print(f"      날짜 정보 없음 - 다음 URL 시도")
+                            
+                            # 네이버 카페 실제 날짜 패턴 검색 (우선순위별)
+                            enhanced_patterns = [
+                                # 1순위: 네이버 공식 JSON 필드
+                                r'"writeDt":"(\d{4})-(\d{1,2})-(\d{1,2})',      # JSON writeDt (최우선)
+                                r'"regDt":"(\d{4})-(\d{1,2})-(\d{1,2})',        # JSON regDt
+                                r'"createDate":"(\d{4})-(\d{1,2})-(\d{1,2})',   # JSON createDate
+                                r'data-write-date="(\d{4})-(\d{1,2})-(\d{1,2})',  # data-write-date 속성
                                 
-                                if date(2020, 1, 1) <= extracted_date <= date.today():
-                                    print(f"    ✓ 빠른 패턴 날짜: {extracted_date}")
-                                    return extracted_date
-                    
-                    print(f"    ❌ 알 수 없는 카페/범위 - 제외: {cafe_name}")
-                    return None
-                    
-                # HEAD 요청으로 Last-Modified 확인 (선택적)
-                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-                response = requests.head(link, headers=headers, timeout=1)
+                                # 2순위: 텍스트 기반 날짜 표시
+                                r'작성일[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',   # 작성일: 2025.07.15
+                                r'등록일[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',   # 등록일: 2025.07.15
+                                r'(\d{4})\.(\d{1,2})\.(\d{1,2})\s*\d{1,2}:\d{1,2}', # 2025.07.15 14:30
+                                
+                                # 3순위: 메타데이터 
+                                r'<time[^>]*datetime="(\d{4})-(\d{1,2})-(\d{1,2})',  # time datetime 속성
+                                r'"published":"(\d{4})-(\d{1,2})-(\d{1,2})',    # JSON published
+                                r'"created":"(\d{4})-(\d{1,2})-(\d{1,2})',      # JSON created
+                                
+                                # 4순위: 기타 패턴 
+                                r'(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일',        # 한글 날짜
+                                r'data-date="(\d{4})-(\d{1,2})-(\d{1,2})',      # data-date 속성
+                                r'datetime="(\d{4})-(\d{1,2})-(\d{1,2})',       # datetime 속성
+                                r'(\d{4})-(\d{1,2})-(\d{1,2})T\d{2}:\d{2}:\d{2}', # ISO 형식
+                            ]
+                            
+                            # 우선순위별로 패턴 검색
+                            for pattern_idx, pattern in enumerate(enhanced_patterns):
+                                matches = re.findall(pattern, html_content)
+                                
+                                for match in matches:
+                                    try:
+                                        if len(match) >= 3:
+                                            year = int(match[0])
+                                            month = int(match[1])
+                                            day = int(match[2])
+                                            
+                                            # 유효한 날짜 범위 확인
+                                            if 2020 <= year <= 2025 and 1 <= month <= 12 and 1 <= day <= 31:
+                                                test_date = date(year, month, day)
+                                                # 미래 날짜 제외
+                                                if test_date <= date.today():
+                                                    pattern_names = [
+                                                        "네이버 공식 writeDt", "네이버 공식 regDt", "네이버 공식 createDate", "data-write-date",
+                                                        "작성일 표시", "등록일 표시", "날짜+시간 표시",
+                                                        "time datetime", "JSON published", "JSON created",
+                                                        "한글 날짜", "data-date", "datetime 속성", "ISO 날짜"
+                                                    ]
+                                                    pattern_name = pattern_names[pattern_idx] if pattern_idx < len(pattern_names) else f"패턴{pattern_idx}"
+                                                    print(f"    ✓ 정확한 날짜 추출 성공: {test_date} ({pattern_name})")
+                                                    return test_date
+                                    except (ValueError, IndexError):
+                                        continue
+                                
+                                # 우선순위 높은 패턴에서 찾았으면 다른 URL 시도 중단
+                                if pattern_idx < 4 and any(2020 <= int(match[0]) <= 2025 for match in matches if len(match) >= 3 and match[0].isdigit()):
+                                    print(f"      상위 패턴에서 날짜 발견 - 다른 URL 시도 중단")
+                                    break
+                                        
+                    except Exception as e:
+                        print(f"      시도 실패: {str(e)[:50]}")
+                        continue
+                
+                # 하나라도 성공했으면 다른 URL 시도 중단
+                if 'extracted_date' in locals():
+                    break
+                        
+                # HEAD 요청으로 Last-Modified 확인 (보조적)
+                response = requests.head(link, headers=headers, timeout=2)
                 if response.status_code == 200:
                     last_modified = response.headers.get('Last-Modified')
                     if last_modified:
@@ -327,7 +382,7 @@ def filter_cafe_by_real_date_only(cafe_results, start_date, end_date, service_na
     print(f"    실제 날짜만 사용한 필터링 시작: {start_date} ~ {end_date}")
     
     for cafe in cafe_results:
-        if len(filtered_results) >= max_results or processed_count >= 10:  # 빠른 처리를 위해 10개로 제한
+        if len(filtered_results) >= max_results or processed_count >= 30:  # 정확도를 위해 30개까지 처리
             break
             
         processed_count += 1
