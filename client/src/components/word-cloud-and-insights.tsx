@@ -31,13 +31,15 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/wordcloud/긍정?${params}`);
+      const response = await fetch(`/api/wordcloud/긍정?${params}&t=${Date.now()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch positive words");
       }
       return response.json();
     },
     enabled: true,
+    staleTime: 0,
+    cacheTime: 0,
   });
 
   const { data: negativeWords = [], isLoading: negativeLoading } = useQuery({
@@ -57,13 +59,15 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/wordcloud/부정?${params}`);
+      const response = await fetch(`/api/wordcloud/부정?${params}&t=${Date.now()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch negative words");
       }
       return response.json();
     },
     enabled: true,
+    staleTime: 0,
+    cacheTime: 0,
   });
 
   const { data: insights = [], isLoading: insightsLoading } = useQuery({
@@ -83,13 +87,15 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         params.append("dateTo", filters.dateTo.toISOString());
       }
 
-      const response = await fetch(`/api/insights?${params}`);
+      const response = await fetch(`/api/insights?${params}&t=${Date.now()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch insights");
       }
       return response.json();
     },
     enabled: true,
+    staleTime: 0,
+    cacheTime: 0,
   });
 
   console.log("WordCloud component - positiveWords:", positiveWords);
