@@ -36,7 +36,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       }
       return response.json();
     },
-    enabled: !!filters?.service?.id,
+    enabled: true,
   });
 
   const { data: negativeWords = [], isLoading: negativeLoading } = useQuery({
@@ -62,7 +62,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       }
       return response.json();
     },
-    enabled: !!filters?.service?.id,
+    enabled: true,
   });
 
   const { data: insights = [], isLoading: insightsLoading } = useQuery({
@@ -88,7 +88,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       }
       return response.json();
     },
-    enabled: !!filters?.service?.id,
+    enabled: true,
   });
 
   const renderWordCloud = (words: any[], title: string, isPositive: boolean) => {
