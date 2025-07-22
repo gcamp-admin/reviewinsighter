@@ -277,13 +277,13 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 
                                 print(f"  실제 날짜만 추출 시스템 사용: {start_dt} ~ {end_dt}")
                                 
-                                # 실제 날짜 추출을 통한 필터링 (제한 대폭 확장)
+                                # 빠른 날짜 필터링 (속도 최적화)
                                 filtered_results = filter_cafe_by_real_date_only(
                                     naver_cafes, 
                                     start_dt, 
                                     end_dt, 
                                     service_name=service_name,
-                                    max_results=50  # 10개→50개로 대폭 확장
+                                    max_results=30  # 속도를 위해 30개로 조정
                                 )
                                 
                                 cafe_results.extend(filtered_results)
