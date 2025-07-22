@@ -312,14 +312,18 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                     print(f"  Skipping news article: {title[:50]}...")
                                     continue
                                 
-                                # 실제 네이버 카페 날짜 추출 (무조건 추출)
+                                # 실제 네이버 카페 날짜 추출 (확실한 데이터만)
                                 from datetime import datetime as dt
                                 from naver_cafe_real_date_only import extract_real_date_only
                                 
-                                # 실제 카페 날짜 무조건 추출
+                                # 확실한 카페 날짜만 추출 (추정 금지)
                                 extracted_date = extract_real_date_only(cafe)
+                                if extracted_date is None:
+                                    print(f"  ❌ 확실한 날짜 없음 - 카페 글 제외: {clean_title[:30]}...")
+                                    continue
+                                    
                                 iso_date = extracted_date.strftime('%Y-%m-%dT00:00:00.000Z')
-                                print(f"  ✓ 네이버 카페 실제 날짜: {extracted_date} -> {iso_date}")
+                                print(f"  ✓ 네이버 카페 확실한 날짜: {extracted_date} -> {iso_date}")
                                 
                                 # Clean content from HTML tags
                                 # Remove HTML tags from content

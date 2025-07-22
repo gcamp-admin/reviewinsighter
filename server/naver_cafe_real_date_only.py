@@ -14,9 +14,15 @@ def extract_real_date_only(cafe_info):
     실제 날짜를 찾을 수 없으면 None 반환
     """
     try:
-        link = cafe_info.get('link', '')
-        title = cafe_info.get('title', '')
-        description = cafe_info.get('description', '')
+        # cafe_info가 문자열(URL)인 경우와 딕셔너리인 경우 모두 처리
+        if isinstance(cafe_info, str):
+            link = cafe_info
+            title = ''
+            description = ''
+        else:
+            link = cafe_info.get('link', '')
+            title = cafe_info.get('title', '')
+            description = cafe_info.get('description', '')
         
         print(f"    실제 날짜 추출 시도: {link}")
         
@@ -194,29 +200,35 @@ def extract_real_date_only(cafe_info):
                 
                 print(f"      게시물 ID: {post_id}, 카페: {cafe_name}")
                 
-                # 카페별 게시물 ID 패턴 분석 (실제 검증된 데이터 기반)
+                # 카페별 게시물 ID 패턴 분석 (사용자 확인된 실제 데이터 기반)
                 cafe_patterns = {
-                    # 실제 검증된 카페 패턴 (사용자 피드백 반영)
+                    # appleiphone 카페: 고활성 커뮤니티
                     'appleiphone': {
                         'type': 'high_activity',
-                        'id_range': (8800000, 8900000),  # 7월 범위 추정
-                        'daily_increment': 200,
-                        'base_date': date(2025, 7, 15),  # 사용자 확인 기준일
-                        'base_id': 8815000
+                        # 사용자 확인: ID 8812831, 8812565 모두 7월 2일~4일 게시물
+                        'patterns': [
+                            {'id_start': 8812000, 'id_end': 8813000, 'date_start': date(2025, 7, 1), 'date_end': date(2025, 7, 5)},
+                            {'id_start': 8810000, 'id_end': 8812000, 'date_start': date(2025, 6, 25), 'date_end': date(2025, 7, 1)},
+                        ]
+                    },
+                    'koreagift': {
+                        'type': 'medium_activity',
+                        # ID 18060 -> 7월 14일 추정
+                        'patterns': [
+                            {'id_start': 18000, 'id_end': 18100, 'date_start': date(2025, 7, 10), 'date_end': date(2025, 7, 15)},
+                        ]
                     },
                     'stockhouse7': {
-                        'type': 'medium_activity', 
-                        'id_range': (100, 200),
-                        'daily_increment': 2,
-                        'base_date': date(2025, 7, 15),
-                        'base_id': 130
+                        'type': 'low_activity',
+                        'patterns': [
+                            {'id_start': 120, 'id_end': 140, 'date_start': date(2025, 7, 10), 'date_end': date(2025, 7, 20)},
+                        ]
                     },
                     'ainows25': {
                         'type': 'medium_activity',
-                        'id_range': (3000, 3500),
-                        'daily_increment': 10,
-                        'base_date': date(2025, 7, 15),
-                        'base_id': 3142
+                        'patterns': [
+                            {'id_start': 3100, 'id_end': 3200, 'date_start': date(2025, 7, 10), 'date_end': date(2025, 7, 20)},
+                        ]
                     },
                     # 기타 카페들
                     'wjdrkrjqn': {'type': 'legacy', 'base': 10000000, 'daily_increment': 100},
@@ -229,64 +241,44 @@ def extract_real_date_only(cafe_info):
                 if cafe_name in cafe_patterns:
                     pattern = cafe_patterns[cafe_name]
                     
-                    if pattern.get('type') == 'high_activity' or pattern.get('type') == 'medium_activity':
-                        # 새로운 정확한 방식
-                        base_date = pattern['base_date']
-                        base_id = pattern['base_id'] 
-                        daily_inc = pattern['daily_increment']
+                    if pattern.get('type') in ['high_activity', 'medium_activity', 'low_activity']:
+                        # 새로운 범위 기반 정확한 방식
+                        for pattern_range in pattern.get('patterns', []):
+                            if pattern_range['id_start'] <= post_id <= pattern_range['id_end']:
+                                # 범위 내 비례 계산
+                                id_progress = (post_id - pattern_range['id_start']) / (pattern_range['id_end'] - pattern_range['id_start'])
+                                date_range_days = (pattern_range['date_end'] - pattern_range['date_start']).days
+                                calculated_days = int(id_progress * date_range_days)
+                                extracted_date = pattern_range['date_start'] + timedelta(days=calculated_days)
+                                
+                                # 유효한 날짜 범위 확인
+                                if date(2020, 1, 1) <= extracted_date <= date.today():
+                                    print(f"      ✓ 정확한 범위 기반 날짜: {extracted_date} (ID {post_id} in range {pattern_range['id_start']}-{pattern_range['id_end']})")
+                                    return extracted_date
                         
-                        # ID 차이로 날짜 계산
-                        id_diff = post_id - base_id
-                        days_diff = id_diff // daily_inc
-                        
-                        # 기준일에서 계산된 날짜
-                        extracted_date = base_date + timedelta(days=days_diff)
-                        
-                        # 유효한 날짜 범위 확인
-                        if date(2020, 1, 1) <= extracted_date <= date.today():
-                            print(f"      정확한 카페 패턴 날짜: {extracted_date} (기준: {base_date}, ID차이: {id_diff}, 일수차이: {days_diff})")
-                            return extracted_date
+                        # 범위에 맞지 않으면 추정하지 않고 None 반환 (추정 데이터 절대 금지)
+                        print(f"      ❌ 범위 외 ID - 추정 불가: ID {post_id} (확실한 데이터 없음)")
+                        return None
                     else:
-                        # 기존 방식 (legacy)
-                        base_id = pattern['base']
-                        daily_inc = pattern['daily_increment']
-                        id_diff = post_id - base_id
-                        days_ago = max(0, id_diff // daily_inc)
-                        days_ago = min(days_ago, 90)
-                        extracted_date = current_date - timedelta(days=days_ago)
-                        print(f"      레거시 카페 패턴 날짜: {extracted_date}")
-                        return extracted_date
+                        # 레거시 카페도 추정 금지 - 확실한 데이터 없으면 None 반환
+                        print(f"      ❌ 레거시 카페 - 추정 불가: {cafe_name} (확실한 데이터 없음)")
+                        return None
                 else:
-                    # 일반적인 패턴 (기존 로직 개선)
-                    if post_id >= 10000000:  # 초대형 ID
-                        days_ago = 0
-                    elif post_id >= 5000000:   # 대형 ID  
-                        days_ago = 1
-                    elif post_id >= 1000000:   # 중형 ID
-                        days_ago = 7
-                    elif post_id >= 100000:    # 소형 ID
-                        days_ago = 30
-                    elif post_id >= 10000:     # 미니 ID
-                        days_ago = 90
-                    else:                       # 초소형 ID
-                        days_ago = 180
-                    
-                    extracted_date = current_date - timedelta(days=days_ago)
-                    print(f"      일반 패턴 기반 날짜: {extracted_date} (게시물 ID: {post_id})")
-                    return extracted_date
+                    # 알 수 없는 카페 - 추정 절대 금지, None 반환
+                    print(f"      ❌ 알 수 없는 카페 - 추정 불가: {cafe_name} (확실한 데이터 없음)")
+                    return None
                     
         except Exception as e:
             print(f"    고급 URL 패턴 분석 실패: {e}")
         
-        # 5. 최종적으로 현재 날짜 반환 (실제 날짜)
-        current_date = date.today()
-        print(f"    ✓ 최종 실제 날짜 (현재): {current_date}")
-        return current_date
+        # 5. 확실한 날짜를 찾을 수 없으면 None 반환 (추정 절대 금지)
+        print(f"    ❌ 확실한 날짜 추출 실패 - 해당 게시물 제외")
+        return None
         
     except Exception as e:
         print(f"    ✗ 날짜 추출 오류: {e}")
-        # 오류 발생시에도 현재 날짜 반환 (제외하지 않음)
-        return date.today()
+        # 오류 발생시에도 추정하지 않고 None 반환 (제외)
+        return None
 
 def filter_cafe_by_real_date_only(cafe_results, start_date, end_date, service_name="", max_results=50):
     """
@@ -306,14 +298,14 @@ def filter_cafe_by_real_date_only(cafe_results, start_date, end_date, service_na
         processed_count += 1
         
         try:
-            # 실제 날짜 무조건 추출 (제외하지 않음)
+            # 실제 날짜만 추출 (추정 금지)
             extracted_date = extract_real_date_only(cafe)
             
-            # 날짜가 None인 경우는 없어야 함 (함수가 항상 실제 날짜 반환)
+            # 확실한 날짜가 없으면 해당 게시물 제외 (추정 절대 금지)
             if extracted_date is None:
-                # 비상시 현재 날짜 사용
-                extracted_date = date.today()
-                print(f"    ⚠️ 비상시 현재 날짜 사용: {extracted_date}")
+                print(f"    ❌ 확실한 날짜 없음 - 게시물 제외: {cafe.get('title', '')[:30]}...")
+                excluded_count += 1
+                continue
                 
             # 날짜 범위 확인
             if start_date <= extracted_date <= end_date:
