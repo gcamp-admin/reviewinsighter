@@ -38,15 +38,19 @@ HEART 프레임워크 (UX 관점):
 ${reviewTexts.slice(0, 10).map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
 내용: ${review.content.substring(0, 150)}`).join('\n\n')}
 
-분석 결과를 다음 JSON 형식으로 반환해주세요:
+분석 결과를 다음 JSON 형식으로 반환해주세요 (상위 5개 문제 순으로):
 {
   "insights": [
     {
       "category": "happiness|engagement|adoption|retention|task_success",
-      "title": "🔴 Critical | HEART: [category] | [문제유형] ([건수]건)",
-      "problem_summary": "실제 사용자 표현을 인용하며 구체적인 UX 문제점 설명. 사용자가 어떤 상황에서 어떤 문제를 겪었는지 명확히 기술",
-      "competitor_benchmark": "동일 문제를 해결한 타사 앱(카카오톡, 네이버폰, 구글전화, 삼성전화 등)의 UX 솔루션 사례. 구체적인 기능명과 UI 방식 명시",
-      "ux_suggestions": "구체적이고 실행 가능한 UI/UX/GUI/Flow 개선 제안 (3-5개 항목). 각 항목은 '**카테고리**: 구체적인 솔루션 설명' 형식으로 작성. 버튼 위치/크기/색상, 화면 전환, 애니메이션, 피드백 방식 등을 상세히 명시",
+      "title": "Critical | HEART: [category] | [문제유형] ([건수]건)",
+      "problem_summary": "실제 사용자 리뷰 표현을 직접 인용하며 한 줄로 문제상황 요약. 예: '사용자들이 화면크기를 크게하면 키패드가 사라진다고 호소하여 기본 통화 기능을 사용할 수 없는 접근성 문제 발생'",
+      "competitor_benchmark": "동일 문제를 해결한 타사 앱의 구체적 해결방안. 카카오톡/네이버폰/구글전화/삼성전화 등이 이 문제를 어떻게 해결하는지 구체적 기능과 UI 방식 명시",
+      "ux_suggestions": [
+        "구체적이고 실행 가능한 UI/UX 개선 제안 1 (버튼 위치/크기/색상, 화면 전환, 애니메이션 등 상세)",
+        "구체적이고 실행 가능한 UI/UX 개선 제안 2",
+        "구체적이고 실행 가능한 UI/UX 개선 제안 3"
+      ],
       "priority": "critical|major|minor",
       "mention_count": 건수,
       "trend": "stable"
@@ -108,6 +112,9 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
 실제 사용자 리뷰에서 발견된 문제만 분석하고, 가상의 문제는 만들지 마세요.
 각 인사이트마다 problem_summary, competitor_benchmark, ux_suggestions 필드를 모두 포함해주세요.
 타사 벤치마킹에는 카카오톡, 네이버폰, 구글전화, 삼성전화, T전화 등의 실제 UX 솔루션을 참조하세요.
+이모지는 사용하지 마세요.
+반드시 정확히 5개의 인사이트를 생성해주세요. 상위 5개의 가장 심각한 문제를 우선순위대로 분석해주세요.
+insights 배열에는 정확히 5개의 항목이 포함되어야 합니다.
 `;
 
     const response = await openai.chat.completions.create({
@@ -115,14 +122,14 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
       messages: [
         {
           role: "system",
-          content: "당신은 UI/UX/GUI/Flow 전문 디자이너입니다. 사용자 리뷰를 분석하여 구체적이고 실행 가능한 인터페이스 개선 제안을 생성합니다. 요구사항: 1. 구체적인 UI 컴포넌트: 버튼 위치/크기/색상, 아이콘 종류, 레이아웃 배치를 명시 2. 사용자 플로우: 단계별 화면 전환과 터치포인트를 구체화 3. 인터랙션 디자인: 제스처, 애니메이션, 피드백 방식을 상세히 기술 4. GUI 요소: 팝업, 다이얼로그, 상태 표시를 구체적으로 설계. 반드시 실제 리뷰 내용을 기반으로 구체적인 UI/UX 솔루션을 제안하고, 유효한 JSON 형태로 답변해주세요."
+          content: "당신은 UI/UX/GUI/Flow 전문 디자이너입니다. 사용자 리뷰를 분석하여 구체적이고 실행 가능한 인터페이스 개선 제안을 생성합니다. 중요: 반드시 정확히 5개의 인사이트를 생성해야 합니다. 요구사항: 1. 구체적인 UI 컴포넌트: 버튼 위치/크기/색상, 아이콘 종류, 레이아웃 배치를 명시 2. 사용자 플로우: 단계별 화면 전환과 터치포인트를 구체화 3. 인터랙션 디자인: 제스처, 애니메이션, 피드백 방식을 상세히 기술 4. GUI 요소: 팝업, 다이얼로그, 상태 표시를 구체적으로 설계. 반드시 실제 리뷰 내용을 기반으로 구체적인 UI/UX 솔루션을 제안하고, insights 배열에 정확히 5개 항목을 포함한 유효한 JSON 형태로 답변해주세요."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      max_tokens: 1500,
+      max_tokens: 2500,
       temperature: 0.3,
       response_format: { type: "json_object" }
     });

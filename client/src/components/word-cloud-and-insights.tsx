@@ -381,13 +381,19 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                 )}
 
                 {/* UX 개선 제안 */}
-                <div className="space-y-2 bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
-                  <h4 className="font-semibold text-green-800 flex items-center">
+                <div className="space-y-2 p-4 rounded-lg border-l-4 border-gray-400">
+                  <h4 className="font-semibold text-gray-800 flex items-center">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     UX 개선 제안
                   </h4>
-                  <div className="text-green-700 leading-relaxed">
-                    {Array.isArray(insight.description) ? (
+                  <div className="text-gray-700 leading-relaxed">
+                    {Array.isArray(insight.ux_suggestions) ? (
+                      <ul className="space-y-2">
+                        {insight.ux_suggestions.map((item: string, idx: number) => (
+                          <li key={idx} className="text-sm">{item}</li>
+                        ))}
+                      </ul>
+                    ) : Array.isArray(insight.description) ? (
                       <ul className="space-y-2">
                         {insight.description.map((item: string, idx: number) => (
                           <li key={idx} className="text-sm">{item}</li>
