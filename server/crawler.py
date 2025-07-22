@@ -256,10 +256,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
         try:
             # 네이버 API 사용 시도
             api_success = False
-            for kw in service_keywords[:3]:  # Limit to 3 keywords for stability
+            for kw in service_keywords[:5]:  # 키워드 수 확장 (3→5개)
                 print(f"Searching Naver Cafe with keyword: {kw}")
                 try:
-                    naver_cafes = search_naver(kw, search_type="cafe", display=review_count//3, start_date=start_date, end_date=end_date)
+                    naver_cafes = search_naver(kw, search_type="cafe", display=100, start_date=start_date, end_date=end_date)  # 최대 100개로 확장
                     print(f"Found {len(naver_cafes)} cafe results for keyword: {kw}")
                     
                     if naver_cafes:
@@ -277,13 +277,13 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 
                                 print(f"  실제 날짜만 추출 시스템 사용: {start_dt} ~ {end_dt}")
                                 
-                                # 빠른 날짜 추출을 통한 필터링 (최대 10개로 제한)
+                                # 실제 날짜 추출을 통한 필터링 (제한 대폭 확장)
                                 filtered_results = filter_cafe_by_real_date_only(
                                     naver_cafes, 
                                     start_dt, 
                                     end_dt, 
                                     service_name=service_name,
-                                    max_results=min(10, review_count//3)  # 최대 10개로 제한하여 속도 개선
+                                    max_results=50  # 10개→50개로 대폭 확장
                                 )
                                 
                                 cafe_results.extend(filtered_results)

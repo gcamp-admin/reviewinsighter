@@ -154,9 +154,8 @@ def extract_real_date_only(cafe_info):
                         print(f"      시도 실패: {str(e)[:50]}")
                         continue
                 
-                # 하나라도 성공했으면 다른 URL 시도 중단
-                if 'extracted_date' in locals():
-                    break
+                # 웹 스크래핑 성공한 경우 다음 단계로 진행
+                # (extracted_date가 반환되었으면 함수 종료됨)
                         
                 # HEAD 요청으로 Last-Modified 확인 (보조적)
                 response = requests.head(link, headers=headers, timeout=2)
@@ -382,7 +381,7 @@ def filter_cafe_by_real_date_only(cafe_results, start_date, end_date, service_na
     print(f"    실제 날짜만 사용한 필터링 시작: {start_date} ~ {end_date}")
     
     for cafe in cafe_results:
-        if len(filtered_results) >= max_results or processed_count >= 30:  # 정확도를 위해 30개까지 처리
+        if len(filtered_results) >= max_results or processed_count >= 100:  # 30개→100개로 대폭 확장
             break
             
         processed_count += 1
