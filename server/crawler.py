@@ -70,8 +70,8 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     created_at += 'Z'
                 elif created_at.endswith('-07:00'):
                     # Convert PST to UTC
-                    from datetime import datetime, timedelta
-                    dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    from datetime import datetime as dt_conv, timedelta
+                    dt = dt_conv.fromisoformat(created_at.replace('Z', '+00:00'))
                     dt = dt + timedelta(hours=7)  # Convert PST to UTC
                     created_at = dt.isoformat() + 'Z'
                     
@@ -110,17 +110,17 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             created_at = review.get("at", "")
             if created_at:
                 try:
-                    from datetime import datetime, timedelta
+                    from datetime import datetime as dt_conv, timedelta
                     if '-07:00' in created_at:
                         # Convert PST to UTC
-                        dt = datetime.fromisoformat(created_at.replace('-07:00', ''))
+                        dt = dt_conv.fromisoformat(created_at.replace('-07:00', ''))
                         dt = dt + timedelta(hours=7)  # Convert PST to UTC
                         created_at = dt.isoformat() + 'Z'
                     elif not created_at.endswith('Z') and '+' not in created_at:
                         created_at += 'Z'
                 except:
                     # If parsing fails, use current time
-                    created_at = datetime.now().isoformat() + 'Z'
+                    created_at = dt_conv.now().isoformat() + 'Z'
                     
             apple_review = {
                 "userId": review.get("userName", "익명"),
@@ -158,13 +158,14 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                             # Convert YYYYMMDD to ISO format
                             post_date = blog.get("postdate", "20250101")
                             try:
-                                parsed_date = datetime.strptime(post_date, "%Y%m%d")
+                                from datetime import datetime as dt_parse
+                                parsed_date = dt_parse.strptime(post_date, "%Y%m%d")
                                 iso_date = parsed_date.isoformat() + "Z"
                                 
                                 # Filter by date range if specified (date only comparison)
                                 if start_date and end_date:
-                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
-                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                                    start_dt = dt_parse.fromisoformat(start_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
+                                    end_dt = dt_parse.fromisoformat(end_date.replace('Z', '+00:00')).replace(tzinfo=None).date()
                                     blog_date = parsed_date.date()
                                     if not (start_dt <= blog_date <= end_dt):
                                         print(f"  Skipping blog post: {blog_date} outside range {start_dt} to {end_dt}")
@@ -316,6 +317,10 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 from datetime import datetime as dt
                                 from naver_cafe_real_date_only import extract_real_date_only
                                 
+                                # Clean content from HTML tags first
+                                clean_title = re.sub(r'<[^>]+>', '', title)
+                                clean_description = re.sub(r'<[^>]+>', '', description)
+                                
                                 # 확실한 카페 날짜만 추출 (추정 금지)
                                 extracted_date = extract_real_date_only(cafe)
                                 if extracted_date is None:
@@ -324,11 +329,6 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                     
                                 iso_date = extracted_date.strftime('%Y-%m-%dT00:00:00.000Z')
                                 print(f"  ✓ 네이버 카페 확실한 날짜: {extracted_date} -> {iso_date}")
-                                
-                                # Clean content from HTML tags
-                                # Remove HTML tags from content
-                                clean_title = re.sub(r'<[^>]+>', '', title)
-                                clean_description = re.sub(r'<[^>]+>', '', description)
                                 
                                 # Decode HTML entities
                                 clean_title = clean_title.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
