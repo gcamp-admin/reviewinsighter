@@ -16,16 +16,31 @@ export async function analyzeHeartFrameworkWithGPT(reviews: any[]): Promise<any[
   }
 
   try {
-    // Prepare review texts for analysis
-    const reviewTexts = reviews.map(review => ({
+    // 토큰 절약: 부정 리뷰만 필터링하여 분석
+    const negativeReviews = reviews.filter(review => 
+      review.sentiment === '부정' && 
+      review.content && 
+      review.content.length > 10
+    );
+
+    if (negativeReviews.length === 0) {
+      console.log('No negative reviews found for HEART analysis');
+      return [];
+    }
+
+    console.log(`Analyzing ${negativeReviews.length} negative reviews for HEART framework (토큰 절약)`);
+
+    // 부정 리뷰만 분석 대상으로 준비
+    const reviewTexts = negativeReviews.slice(0, 8).map(review => ({
       content: review.content,
       rating: review.rating,
       source: review.source
     }));
 
-    // Create prompt for detailed UX-focused HEART framework analysis
+    // Create prompt for detailed UX-focused HEART framework analysis (부정 리뷰 전용)
     const prompt = `
-다음 리뷰들을 HEART 프레임워크에 따라 분석하여 구체적이고 실행 가능한 UX 개선 제안을 생성해주세요.
+다음 부정 리뷰들을 HEART 프레임워크에 따라 분석하여 구체적이고 실행 가능한 UX 개선 제안을 생성해주세요.
+(부정 리뷰만 분석하여 토큰을 절약하며 문제점 중심의 개선안을 도출합니다)
 
 HEART 프레임워크 (UX 관점):
 - Happiness: 사용자 만족도, 감정적 반응, 사용 즐거움
@@ -34,11 +49,11 @@ HEART 프레임워크 (UX 관점):
 - Retention: 재사용 동기, 사용자 이탈 방지, 지속적 가치 제공
 - Task Success: 작업 완료율, 오류 방지, 사용자 목표 달성
 
-리뷰 데이터:
-${reviewTexts.slice(0, 10).map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
-내용: ${review.content.substring(0, 150)}`).join('\n\n')}
+부정 리뷰 데이터:
+${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
+내용: ${review.content.substring(0, 80)}`).join('\n\n')}
 
-분석 결과를 다음 JSON 형식으로 반환해주세요 (상위 5개 문제 순으로):
+분석 결과를 다음 JSON 형식으로 반환해주세요 (실제로 개선이 필요한 중요한 문제들만):
 {
   "insights": [
     {
@@ -113,8 +128,7 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
 각 인사이트마다 problem_summary, competitor_benchmark, ux_suggestions 필드를 모두 포함해주세요.
 타사 벤치마킹에는 카카오톡, 네이버폰, 구글전화, 삼성전화, T전화 등의 실제 UX 솔루션을 참조하세요.
 이모지는 사용하지 마세요.
-반드시 정확히 5개의 인사이트를 생성해주세요. 상위 5개의 가장 심각한 문제를 우선순위대로 분석해주세요.
-insights 배열에는 정확히 5개의 항목이 포함되어야 합니다.
+실제로 개선이 필요한 중요한 문제들만 분석해주세요. 무의미한 문제를 억지로 만들지 말고, 진짜 사용자가 겪고 있는 문제만 우선순위대로 분석해주세요.
 `;
 
     const response = await openai.chat.completions.create({
@@ -122,14 +136,14 @@ insights 배열에는 정확히 5개의 항목이 포함되어야 합니다.
       messages: [
         {
           role: "system",
-          content: "당신은 UI/UX/GUI/Flow 전문 디자이너입니다. 사용자 리뷰를 분석하여 구체적이고 실행 가능한 인터페이스 개선 제안을 생성합니다. 중요: 반드시 정확히 5개의 인사이트를 생성해야 합니다. 요구사항: 1. 구체적인 UI 컴포넌트: 버튼 위치/크기/색상, 아이콘 종류, 레이아웃 배치를 명시 2. 사용자 플로우: 단계별 화면 전환과 터치포인트를 구체화 3. 인터랙션 디자인: 제스처, 애니메이션, 피드백 방식을 상세히 기술 4. GUI 요소: 팝업, 다이얼로그, 상태 표시를 구체적으로 설계. 반드시 실제 리뷰 내용을 기반으로 구체적인 UI/UX 솔루션을 제안하고, insights 배열에 정확히 5개 항목을 포함한 유효한 JSON 형태로 답변해주세요."
+          content: "당신은 UI/UX/GUI/Flow 전문 디자이너입니다. 사용자 리뷰를 분석하여 구체적이고 실행 가능한 인터페이스 개선 제안을 생성합니다. 중요: 실제로 개선이 필요한 중요한 문제들만 분석하세요. 억지로 문제를 만들지 마세요. 요구사항: 1. 구체적인 UI 컴포넌트: 버튼 위치/크기/색상, 아이콘 종류, 레이아웃 배치를 명시 2. 사용자 플로우: 단계별 화면 전환과 터치포인트를 구체화 3. 인터랙션 디자인: 제스처, 애니메이션, 피드백 방식을 상세히 기술 4. GUI 요소: 팝업, 다이얼로그, 상태 표시를 구체적으로 설계. 반드시 실제 리뷰 내용을 기반으로 구체적인 UI/UX 솔루션을 제안하고, 유효한 JSON 형태로 답변해주세요."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      max_tokens: 2500,
+      max_tokens: 1500,
       temperature: 0.3,
       response_format: { type: "json_object" }
     });
@@ -238,7 +252,10 @@ async function generateKeywordsForSentiment(reviews: any[], sentiment: string): 
   }
 
   try {
-    const reviewTexts = reviews.map(r => r.content).join('\n');
+    // 토큰 절약을 위해 샘플링 및 텍스트 길이 제한
+    const sampleSize = Math.min(8, reviews.length);
+    const sampledReviews = reviews.slice(0, sampleSize);
+    const reviewTexts = sampledReviews.map(r => r.content.substring(0, 80)).join('\n');
     
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
