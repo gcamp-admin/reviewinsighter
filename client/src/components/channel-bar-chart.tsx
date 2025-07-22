@@ -102,12 +102,12 @@ const ChannelBarChart = ({ data }: Props) => {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-1 min-h-0">
-        <div className="relative h-64">
+        <div className="relative h-48">
           <canvas ref={canvasRef}></canvas>
         </div>
       </div>
 
-      <div className="mt-3 space-y-2 flex-shrink-0">
+      <div className="mt-4 space-y-2 flex-shrink-0">
         {data.map((item, i) => (
           <div key={i} className="flex items-center justify-between text-sm">
             <div className="flex items-center">
