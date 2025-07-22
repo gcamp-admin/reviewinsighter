@@ -13,6 +13,13 @@ import random
 import re
 
 def crawl_service_by_selection(service_name, selected_channels, start_date=None, end_date=None, review_count=100):
+    # Map service name to service ID
+    service_mapping = {
+        '익시오': 'ixio',
+        'SOHO우리가게패키지': 'soho-package', 
+        'AI비즈콜': 'ai-bizcall'
+    }
+    service_id = service_mapping.get(service_name, service_name.lower().replace(' ', '-'))
     """
     Crawl reviews from selected channels for a specific service with filtering
     
@@ -71,7 +78,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             google_review = {
                 "userId": review.get("userName", "익명"),
                 "source": "google_play",
-                "serviceId": "ixio",
+                "serviceId": service_id,
                 "appId": str(i),
                 "rating": review.get("score", 3),
                 "content": review.get("content", ""),
@@ -118,7 +125,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
             apple_review = {
                 "userId": review.get("userName", "익명"),
                 "source": "app_store",
-                "serviceId": "ixio",
+                "serviceId": service_id,
                 "appId": str(i),
                 "rating": review.get("score", 3),
                 "content": review.get("content", ""),
@@ -197,7 +204,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                             blog_review = {
                                 "userId": user_id,
                                 "source": "naver_blog",
-                                "serviceId": "ixio",
+                                "serviceId": service_id,
                                 "appId": f"blog_{blog.get('postdate', 'unknown')}",
                                 "rating": 5,  # Default rating for blog posts
                                 "content": f"{clean_title} {clean_description}",
@@ -309,7 +316,7 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 cafe_review = {
                                     "userId": cafe.get("extracted_user_id") or cafe.get("cafename", "Unknown"),
                                     "source": "naver_cafe",
-                                    "serviceId": "ixio",
+                                    "serviceId": service_id,
                                     "appId": f"cafe_{cafe.get('cafename', 'unknown')}",
                                     "rating": 5,  # Default rating for cafe posts
                                     "content": f"{clean_title} {clean_description}".strip(),

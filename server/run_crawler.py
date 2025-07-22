@@ -37,6 +37,14 @@ def main():
         end_date = crawler_args.get('endDate')
         review_count = crawler_args.get('count', 100)
         
+        # Map service name to service ID
+        service_mapping = {
+            '익시오': 'ixio',
+            'SOHO우리가게패키지': 'soho-package',
+            'AI비즈콜': 'ai-bizcall'
+        }
+        service_id = service_mapping.get(service_name, service_name.lower().replace(' ', '-'))
+        
         print(f"Starting crawler for {service_name}")
         print(f"Channels: {selected_channels}")
         print(f"Date range: {start_date} to {end_date}")
@@ -84,7 +92,7 @@ def main():
                                 'rating': review.get('rating', 5),
                                 'source': mapped_source,  # 소스 매핑 수정
                                 'createdAt': created_at,
-                                'serviceId': 'ixio',
+                                'serviceId': service_id,
                                 'appId': review.get('appId', str(total_reviews)),
                                 'link': review.get('link', '')
                             }
@@ -101,7 +109,7 @@ def main():
                                 'rating': review.get('rating', review.get('score', 0)),
                                 'source': mapped_source,
                                 'createdAt': created_at,
-                                'serviceId': 'ixio',
+                                'serviceId': service_id,
                                 'appId': review.get('appId', str(total_reviews))
                             }
                         
