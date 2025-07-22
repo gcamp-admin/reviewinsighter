@@ -20,26 +20,19 @@ const ChannelBarChart = ({ data }: Props) => {
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    // 브랜드 색상 그라데이션 생성
-    const gradients = data.map((item) => {
-      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-      
-      // 브랜드 색상 그라데이션
+    // Modern flat 컬러 생성 (그라데이션 제거)
+    const flatColors = data.map((item) => {
+      // 브랜드 색상 기반 soft 단색
       if (item.label === '구글 앱스토어') {
-        gradient.addColorStop(0, '#D1FAE5'); // 연한 그린
-        gradient.addColorStop(1, '#10B981'); // 브랜드 그린
+        return '#10B981'; // 브랜드 그린
       } else if (item.label === '애플 앱스토어') {
-        gradient.addColorStop(0, '#E0E7FF'); // 연한 인디고
-        gradient.addColorStop(1, '#4F46E5'); // 브랜드 인디고
+        return '#4F46E5'; // 브랜드 인디고
       } else if (item.label === '네이버 블로그') {
-        gradient.addColorStop(0, '#ECFDF5'); // 연한 메인 색상
-        gradient.addColorStop(1, '#7CF3C4'); // 브랜드 메인
+        return '#7CF3C4'; // 브랜드 메인
       } else if (item.label === '네이버 카페') {
-        gradient.addColorStop(0, '#F3F4F6'); // 연한 그레이
-        gradient.addColorStop(1, '#6B7280'); // 중립 그레이
+        return '#6B7280'; // 중립 그레이
       }
-      
-      return gradient;
+      return item.color;
     });
 
     const chart = new Chart(ctx, {
@@ -49,10 +42,10 @@ const ChannelBarChart = ({ data }: Props) => {
         datasets: [{
           label: "수집 채널별 분포",
           data: data.map((item) => item.value),
-          backgroundColor: gradients,
-          borderColor: data.map((item) => item.color),
-          borderWidth: 1,
-          borderRadius: 8,
+          backgroundColor: flatColors,
+          borderColor: flatColors,
+          borderWidth: 0,
+          borderRadius: 6,
           borderSkipped: false,
         }]
       },
@@ -77,24 +70,26 @@ const ChannelBarChart = ({ data }: Props) => {
               display: false
             },
             ticks: {
-              font: {
-                size: 11,
-                family: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-              },
-              color: "#374151"
+              display: false // 막대 아래 라벨 숨김
             }
           },
           y: {
             beginAtZero: true,
             max: Math.max(...data.map(item => item.value)) * 1.1,
             grid: {
-              color: "rgba(0, 0, 0, 0.1)"
+              color: "rgba(156, 163, 175, 0.2)",
+              lineWidth: 1
             },
             ticks: {
               callback: function(value) {
                 return Math.round(value as number) + '%';
               },
-              stepSize: 1
+              stepSize: 10,
+              font: {
+                size: 11,
+                family: 'LG Smart UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+              },
+              color: "#6B7280"
             }
           }
         }
@@ -107,7 +102,7 @@ const ChannelBarChart = ({ data }: Props) => {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-1 min-h-0">
-        <div className="relative h-48">
+        <div className="relative h-64">
           <canvas ref={canvasRef}></canvas>
         </div>
       </div>
@@ -119,11 +114,11 @@ const ChannelBarChart = ({ data }: Props) => {
               <div 
                 className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
                 style={{ 
-                  background: item.label === '구글 앱스토어' ? 'linear-gradient(135deg, #D1FAE5 0%, #10B981 100%)' :
-                             item.label === '애플 앱스토어' ? 'linear-gradient(135deg, #E0E7FF 0%, #4F46E5 100%)' :
-                             item.label === '네이버 블로그' ? 'linear-gradient(135deg, #ECFDF5 0%, #7CF3C4 100%)' :
-                             item.label === '네이버 카페' ? 'linear-gradient(135deg, #F3F4F6 0%, #6B7280 100%)' : 
-                             item.color
+                  backgroundColor: item.label === '구글 앱스토어' ? '#10B981' :
+                                  item.label === '애플 앱스토어' ? '#4F46E5' :
+                                  item.label === '네이버 블로그' ? '#7CF3C4' :
+                                  item.label === '네이버 카페' ? '#6B7280' : 
+                                  item.color
                 }}
               />
               <span className="text-body text-gray-700">

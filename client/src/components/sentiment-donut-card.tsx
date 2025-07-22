@@ -4,7 +4,7 @@ import { ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 
 const SENTIMENT_COLORS = {
   긍정: "#10B981", // 브랜드 그린
-  부정: "#4F46E5", // 브랜드 인디고
+  부정: "#4F46E5", // 브랜드 인디고  
   중립: "#6B7280"  // 그레이
 };
 
@@ -94,20 +94,6 @@ export default function SentimentDonutCard({ filters }: Props) {
       <div className="relative h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <defs>
-              <linearGradient id="positiveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#D1FAE5" />
-                <stop offset="100%" stopColor="#10B981" />
-              </linearGradient>
-              <linearGradient id="negativeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#E0E7FF" />
-                <stop offset="100%" stopColor="#4F46E5" />
-              </linearGradient>
-              <linearGradient id="neutralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#F3F4F6" />
-                <stop offset="100%" stopColor="#6B7280" />
-              </linearGradient>
-            </defs>
             <Pie
               data={chartData}
               cx="50%"
@@ -120,23 +106,19 @@ export default function SentimentDonutCard({ filters }: Props) {
               {chartData.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={
-                    entry.name === '긍정' ? 'url(#positiveGradient)' :
-                    entry.name === '부정' ? 'url(#negativeGradient)' :
-                    'url(#neutralGradient)'
-                  }
+                  fill={entry.color}
                 />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip active={false} payload={[]} />} />
+            <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
         
-        {/* Center text */}
+        {/* Center text - 더 크고 강조된 스타일 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{total}</p>
-            <p className="text-sm text-gray-500">총 리뷰</p>
+            <p className="text-4xl font-bold text-gray-900">{total}</p>
+            <p className="text-sm text-gray-500 mt-1">총 리뷰</p>
           </div>
         </div>
       </div>
@@ -151,9 +133,7 @@ export default function SentimentDonutCard({ filters }: Props) {
                 <div 
                   className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
                   style={{ 
-                    background: item.name === '긍정' ? 'linear-gradient(135deg, #D1FAE5 0%, #10B981 100%)' :
-                               item.name === '부정' ? 'linear-gradient(135deg, #E0E7FF 0%, #4F46E5 100%)' :
-                               'linear-gradient(135deg, #F3F4F6 0%, #6B7280 100%)'
+                    backgroundColor: item.color
                   }}
                 />
                 <IconComponent className="w-4 h-4 mr-1 text-gray-600" />
