@@ -113,24 +113,36 @@ def extract_real_date_only(cafe_info):
                         if response.status_code == 200:
                             html_content = response.text[:10000]  # 처음 10KB만 분석
                             
-                            # 강화된 HTML 날짜 패턴 찾기
+                            # 강화된 HTML 날짜 패턴 찾기 (정확도 우선순위 순서)
                             enhanced_patterns = [
-                                r'작성일[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',  # 작성일: 2025.07.22
-                                r'등록일[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',  # 등록일: 2025.07.22  
-                                r'날짜[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',   # 날짜: 2025.07.22
-                                r'(\d{4})-(\d{1,2})-(\d{1,2})T\d{2}:\d{2}:\d{2}',  # ISO 날짜
-                                r'"writeDate":"(\d{4})-(\d{1,2})-(\d{1,2})',  # JSON writeDate
-                                r'"regDate":"(\d{4})-(\d{1,2})-(\d{1,2})',    # JSON regDate
-                                r'data-date="(\d{4})-(\d{1,2})-(\d{1,2})',    # data-date 속성
-                                r'datetime="(\d{4})-(\d{1,2})-(\d{1,2})',     # datetime 속성
-                                r'(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일',      # 한글 날짜
-                                r'(\d{4})\.(\d{1,2})\.(\d{1,2})\s*\d{1,2}:\d{1,2}',  # 날짜 + 시간
-                                r'<time[^>]*>(\d{4})\.(\d{1,2})\.(\d{1,2})',  # time 태그
-                                r'class="date"[^>]*>(\d{4})\.(\d{1,2})\.(\d{1,2})',  # class="date"
+                                # 1순위: 네이버 카페 공식 날짜 필드
+                                r'"writeDt":"(\d{4})-(\d{1,2})-(\d{1,2})',      # JSON writeDt (최우선)
+                                r'"regDt":"(\d{4})-(\d{1,2})-(\d{1,2})',        # JSON regDt
+                                r'"createDate":"(\d{4})-(\d{1,2})-(\d{1,2})',   # JSON createDate
+                                r'data-write-date="(\d{4})-(\d{1,2})-(\d{1,2})',  # data-write-date 속성
+                                
+                                # 2순위: 텍스트 기반 날짜 표시
+                                r'작성일[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',   # 작성일: 2025.07.15
+                                r'등록일[:\s]*(\d{4})\.(\d{1,2})\.(\d{1,2})',   # 등록일: 2025.07.15
+                                r'(\d{4})\.(\d{1,2})\.(\d{1,2})\s*\d{1,2}:\d{1,2}', # 2025.07.15 14:30
+                                
+                                # 3순위: 메타데이터 
+                                r'<time[^>]*datetime="(\d{4})-(\d{1,2})-(\d{1,2})',  # time datetime 속성
+                                r'"published":"(\d{4})-(\d{1,2})-(\d{1,2})',    # JSON published
+                                r'"created":"(\d{4})-(\d{1,2})-(\d{1,2})',      # JSON created
+                                
+                                # 4순위: 기타 패턴 
+                                r'(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일',        # 한글 날짜
+                                r'data-date="(\d{4})-(\d{1,2})-(\d{1,2})',      # data-date 속성
+                                r'datetime="(\d{4})-(\d{1,2})-(\d{1,2})',       # datetime 속성
+                                r'(\d{4})-(\d{1,2})-(\d{1,2})T\d{2}:\d{2}:\d{2}', # ISO 형식
                             ]
                             
-                            for pattern in enhanced_patterns:
+                            # 우선순위별로 패턴 검색 (정확한 패턴부터)
+                            for pattern_idx, pattern in enumerate(enhanced_patterns):
                                 matches = re.findall(pattern, html_content)
+                                valid_dates = []
+                                
                                 for match in matches:
                                     try:
                                         if len(match) >= 3:
@@ -138,13 +150,27 @@ def extract_real_date_only(cafe_info):
                                             month = int(match[1])
                                             day = int(match[2])
                                             
-                                            # 유효한 날짜 범위 확인
+                                            # 유효한 날짜 범위 확인 (더 엄격하게)
                                             if 2020 <= year <= 2025 and 1 <= month <= 12 and 1 <= day <= 31:
-                                                extracted_date = date(year, month, day)
-                                                print(f"    ✓ 강화된 웹 스크래핑 성공: {extracted_date} (패턴: {pattern[:30]})")
-                                                return extracted_date
+                                                test_date = date(year, month, day)
+                                                # 미래 날짜 제외
+                                                if test_date <= date.today():
+                                                    valid_dates.append((test_date, pattern))
                                     except (ValueError, IndexError):
                                         continue
+                                
+                                # 유효한 날짜가 있으면 우선순위가 높은 패턴에서 첫 번째 날짜 사용
+                                if valid_dates:
+                                    extracted_date, used_pattern = valid_dates[0]
+                                    pattern_names = [
+                                        "네이버 공식 writeDt", "네이버 공식 regDt", "네이버 공식 createDate", "data-write-date",
+                                        "작성일 표시", "등록일 표시", "날짜+시간 표시",
+                                        "time datetime", "JSON published", "JSON created",
+                                        "한글 날짜", "data-date", "datetime 속성", "ISO 날짜"
+                                    ]
+                                    pattern_name = pattern_names[pattern_idx] if pattern_idx < len(pattern_names) else f"패턴{pattern_idx}"
+                                    print(f"    ✓ 정확한 날짜 추출 성공: {extracted_date} ({pattern_name})")
+                                    return extracted_date
                                         
                     except Exception as e:
                         print(f"      실패: {str(e)[:50]}")
@@ -168,33 +194,68 @@ def extract_real_date_only(cafe_info):
                 
                 print(f"      게시물 ID: {post_id}, 카페: {cafe_name}")
                 
-                # 카페별 게시물 ID 패턴 분석 (실제 데이터 기반)
+                # 카페별 게시물 ID 패턴 분석 (실제 검증된 데이터 기반)
                 cafe_patterns = {
-                    # 대형 활성 카페들 (높은 ID = 최근 글)
-                    'stockhouse7': {'base': 8000000, 'daily_increment': 50},
-                    'ainows25': {'base': 9000000, 'daily_increment': 30},
-                    'wjdrkrjqn': {'base': 10000000, 'daily_increment': 100},
-                    'rainup': {'base': 3300000, 'daily_increment': 20},
-                    'bonjukbibimbap': {'base': 400, 'daily_increment': 1},
-                    'saleagent': {'base': 540000, 'daily_increment': 10},
-                    'forcso': {'base': 2000, 'daily_increment': 1},
+                    # 실제 검증된 카페 패턴 (사용자 피드백 반영)
+                    'appleiphone': {
+                        'type': 'high_activity',
+                        'id_range': (8800000, 8900000),  # 7월 범위 추정
+                        'daily_increment': 200,
+                        'base_date': date(2025, 7, 15),  # 사용자 확인 기준일
+                        'base_id': 8815000
+                    },
+                    'stockhouse7': {
+                        'type': 'medium_activity', 
+                        'id_range': (100, 200),
+                        'daily_increment': 2,
+                        'base_date': date(2025, 7, 15),
+                        'base_id': 130
+                    },
+                    'ainows25': {
+                        'type': 'medium_activity',
+                        'id_range': (3000, 3500),
+                        'daily_increment': 10,
+                        'base_date': date(2025, 7, 15),
+                        'base_id': 3142
+                    },
+                    # 기타 카페들
+                    'wjdrkrjqn': {'type': 'legacy', 'base': 10000000, 'daily_increment': 100},
+                    'rainup': {'type': 'legacy', 'base': 3300000, 'daily_increment': 20},
+                    'bonjukbibimbap': {'type': 'legacy', 'base': 400, 'daily_increment': 1},
+                    'saleagent': {'type': 'legacy', 'base': 540000, 'daily_increment': 10},
+                    'forcso': {'type': 'legacy', 'base': 2000, 'daily_increment': 1},
                 }
                 
                 if cafe_name in cafe_patterns:
                     pattern = cafe_patterns[cafe_name]
-                    base_id = pattern['base']
-                    daily_inc = pattern['daily_increment']
                     
-                    # ID 차이로 날짜 계산
-                    id_diff = post_id - base_id
-                    days_ago = max(0, id_diff // daily_inc)
-                    
-                    # 최대 90일 전까지만 허용
-                    days_ago = min(days_ago, 90)
-                    
-                    extracted_date = current_date - timedelta(days=days_ago)
-                    print(f"      카페 특성 기반 날짜: {extracted_date} (ID차이: {id_diff}, 예상일수: {days_ago})")
-                    return extracted_date
+                    if pattern.get('type') == 'high_activity' or pattern.get('type') == 'medium_activity':
+                        # 새로운 정확한 방식
+                        base_date = pattern['base_date']
+                        base_id = pattern['base_id'] 
+                        daily_inc = pattern['daily_increment']
+                        
+                        # ID 차이로 날짜 계산
+                        id_diff = post_id - base_id
+                        days_diff = id_diff // daily_inc
+                        
+                        # 기준일에서 계산된 날짜
+                        extracted_date = base_date + timedelta(days=days_diff)
+                        
+                        # 유효한 날짜 범위 확인
+                        if date(2020, 1, 1) <= extracted_date <= date.today():
+                            print(f"      정확한 카페 패턴 날짜: {extracted_date} (기준: {base_date}, ID차이: {id_diff}, 일수차이: {days_diff})")
+                            return extracted_date
+                    else:
+                        # 기존 방식 (legacy)
+                        base_id = pattern['base']
+                        daily_inc = pattern['daily_increment']
+                        id_diff = post_id - base_id
+                        days_ago = max(0, id_diff // daily_inc)
+                        days_ago = min(days_ago, 90)
+                        extracted_date = current_date - timedelta(days=days_ago)
+                        print(f"      레거시 카페 패턴 날짜: {extracted_date}")
+                        return extracted_date
                 else:
                     # 일반적인 패턴 (기존 로직 개선)
                     if post_id >= 10000000:  # 초대형 ID
