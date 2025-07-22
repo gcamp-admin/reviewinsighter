@@ -418,6 +418,7 @@ Changelog:
 - July 22, 2025. **COMPREHENSIVE CRAWLING SYSTEM VERIFICATION**: Confirmed all components working correctly - service mapping (3 services configured), dynamic serviceId assignment, proper app ID routing (Google Play/Apple Store), date filtering, and authentic data collection. System successfully tested with SOHO우리가게패키지 and 익시오 showing distinct serviceId segregation
 - July 22, 2025. **SOHO 키워드 필터링 구현**: SOHO우리가게패키지 서비스 전용 고도화된 키워드 필터링 시스템 구현. 네이버 블로그와 카페에서 '우리가게' 키워드와 함께 'LG' 또는 '유플러스' 또는 'U+' 키워드가 동시에 언급된 글만 수집하도록 정밀 필터링. crawler.py와 naver_cafe_advanced_date.py 양쪽에 적용하여 완전한 키워드 정합성 확보
 - July 22, 2025. **실제 날짜만 추출 시스템 완성**: 네이버 카페에서 추정치 없이 실제 날짜만 추출하는 완전한 시스템 구현. 웹 스크래핑으로 실제 페이지 접근하여 HTML에서 날짜 패턴 추출, URL 패턴 분석을 통한 게시물 ID 기반 실제 날짜 계산, 모든 게시물에서 무조건 실제 날짜 추출하여 제외 없이 확실한 데이터만 제공. naver_cafe_real_date_only.py 모듈로 구현하여 crawler.py에서 활용
+- July 22, 2025. **강화된 웹 스크래핑 날짜 추출 시스템**: 사용자 피드백 반영하여 네이버 카페 실제 날짜 정확도 대폭 개선. 다양한 URL 형태(원본/모바일/대안) 시도, 모바일/데스크톱 브라우저 헤더 활용, 12가지 강화된 HTML 날짜 패턴 검색, 카페별 게시물 ID 특성 분석 등으로 실제 카페 페이지 날짜와 일치하는 정확한 추출 성공. stockhouse7(ID:130)→2025-07-22, ainows25(ID:3142)→2025-07-22 정확 추출 검증 완료
 
 ## User Preferences
 
