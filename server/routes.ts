@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { selectedService, selectedChannels, appId, appIdApple, count, serviceId, serviceName, startDate, endDate } = req.body;
       
       // Convert selectedChannels to sources array
-      const sources = [];
+      const sources: string[] = [];
       if (selectedChannels?.googlePlay) sources.push('google_play');
       if (selectedChannels?.appleStore) sources.push('app_store');
       if (selectedChannels?.naverBlog) sources.push('naver_blog');
@@ -489,9 +489,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       mentionCount: 0,
                       trend: 'stable',
                       category: insight.heart_category,
-                      serviceId: serviceId,
-                      problem_summary: insight.problem_summary,
-                      ux_suggestions: insight.ux_suggestions,
                     });
                     insightsStored++;
                   } catch (err) {
@@ -522,7 +519,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         mentionCount: 0,
                         trend: 'stable',
                         category: insight.heart_category,
-                        serviceId: serviceId,
                         problem_summary: insight.problem_summary,
                         ux_suggestions: insight.ux_suggestions,
                       });
@@ -574,7 +570,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         word: wordData.word,
                         frequency: wordData.frequency,
                         sentiment: "긍정",
-                        serviceId: serviceId,
                       });
                       wordCloudStored++;
                     } catch (err) {
@@ -592,7 +587,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         word: wordData.word,
                         frequency: wordData.frequency,
                         sentiment: "부정",
-                        serviceId: serviceId,
                       });
                       wordCloudStored++;
                     } catch (err) {
@@ -669,17 +663,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (parseError) {
           console.error("Error parsing Python analysis output:", parseError);
           console.error("Python output:", output);
-          res.status(500).json({ success: false, message: `AI 분석 결과 처리 중 오류가 발생했습니다: ${parseError.message}` });
+          res.status(500).json({ success: false, message: `AI 분석 결과 처리 중 오류가 발생했습니다: ${String(parseError)}` });
         }
         });
       
       } catch (fileError) {
         console.error("Error writing temp file:", fileError);
-        res.status(500).json({ success: false, message: `파일 생성 중 오류가 발생했습니다: ${fileError.message}` });
+        res.status(500).json({ success: false, message: `파일 생성 중 오류가 발생했습니다: ${String(fileError)}` });
       }
     } catch (error) {
       console.error("Error in analyze endpoint:", error);
-      res.status(500).json({ success: false, message: `분석 시스템 오류: ${error.message}` });
+      res.status(500).json({ success: false, message: `분석 시스템 오류: ${String(error)}` });
     }
   });
 
@@ -833,19 +827,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Network analysis output:', stdout);
           res.status(500).json({ 
             error: "결과 파싱 실패",
-            message: `분석 결과를 처리하는 중 오류가 발생했습니다: ${parseError.message}`
+            message: `분석 결과를 처리하는 중 오류가 발생했습니다: ${String(parseError)}`
           });
         }
       });
       
       } catch (fileError) {
         console.error("Error writing temp network file:", fileError);
-        res.status(500).json({ error: `파일 생성 중 오류가 발생했습니다: ${fileError.message}` });
+        res.status(500).json({ error: `파일 생성 중 오류가 발생했습니다: ${String(fileError)}` });
       }
       
     } catch (error) {
       console.error('Keyword network analysis error:', error);
-      res.status(500).json({ error: `키워드 네트워크 분석 시스템 오류: ${error.message}` });
+      res.status(500).json({ error: `키워드 네트워크 분석 시스템 오류: ${String(error)}` });
     }
   });
 
