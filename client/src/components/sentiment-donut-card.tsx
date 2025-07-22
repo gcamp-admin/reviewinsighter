@@ -123,29 +123,33 @@ export default function SentimentDonutCard({ filters }: Props) {
         </div>
       </div>
 
-      <div className="mt-6 space-y-2 flex-shrink-0">
-        {chartData.map((item) => {
-          const IconComponent = SENTIMENT_ICONS[item.name as keyof typeof SENTIMENT_ICONS];
-          const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-          return (
-            <div key={item.name} className="flex items-center justify-between text-sm">
-              <div className="flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-                  style={{ 
-                    backgroundColor: item.color
-                  }}
-                />
-                <IconComponent className="w-4 h-4 mr-1 text-gray-600" />
-                <span className="text-body text-gray-700">{item.name}</span>
+      <div className="mt-6 flex-shrink-0">
+        <div className="space-y-2">
+          {chartData.map((item) => {
+            const IconComponent = SENTIMENT_ICONS[item.name as keyof typeof SENTIMENT_ICONS];
+            const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+            return (
+              <div key={item.name} className="flex items-center justify-between text-sm h-6">
+                <div className="flex items-center">
+                  <div 
+                    className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                    style={{ 
+                      backgroundColor: item.color
+                    }}
+                  />
+                  <IconComponent className="w-4 h-4 mr-1 text-gray-600" />
+                  <span className="text-body text-gray-700">{item.name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-body font-medium text-gray-900">{item.value}</span>
+                  <span className="text-body text-gray-500">({percentage}%)</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-body font-medium text-gray-900">{item.value}</span>
-                <span className="text-body text-gray-500">({percentage}%)</span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+          {/* 범례 정렬을 위한 빈 공간 추가 */}
+          <div className="h-6"></div>
+        </div>
       </div>
     </div>
   );

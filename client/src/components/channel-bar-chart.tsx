@@ -107,29 +107,31 @@ const ChannelBarChart = ({ data }: Props) => {
         </div>
       </div>
 
-      <div className="mt-6 space-y-2 flex-shrink-0">
-        {data.map((item, i) => (
-          <div key={i} className="flex items-center justify-between text-sm">
-            <div className="flex items-center">
-              <div 
-                className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-                style={{ 
-                  backgroundColor: item.label === '구글 앱스토어' ? '#10B981' :
-                                  item.label === '애플 앱스토어' ? '#4F46E5' :
-                                  item.label === '네이버 블로그' ? '#7CF3C4' :
-                                  item.label === '네이버 카페' ? '#6B7280' : 
-                                  item.color
-                }}
-              />
-              <span className="text-body text-gray-700">
-                {item.label}
-              </span>
+      <div className="mt-6 flex-shrink-0">
+        <div className="space-y-2">
+          {data.map((item, i) => (
+            <div key={i} className="flex items-center justify-between text-sm h-6">
+              <div className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                  style={{ 
+                    backgroundColor: item.label === '구글 앱스토어' ? '#10B981' :
+                                    item.label === '애플 앱스토어' ? '#4F46E5' :
+                                    item.label === '네이버 블로그' ? '#7CF3C4' :
+                                    item.label === '네이버 카페' ? '#6B7280' : 
+                                    item.color
+                  }}
+                />
+                <span className="text-body text-gray-700">
+                  {item.label}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-body font-medium text-gray-900">{Math.round(item.value)}%</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-body font-medium text-gray-900">{Math.round(item.value)}%</span>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
