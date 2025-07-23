@@ -435,6 +435,8 @@ Changelog:
 - July 23, 2025. **Naver Cafe 날짜 인식 고도화**: 제목 내 [3월 24일] 형태 날짜 패턴 추가 인식으로 72개 Naver Cafe 리뷰 수집 성공. 실제 날짜 추출 시스템 개선으로 수집 효율성 대폭 향상
 - July 23, 2025. **멀티소스 통합 수집 검증 완료**: 전체 4개 채널에서 총 115개 리뷰 수집 달성 (Google Play 2개 + Apple Store 3개 + Naver Blog 50개 + Naver Cafe 60개), 채널별 분포 카드 정상 업데이트, 감정 분석 및 통계 표시 완벽 작동
 - July 23, 2025. **프론트엔드 표시 문제 완전 해결**: 백엔드 수집 성공 후 프론트엔드에 데이터가 표시되지 않던 문제 완전 수정. review-list.tsx에서 API 파라미터 수정 (service → serviceId, dateFrom/dateTo → startDate/endDate, limit → pageSize), 프론트엔드 리뷰 목록 정상 표시 확인
+- July 23, 2025. **Apple Store 리뷰 수집 시스템 완전 복원**: Apple Store RSS 크롤러 정상화, 실제 리뷰 3개 수집 확인 (산산이죠, 띠로리롤, 이ㅣㅔㅔ), 날짜별 정확한 필터링 동작 (6월 리뷰들로 확인), 프론트엔드 날짜 범위 조정으로 Apple Store 리뷰 포함 가능
+- July 23, 2025. **헤더 문구 업데이트**: 사용자 요청에 따라 헤더 설명 문구를 "AI 기반 리뷰 분석 플랫폼"에서 "고객의 코맨트를 분석해서 UX 인사이트를 발굴해주는 당신의 UX멘토 코멘토!"로 변경
 
 ## User Preferences
 

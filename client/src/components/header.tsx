@@ -20,7 +20,7 @@ export default function Header() {
             </div>
             <div>
               <p className="text-caption text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                AI 기반 리뷰 분석 플랫폼
+                고객의 코맨트를 분석해서 UX 인사이트를 발굴해주는 당신의 UX멘토 코멘토!
               </p>
             </div>
           </div>
