@@ -639,10 +639,20 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         </div>
 
         {/* Pagination */}
+        {data && data.pages > 1 && (
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200/50">
           <div className="text-caption text-gray-500">
-            총 <span className="font-medium text-gray-700">{data.total.toLocaleString()}</span>개 중{" "}
-            <span className="font-medium text-gray-700">{startItem}-{endItem}</span>개 표시
+            {(() => {
+              const totalPages = data.pages || Math.ceil(data.total / limit);
+              const startItem = (currentPage - 1) * limit + 1;
+              const endItem = Math.min(currentPage * limit, data.total);
+              return (
+                <>
+                  총 <span className="font-medium text-gray-700">{data.total.toLocaleString()}</span>개 중{" "}
+                  <span className="font-medium text-gray-700">{startItem}-{endItem}</span>개 표시
+                </>
+              );
+            })()}
           </div>
           <div className="flex items-center space-x-1">
             <Button
@@ -675,6 +685,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             {/* 현재 페이지 근처 */}
             {(() => {
               const pagesToShow = [];
+              const totalPages = data.pages || Math.ceil(data.total / limit);
               let startPage, endPage;
               
               if (totalPages <= 7) {
@@ -713,33 +724,37 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
             })()}
             
             {/* 마지막 페이지 */}
-            {currentPage < totalPages - 2 && (
-              <>
-                {currentPage < totalPages - 3 && (
-                  <span className="px-2 text-gray-500">...</span>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(totalPages)}
-                  className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
-                >
-                  {totalPages}
-                </Button>
-              </>
-            )}
+            {(() => {
+              const totalPages = data.pages || Math.ceil(data.total / limit);
+              return currentPage < totalPages - 2 && (
+                <>
+                  {currentPage < totalPages - 3 && (
+                    <span className="px-2 text-gray-500">...</span>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(totalPages)}
+                    className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
+                  >
+                    {totalPages}
+                  </Button>
+                </>
+              );
+            })()}
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === (data.pages || Math.ceil(data.total / limit))}
               className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-8"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
+        )}
       </CardContent>
     </Card>
   );

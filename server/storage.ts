@@ -5,7 +5,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
-  getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }>;
+  getReviews(page: number, limit: number, filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number, page: number, pages: number }>;
   getReviewStats(filters?: { source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ total: number, positive: number, negative: number, neutral: number, averageRating: number }>;
   createReview(review: InsertReview): Promise<Review>;
   updateReview(id: number, update: Partial<Review>): Promise<Review | undefined>;
@@ -69,7 +69,7 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getReviews(page: number, limit: number, filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number }> {
+  async getReviews(page: number, limit: number, filters?: { serviceId?: string, source?: string[], dateFrom?: Date, dateTo?: Date, sentiment?: string }): Promise<{ reviews: Review[], total: number, page: number, pages: number }> {
     let filteredReviews = Array.from(this.reviews.values());
 
     if (filters) {
@@ -116,9 +116,13 @@ export class MemStorage implements IStorage {
     const endIndex = startIndex + limit;
     const paginatedReviews = sortedReviews.slice(startIndex, endIndex);
 
+    const totalPages = Math.ceil(filteredReviews.length / limit);
+    
     return {
       reviews: paginatedReviews,
-      total: filteredReviews.length
+      total: filteredReviews.length,
+      page: page,
+      pages: totalPages
     };
   }
 

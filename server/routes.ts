@@ -35,7 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reviews", async (req, res) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt((req.query.pageSize || req.query.limit) as string) || 5;
       
       // Handle source parameter (can be string or array)
       let source: string[] | undefined;

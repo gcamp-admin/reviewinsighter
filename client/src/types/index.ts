@@ -31,6 +31,8 @@ export interface ReviewStats {
 export interface PaginatedReviews {
   reviews: Review[];
   total: number;
+  page: number;
+  pages: number;
 }
 
 export interface Review {
