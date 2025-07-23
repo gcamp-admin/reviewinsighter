@@ -430,11 +430,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                 ⚠️ 종료 날짜는 오늘 날짜보다 이후 날짜를 선택할 수 없습니다
               </p>
             )}
-            {isDateRangeExceeded && (
-              <p className="text-xs text-red-500 mt-1">
-                ⚠️ 수집 기간은 최대 31일까지만 설정할 수 있습니다
-              </p>
-            )}
+            
             
 
           </div>
