@@ -434,6 +434,7 @@ Changelog:
 - July 23, 2025. **Apple Store 날짜 필터링 최적화**: Apple Store RSS 피드 날짜 파싱 로직 개선, 실제 리뷰 날짜 범위 확인으로 정확한 수집 실현. 6월-7월 범위에서 3개 Apple Store 리뷰 성공 수집
 - July 23, 2025. **Naver Cafe 날짜 인식 고도화**: 제목 내 [3월 24일] 형태 날짜 패턴 추가 인식으로 72개 Naver Cafe 리뷰 수집 성공. 실제 날짜 추출 시스템 개선으로 수집 효율성 대폭 향상
 - July 23, 2025. **멀티소스 통합 수집 검증 완료**: 전체 4개 채널에서 총 115개 리뷰 수집 달성 (Google Play 2개 + Apple Store 3개 + Naver Blog 50개 + Naver Cafe 60개), 채널별 분포 카드 정상 업데이트, 감정 분석 및 통계 표시 완벽 작동
+- July 23, 2025. **프론트엔드 표시 문제 완전 해결**: 백엔드 수집 성공 후 프론트엔드에 데이터가 표시되지 않던 문제 완전 수정. review-list.tsx에서 API 파라미터 수정 (service → serviceId, dateFrom/dateTo → startDate/endDate, limit → pageSize), 프론트엔드 리뷰 목록 정상 표시 확인
 
 ## User Preferences
 

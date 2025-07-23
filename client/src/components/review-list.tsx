@@ -52,11 +52,11 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: limit.toString(),
+        pageSize: limit.toString(),
       });
       
       if (filters?.service?.id) {
-        params.append("service", filters.service.id);
+        params.append("serviceId", filters.service.id);
       }
       
       // 소스 필터 적용
@@ -69,10 +69,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
       
       if (filters.dateFrom) {
-        params.append("dateFrom", filters.dateFrom.toISOString());
+        params.append("startDate", filters.dateFrom.toISOString());
       }
       if (filters.dateTo) {
-        params.append("dateTo", filters.dateTo.toISOString());
+        params.append("endDate", filters.dateTo.toISOString());
       }
       if (sentimentFilter && sentimentFilter !== "all") {
         params.append("sentiment", sentimentFilter);
@@ -192,10 +192,10 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
       
       if (filters.dateFrom) {
-        params.append("dateFrom", filters.dateFrom.toISOString());
+        params.append("startDate", filters.dateFrom.toISOString());
       }
       if (filters.dateTo) {
-        params.append("dateTo", filters.dateTo.toISOString());
+        params.append("endDate", filters.dateTo.toISOString());
       }
       
       // 감정 필터 적용
