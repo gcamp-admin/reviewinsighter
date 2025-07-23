@@ -389,6 +389,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     onChange={(date) => handleDateChange('dateFrom', date)}
                     placeholderText="년-월-일"
                     dateFormat="yyyy-MM-dd"
+                    openToDate={new Date()}
                     className={`w-full p-2 pl-4 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${hasDateRangeError ? 'border-red-500' : ''}`}
                     wrapperClassName="w-full"
                     style={{ width: '100%' }}
