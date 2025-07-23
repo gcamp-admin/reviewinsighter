@@ -187,23 +187,39 @@ ${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리
       );
     }
 
-    // 🚨 CRITICAL: SOHO 서비스 벤치마킹 후처리 검증 및 강제 수정
-    if (validatedServiceId === 'soho-package') {
-      insights = insights.map((insight: any) => {
+    // 🚨 CRITICAL: 서비스별 강제 벤치마킹 교체 시스템
+    insights = insights.map((insight: any) => {
+      // 서비스별 올바른 벤치마킹으로 강제 교체
+      if (validatedServiceId === 'soho-package') {
+        // SOHO 서비스: 매장 관리 앱만 허용
         if (insight.competitor_benchmark) {
-          const forbiddenTerms = ['SKT T전화', 'KT 전화', '후아유', '터치콜', '원폰', '더콜러', '위즈콜', '콜 블로커'];
+          const forbiddenTerms = ['SKT T전화', 'KT 전화', '후아유', '터치콜', '원폰', '더콜러', '위즈콜', '콜 블로커', '통화', '전화', '스팸'];
           const containsForbidden = forbiddenTerms.some(term => 
             insight.competitor_benchmark.includes(term)
           );
           
-          if (containsForbidden) {
-            console.log(`🚨 경고: SOHO 서비스에서 통화 앱 벤치마킹 발견! 강제 수정 실행`);
-            insight.competitor_benchmark = '배달의민족 사장님 앱은 매장 관리 과정에서 발생하는 접속 문제를 해결하기 위해 오프라인 모드 기능을 제공하며, 자동 캐시 정리 시스템으로 사용자가 수동으로 관리할 필요가 없습니다. 네이버페이 사장용 앱은 안정적인 서버 연결과 함께 연결 상태를 실시간으로 표시하여 사용자에게 현재 상황을 명확히 알려줍니다.';
+          if (containsForbidden || !insight.competitor_benchmark.includes('배달의민족')) {
+            console.log(`🚨 SOHO 서비스: 부적절한 벤치마킹 감지, 강제 교체 실행`);
+            insight.competitor_benchmark = '배달의민족 사장님 앱은 매장 운영 중 발생하는 시스템 문제를 해결하기 위해 오프라인 모드와 자동 백업 기능을 제공합니다. 네이버페이 사장용 앱은 결제 시스템 안정성을 위해 실시간 상태 모니터링과 자동 복구 기능을 갖추고 있어 매장 운영 중단을 최소화합니다.';
           }
+        } else {
+          // 벤치마킹이 없는 경우에도 SOHO 전용 벤치마킹 추가
+          insight.competitor_benchmark = '배달의민족 사장님 앱과 네이버페이 사장용 앱은 매장 관리 시스템의 안정성과 사용 편의성을 높이는 다양한 UX 기능을 제공합니다.';
         }
-        return insight;
-      });
-    }
+      } else if (validatedServiceId === 'ixio') {
+        // 익시오 서비스: 통화 앱 허용
+        if (!insight.competitor_benchmark || !insight.competitor_benchmark.includes('통화')) {
+          insight.competitor_benchmark = '후아유와 SKT T전화는 통화 기능의 안정성과 사용자 경험 개선을 위한 다양한 기능을 제공합니다.';
+        }
+      } else if (validatedServiceId === 'ai-bizcall') {
+        // AI비즈콜 서비스: 화상회의 앱 허용
+        if (!insight.competitor_benchmark || !insight.competitor_benchmark.includes('화상회의')) {
+          insight.competitor_benchmark = '줌과 마이크로소프트 팀즈는 비즈니스 화상회의의 안정성과 협업 기능을 강화하는 솔루션을 제공합니다.';
+        }
+      }
+      
+      return insight;
+    });
 
     // 우선순위 순서대로 정렬
     const priorityOrder: {[key: string]: number} = { 'critical': 1, 'major': 2, 'minor': 3 };
@@ -216,17 +232,30 @@ ${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리
 
   } catch (error) {
     console.error('HEART framework analysis failed:', error);
-    return generateFallbackInsights();
+    return generateFallbackInsights(validatedServiceId);
   }
 }
 
-function generateFallbackInsights(): any[] {
+// 서비스별 fallback 인사이트 생성 함수
+function generateFallbackInsights(serviceId: string = 'unknown'): any[] {
+  // 서비스별 맞춤형 벤치마킹
+  let benchmarkText = '';
+  if (serviceId === 'soho-package') {
+    benchmarkText = '배달의민족 사장님 앱은 매장 운영의 안정성을 위해 오프라인 모드와 자동 백업을 제공하며, 네이버페이 사장용 앱은 결제 시스템 안정성을 보장하는 실시간 모니터링 기능을 갖추고 있습니다.';
+  } else if (serviceId === 'ixio') {
+    benchmarkText = '후아유와 SKT T전화는 통화 연결의 안정성과 스팸 차단 기능으로 사용자 경험을 개선합니다.';
+  } else if (serviceId === 'ai-bizcall') {
+    benchmarkText = '줌과 마이크로소프트 팀즈는 화상회의의 안정성과 협업 기능을 강화하는 다양한 솔루션을 제공합니다.';
+  } else {
+    benchmarkText = '유사 서비스들은 안정성과 사용자 경험 개선을 위한 다양한 기능을 제공합니다.';
+  }
+
   return [
     {
       title: "HEART: Task Success | 앱 안정성 문제",
       priority: "critical",
       problem_summary: "사용자들이 앱 사용 중 안정성 문제를 호소하고 있습니다. 기본적인 기능에서 문제를 겪고 있어 서비스 신뢰도에 영향을 미치고 있습니다.",
-      competitor_benchmark: "배달의민족 사장님 앱은 안정적인 서버 연결을 보장하기 위해 캐시 관리 기능을 자동화하고, 사용자에게 불필요한 작업을 요구하지 않습니다. 네이버페이 사장용 앱은 앱 사용 중 오류 발생 시 자동으로 재연결을 시도하여 사용자 경험을 개선합니다.",
+      competitor_benchmark: benchmarkText,
       ux_suggestions: ["연결 실패 시 명확한 오류 메시지 표시", "자동 재연결 시도 기능과 진행 상태 표시", "앱 상태를 실시간으로 보여주는 시각적 인디케이터 추가", "연결 실패 시 재시도 버튼을 크게 표시하여 쉽게 재시도 가능하도록 함"],
       heart_category: "Task Success"
     },
