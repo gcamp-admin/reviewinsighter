@@ -206,10 +206,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Convert selectedChannels to sources array
       const sources: string[] = [];
-      if (selectedChannels?.googlePlay) sources.push('google_play');
-      if (selectedChannels?.appleStore) sources.push('app_store');
-      if (selectedChannels?.naverBlog) sources.push('naver_blog');
-      if (selectedChannels?.naverCafe) sources.push('naver_cafe');
+      
+      // Handle both array and object formats for selectedChannels
+      if (Array.isArray(selectedChannels)) {
+        // Array format: ["google_play", "apple_store", ...]
+        sources.push(...selectedChannels);
+      } else if (selectedChannels && typeof selectedChannels === 'object') {
+        // Object format: { googlePlay: true, appleStore: false, ... }
+        if (selectedChannels?.googlePlay) sources.push('google_play');
+        if (selectedChannels?.appleStore) sources.push('app_store');
+        if (selectedChannels?.naverBlog) sources.push('naver_blog');
+        if (selectedChannels?.naverCafe) sources.push('naver_cafe');
+      }
       
       // Use the original schema for validation but with converted sources
       const validatedData = collectReviewsSchema.parse({
@@ -238,10 +246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const crawlerArgs = {
         serviceName: selectedService || serviceName || '익시오',
         selectedChannels: {
-          googlePlay: selectedChannels?.googlePlay || false,
-          appleStore: selectedChannels?.appleStore || false,
-          naverBlog: selectedChannels?.naverBlog || false,
-          naverCafe: selectedChannels?.naverCafe || false
+          googlePlay: sources.includes('google_play'),
+          appleStore: sources.includes('app_store') || sources.includes('apple_store'),
+          naverBlog: sources.includes('naver_blog'),
+          naverCafe: sources.includes('naver_cafe')
         },
         startDate: startDate || null,
         endDate: endDate || null,

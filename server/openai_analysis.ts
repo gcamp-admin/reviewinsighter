@@ -59,7 +59,7 @@ ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: $
   "insights": [
     {
       "category": "happiness|engagement|adoption|retention|task_success",
-      "title": "Critical | HEART: [category] | [문제유형] ([건수]건)",
+      "title": "HEART: [category] | [문제유형] ([건수]건)",
       "problem_summary": "실제 사용자 리뷰 표현을 직접 인용하며 한 줄로 문제상황 요약. 예: '사용자들이 차단이 안되어서 불편하다고 호소하여 스팸 차단 기능의 신뢰성 문제 발생'",
       "competitor_benchmark": "동일 문제를 해결한 유사 앱들의 구체적 해결방안. 통화 관련: 후아유(Who's calling), 터치콜(T전화), 원폰(OnePhone), 스팸차단: 더콜러(Truecaller), 위즈콜(WhizCall), 콜 블로커(CallBlocker), 기능 안정성: SKT T전화, KT 전화, 올레 전화 등의 실제 해결방식 명시",
       "ux_suggestions": [

@@ -426,9 +426,9 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
             <div className="text-center">
               <div className="mb-6">
                 <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-purple-600 font-bold text-2xl">💡</span>
+                  <span className="text-purple-600 font-bold text-2xl">H</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">💡 왜 HEART 분석을 하나요?</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">왜 HEART 분석을 하나요?</h2>
               </div>
               
               <div className="text-left space-y-4 text-sm text-gray-600">
@@ -471,7 +471,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                 </div>
                 
                 <p className="text-center text-purple-600 font-medium pt-4 border-t">
-                  👉 이렇게 분석하면, 리뷰 속 불편함이 구체적인 UX 개선 항목으로 드러납니다.
+                  이렇게 분석하면, 리뷰 속 불편함이 구체적인 UX 개선 항목으로 드러납니다.
                 </p>
               </div>
             </div>
