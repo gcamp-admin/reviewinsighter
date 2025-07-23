@@ -11,11 +11,12 @@ import AIAnalysisSection from "@/components/ai-analysis-section";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
+  // Set initial date range to include Apple Store reviews
   const [filters, setFilters] = useState<ReviewFilters>({
     service: undefined,
     source: [],
-    dateFrom: undefined,
-    dateTo: undefined
+    dateFrom: new Date('2025-06-01'),  // Include Apple Store review dates
+    dateTo: new Date('2025-07-22')     // Current end date
   });
 
   const [currentPage, setCurrentPage] = useState(1);
