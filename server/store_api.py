@@ -177,16 +177,22 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                     # Apply date filtering if specified
                     if start_date and end_date:
                         try:
-                            # 시작/끝 날짜를 정확히 파싱
-                            if 'T' in start_date:
-                                start_dt = datetime.fromisoformat(start_date.replace('Z', '')).date()
+                            # 시작/끝 날짜를 정확히 파싱 - string type 확인
+                            if isinstance(start_date, str):
+                                if 'T' in start_date:
+                                    start_dt = datetime.fromisoformat(start_date.replace('Z', '')).date()
+                                else:
+                                    start_dt = datetime.fromisoformat(start_date).date()
                             else:
-                                start_dt = datetime.fromisoformat(start_date).date()
+                                start_dt = start_date.date() if hasattr(start_date, 'date') else start_date
                         
-                            if 'T' in end_date:
-                                end_dt = datetime.fromisoformat(end_date.replace('Z', '')).date()
+                            if isinstance(end_date, str):
+                                if 'T' in end_date:
+                                    end_dt = datetime.fromisoformat(end_date.replace('Z', '')).date()
+                                else:
+                                    end_dt = datetime.fromisoformat(end_date).date()
                             else:
-                                end_dt = datetime.fromisoformat(end_date).date()
+                                end_dt = end_date.date() if hasattr(end_date, 'date') else end_date
                             
                             print(f"Apple Store date filter: {review_date.date()} vs {start_dt} ~ {end_dt}")
                             

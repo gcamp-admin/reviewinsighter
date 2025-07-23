@@ -48,9 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Handle date parameters
-      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
-      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+      // Handle date parameters - use startDate/endDate parameters
+      const dateFrom = (req.query.startDate || req.query.dateFrom) ? new Date((req.query.startDate || req.query.dateFrom) as string) : undefined;
+      const dateTo = (req.query.endDate || req.query.dateTo) ? new Date((req.query.endDate || req.query.dateTo) as string) : undefined;
       
       // Handle sentiment parameter
       const sentiment = req.query.sentiment as string;
@@ -87,9 +87,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Handle date parameters
-      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
-      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+      // Handle date parameters - use startDate/endDate parameters for stats
+      const dateFrom = (req.query.startDate || req.query.dateFrom) ? new Date((req.query.startDate || req.query.dateFrom) as string) : undefined;
+      const dateTo = (req.query.endDate || req.query.dateTo) ? new Date((req.query.endDate || req.query.dateTo) as string) : undefined;
       
       // Handle sentiment parameter
       const sentiment = req.query.sentiment as string;

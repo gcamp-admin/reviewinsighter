@@ -126,14 +126,14 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                     
             apple_review = {
                 "userId": review.get("userName", "익명"),
-                "source": "app_store",
+                "source": "apple_store",
                 "serviceId": service_id,
                 "appId": str(i),
                 "rating": review.get("score", 3),
                 "content": review.get("content", ""),
                 "createdAt": created_at,
                 "link": None,
-                "platform": "app_store"
+                "platform": "apple_store"
             }
             apple_results.append(apple_review)
             print(f"  Added Apple Store review {i+1}: {apple_review['userId']} - {apple_review['content'][:50]}...")
