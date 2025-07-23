@@ -24,8 +24,22 @@ export default function Dashboard() {
   const [activeAnalysisSection, setActiveAnalysisSection] = useState<'wordcloud' | 'heart' | 'comprehensive' | null>(null);
 
   const handleFiltersChange = (newFilters: ReviewFilters) => {
+    // 서비스, 채널, 날짜 변경 시 모든 데이터 초기화
+    const shouldReset = (
+      filters.service !== newFilters.service ||
+      JSON.stringify(filters.source) !== JSON.stringify(newFilters.source) ||
+      filters.dateFrom !== newFilters.dateFrom ||
+      filters.dateTo !== newFilters.dateTo
+    );
+
+    if (shouldReset) {
+      console.log("Filter change detected - resetting all data");
+      setHasCollectedReviews(false);
+      setActiveAnalysisSection(null);
+      setCurrentPage(1);
+    }
+
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleCollectionSuccess = () => {
@@ -79,7 +93,7 @@ export default function Dashboard() {
         {/* Always show WordCloudAndInsights when hasCollectedReviews is true */}
         {hasCollectedReviews && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection} />
+            <WordCloudAndInsights filters={filters} activeSection={activeAnalysisSection || undefined} />
           </div>
         )}
       </main>

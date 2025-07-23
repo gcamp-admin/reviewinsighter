@@ -39,7 +39,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     },
     enabled: true,
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
   });
 
   const { data: negativeWords = [], isLoading: negativeLoading } = useQuery({
@@ -67,7 +67,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     },
     enabled: true,
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
   });
 
   const { data: insights = [], isLoading: insightsLoading } = useQuery({
@@ -95,7 +95,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     },
     enabled: true,
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
   });
 
   console.log("WordCloud component - positiveWords:", positiveWords);
