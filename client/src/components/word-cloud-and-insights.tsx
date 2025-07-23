@@ -112,31 +112,40 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     // 빈도수 기준으로 정렬 (높은 순)
     const sortedWords = [...words].sort((a, b) => b.frequency - a.frequency);
     
-    // 충돌 감지 함수 (글자 길이와 크기 고려)
+    // 강화된 충돌 감지 함수 (한글 특성 고려)
     const checkCollision = (pos1: any, pos2: any, word1: string, word2: string, size1: number, size2: number) => {
-      const padding = 30; // 최소 간격 증가
+      const padding = 45; // 안전 간격을 더 크게
       
-      // 글자 길이를 고려한 박스 크기 계산
-      const char1Width = word1.length * (size1 * 0.6); // 한글 평균 너비
-      const char2Width = word2.length * (size2 * 0.6);
+      // 한글과 영문을 구분하여 정확한 텍스트 너비 계산
+      const getAccurateTextWidth = (text: string, fontSize: number) => {
+        const koreanChars = (text.match(/[가-힣]/g) || []).length;
+        const otherChars = text.length - koreanChars;
+        // 한글은 정사각형에 가깝고, 영문/숫자는 더 좁음
+        return (koreanChars * fontSize * 0.9 + otherChars * fontSize * 0.6);
+      };
+      
+      const width1 = getAccurateTextWidth(word1, size1);
+      const width2 = getAccurateTextWidth(word2, size2);
+      const height1 = size1 * 1.4; // 높이 여유 증가
+      const height2 = size2 * 1.4;
       
       const box1 = {
-        left: pos1.left - char1Width / 2,
-        right: pos1.left + char1Width / 2,
-        top: pos1.top - size1 / 2,
-        bottom: pos1.top + size1 / 2
+        left: pos1.left - width1 / 2,
+        right: pos1.left + width1 / 2,
+        top: pos1.top - height1 / 2,
+        bottom: pos1.top + height1 / 2
       };
       
       const box2 = {
-        left: pos2.left - char2Width / 2,
-        right: pos2.left + char2Width / 2,
-        top: pos2.top - size2 / 2,
-        bottom: pos2.top + size2 / 2
+        left: pos2.left - width2 / 2,
+        right: pos2.left + width2 / 2,
+        top: pos2.top - height2 / 2,
+        bottom: pos2.top + height2 / 2
       };
       
-      // 박스 충돌 검사
-      const horizontalOverlap = box1.right + padding > box2.left && box2.right + padding > box1.left;
-      const verticalOverlap = box1.bottom + padding > box2.top && box2.bottom + padding > box1.top;
+      // 더 엄격한 충돌 검사 (패딩 포함)
+      const horizontalOverlap = (box1.right + padding) > box2.left && (box2.right + padding) > box1.left;
+      const verticalOverlap = (box1.bottom + padding) > box2.top && (box2.bottom + padding) > box1.top;
       
       return horizontalOverlap && verticalOverlap;
     };

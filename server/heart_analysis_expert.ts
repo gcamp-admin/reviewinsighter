@@ -24,6 +24,16 @@ export async function analyzeHeartFrameworkExpert(reviews: any[]): Promise<any[]
   // 서비스ID 확인
   const serviceId = reviews[0]?.serviceId || 'unknown';
   console.log(`🔍 HEART 분석 서비스ID 확인: ${serviceId}`);
+  
+  // 서비스ID 검증 및 강제 매핑
+  let validatedServiceId = serviceId;
+  if (serviceId === 'soho-package' || serviceId === 'SOHO우리가게패키지') {
+    validatedServiceId = 'soho-package';
+    console.log(`✅ SOHO 서비스 확인됨 - 매장 관리 앱 벤치마킹 사용`);
+  } else if (serviceId === 'ixio' || serviceId === '익시오') {
+    validatedServiceId = 'ixio';
+    console.log(`✅ 익시오 서비스 확인됨 - 통화 앱 벤치마킹 사용`);
+  }
 
   // 긍정과 부정 리뷰 분류
   const positiveReviews = reviewTexts.filter(r => r.sentiment === '긍정');
@@ -69,8 +79,8 @@ export async function analyzeHeartFrameworkExpert(reviews: any[]): Promise<any[]
     }
   };
 
-  const benchmarkInfo = getServiceSpecificBenchmarkInfo(serviceId);
-  console.log(`🏪 서비스별 벤치마킹 정보 생성:`);
+  const benchmarkInfo = getServiceSpecificBenchmarkInfo(validatedServiceId);
+  console.log(`🏪 서비스별 벤치마킹 정보 생성 (${validatedServiceId}):`);
   console.log(benchmarkInfo);
 
   try {
@@ -88,7 +98,10 @@ ${benchmarkInfo}
 
 1. 문제 요약: 리뷰에서 반복적으로 나타난 UX 이슈를 요약합니다.
 
-2. 타사 UX 벤치마킹: 위 벤치마킹 앱 목록에서 해당 문제와 가장 유사한 상황을 해결한 앱을 선택하여 구체적 해결 방식을 설명합니다.
+2. 타사 UX 벤치마킹: 반드시 위에 제공된 서비스별 벤치마킹 앱 목록만 사용하여 해당 문제와 가장 유사한 상황을 해결한 앱을 선택하여 구체적 해결 방식을 설명합니다. 
+   - soho-package 서비스일 경우: 매장 관리, POS/결제, 고객 관리, 소상공인 지원, 매출 분석 관련 앱만 사용
+   - ixio 서비스일 경우: 통화 기능, 스팸차단, AI 통화, 안정성 관련 앱만 사용
+   - ai-bizcall 서비스일 경우: 비즈니스 통화, 화상회의, 콜센터 솔루션 관련 앱만 사용
 
 3. UX 개선 제안: 벤치마킹 사례를 바탕으로 구체적이고 실행 가능한 개선 방안을 제시합니다.
 
@@ -120,7 +133,20 @@ ${benchmarkInfo}
         },
         {
           role: "user",
-          content: `서비스: ${serviceId}
+          content: `🚨 중요: 서비스별 벤치마킹 앱 엄격 준수 🚨
+
+서비스: ${validatedServiceId}
+
+${validatedServiceId === 'soho-package' ? `
+⛔ 금지: SKT T전화, KT 전화, 후아유, 터치콜 등 통화 관련 앱은 절대 사용 금지
+✅ 필수: 아래 SOHO 전용 벤치마킹 앱만 사용
+- 매장 관리: 배달의민족 사장님, 요기요 사장님, 쿠팡이츠 파트너
+- POS/결제: 네이버페이 사장용, 카카오페이 사장용, 토스페이먼츠 사장님
+- 고객 관리: 카카오톡 비즈니스, 네이버 톡톡 비즈니스
+- 소상공인 지원: 소상공인 정책정보, 중소벤처기업부 앱, 세무도우미
+- 매출 분석: 사장님 앱(배민), 스마트 스토어 센터
+` : ''}
+
 다음 리뷰 데이터를 분석하여 HEART 프레임워크 기반 UX 인사이트를 제공하세요.
 
 긍정 리뷰 (${positiveReviews.length}개):
@@ -129,7 +155,8 @@ ${positiveReviews.slice(0, 15).map(r => `- ${r.content}`).join('\n')}
 부정 리뷰 (${negativeReviews.length}개):
 ${negativeReviews.slice(0, 15).map(r => `- ${r.content}`).join('\n')}
 
-위 벤치마킹 앱 목록에서 각 문제 상황에 가장 적합한 앱의 해결 방식을 참고하여 구체적인 UX 개선 방안을 제시하세요. 특히 ${serviceId} 서비스의 특성에 맞는 경쟁 앱 사례를 우선적으로 활용해주세요.
+🔥 경고: competitor_benchmark 필드에는 반드시 위에 명시된 서비스별 전용 앱만 언급하세요!
+${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리, POS/결제, 고객 관리 앱만 사용하고 통화 관련 앱은 절대 언급하지 마세요!' : ''}
 
 각 HEART 카테고리별로 가장 중요한 문제를 우선순위가 높은 순서대로 인사이트를 제공하세요.`
         }
