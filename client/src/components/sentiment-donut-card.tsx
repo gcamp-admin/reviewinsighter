@@ -24,13 +24,11 @@ interface Props {
 }
 
 export default function SentimentDonutCard({ filters }: Props) {
-  // Get filtered reviews to calculate accurate sentiment distribution
-  const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews', 'sentiment-distribution', filters],
+  // Use stats endpoint to get accurate sentiment distribution data
+  const { data: statsData } = useQuery({
+    queryKey: ['/api/reviews/stats', 'sentiment-distribution', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('limit', '10000');
-      params.append('page', '1');
       
       if (filters?.dateFrom) {
         params.append('dateFrom', filters.dateFrom.toISOString());
@@ -42,13 +40,13 @@ export default function SentimentDonutCard({ filters }: Props) {
         params.append('serviceId', filters.serviceId);
       }
       
-      const response = await fetch(`/api/reviews?${params}`);
+      const response = await fetch(`/api/reviews/stats?${params}`);
       return response.json();
     },
     enabled: true
   });
 
-  if (!reviewsData?.reviews || reviewsData.reviews.length === 0) {
+  if (!statsData || statsData.total === 0) {
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm h-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">감정 분석</h3>
@@ -59,11 +57,12 @@ export default function SentimentDonutCard({ filters }: Props) {
     );
   }
 
-  // Count sentiments from actual reviews
-  const sentimentCounts = reviewsData.reviews.reduce((acc: { [key: string]: number }, review: any) => {
-    acc[review.sentiment] = (acc[review.sentiment] || 0) + 1;
-    return acc;
-  }, { '긍정': 0, '부정': 0, '중립': 0 });
+  // Use stats data which already provides accurate sentiment counts
+  const sentimentCounts = {
+    '긍정': statsData.positive || 0,
+    '부정': statsData.negative || 0,
+    '중립': statsData.neutral || 0
+  };
 
   const chartData = [
     { name: '긍정', value: sentimentCounts['긍정'], color: SENTIMENT_COLORS.긍정 },
@@ -71,7 +70,7 @@ export default function SentimentDonutCard({ filters }: Props) {
     { name: '중립', value: sentimentCounts['중립'], color: SENTIMENT_COLORS.중립 }
   ];
 
-  const total = sentimentCounts['긍정'] + sentimentCounts['부정'] + sentimentCounts['중립'];
+  const total = statsData.total;
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {

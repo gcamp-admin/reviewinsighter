@@ -26,13 +26,11 @@ interface Props {
 }
 
 export default function AverageRatingCard({ filters }: Props) {
-  // Get filtered reviews to calculate accurate average rating
-  const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews', 'average-rating', filters],
+  // Use stats endpoint to get accurate average rating data
+  const { data: statsData } = useQuery({
+    queryKey: ['/api/reviews/stats', 'average-rating', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('limit', '10000');
-      params.append('page', '1');
       
       if (filters?.dateFrom) {
         params.append('dateFrom', filters.dateFrom.toISOString());
@@ -44,13 +42,13 @@ export default function AverageRatingCard({ filters }: Props) {
         params.append('serviceId', filters.serviceId);
       }
       
-      const response = await fetch(`/api/reviews?${params}`);
+      const response = await fetch(`/api/reviews/stats?${params}`);
       return response.json();
     },
     enabled: true
   });
 
-  if (!reviewsData?.reviews || reviewsData.reviews.length === 0) {
+  if (!statsData || statsData.total === 0) {
     return (
       <div className="bg-white rounded-xl p-5 shadow-sm flex flex-col items-center justify-center text-center h-full">
         <p className="text-sm text-gray-500">평균 평점</p>
@@ -63,9 +61,8 @@ export default function AverageRatingCard({ filters }: Props) {
     );
   }
 
-  // Calculate average rating from actual reviews
-  const ratingsSum = reviewsData.reviews.reduce((sum, review) => sum + review.rating, 0);
-  const averageRating = ratingsSum / reviewsData.reviews.length;
+  // Use stats data which already provides accurate average rating
+  const averageRating = statsData.averageRating || 0;
 
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm flex flex-col items-center justify-center text-center h-full">

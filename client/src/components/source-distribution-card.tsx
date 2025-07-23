@@ -25,13 +25,11 @@ interface Props {
 }
 
 export default function SourceDistributionCard({ filters }: Props) {
-  // Get filtered reviews to calculate accurate source distribution
-  const { data: reviewsData } = useQuery({
-    queryKey: ['/api/reviews', 'source-distribution', filters],
+  // Use stats endpoint to get accurate source distribution data
+  const { data: statsData } = useQuery({
+    queryKey: ['/api/reviews/stats', 'source-distribution', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('limit', '10000');
-      params.append('page', '1');
       
       if (filters?.dateFrom) {
         params.append('dateFrom', filters.dateFrom.toISOString());
@@ -43,13 +41,13 @@ export default function SourceDistributionCard({ filters }: Props) {
         params.append('serviceId', filters.serviceId);
       }
       
-      const response = await fetch(`/api/reviews?${params}`);
+      const response = await fetch(`/api/reviews/stats?${params}`);
       return response.json();
     },
     enabled: true
   });
 
-  if (!reviewsData?.reviews || reviewsData.reviews.length === 0) {
+  if (!statsData || statsData.total === 0) {
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
         <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
@@ -60,19 +58,22 @@ export default function SourceDistributionCard({ filters }: Props) {
     );
   }
 
+  // Use stats data which already provides accurate source counts
+  const sourceCounts = {
+    google_play: statsData.countsBySource?.googlePlay || 0,
+    app_store: statsData.countsBySource?.appleStore || 0,
+    naver_blog: statsData.countsBySource?.naverBlog || 0,
+    naver_cafe: statsData.countsBySource?.naverCafe || 0
+  };
+
+  const totalReviews = statsData.total;
+  
   // Ensure all 4 channels are included, even if they have 0 reviews
   const allChannels: (keyof typeof CHANNEL_NAMES)[] = ['google_play', 'app_store', 'naver_blog', 'naver_cafe'];
   
-  const sourceCounts = reviewsData.reviews.reduce((acc: Record<string, number>, review: any) => {
-    acc[review.source] = (acc[review.source] || 0) + 1;
-    return acc;
-  }, {});
-
-  const totalReviews = reviewsData.reviews.length;
-  
   const chartData = allChannels.map(channel => ({
     label: CHANNEL_NAMES[channel],
-    value: totalReviews > 0 ? ((sourceCounts[channel] || 0) / totalReviews) * 100 : 0,
+    value: totalReviews > 0 ? (sourceCounts[channel] / totalReviews) * 100 : 0,
     color: CHANNEL_COLORS[channel]
   }));
 
