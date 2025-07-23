@@ -1090,11 +1090,14 @@ def scrape_naver_blog_reviews(service_name='익시오', count=100, service_keywo
                 processed_review = {
                     'userId': user_id,
                     'source': 'naver_blog',
+                    'serviceId': service_name,  # Dynamic service ID
+                    'appId': f"blog_{datetime.now().strftime('%Y%m%d')}",
                     'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length
                     'sentiment': sentiment,
                     'createdAt': created_at,
-                    'url': item.get('link', '')
+                    'url': item.get('link', ''),
+                    'link': item.get('link', '')
                 }
                 processed_reviews.append(processed_review)
                 
@@ -1222,7 +1225,7 @@ def scrape_naver_cafe_reviews(service_name='익시오', count=100, service_keywo
                 processed_review = {
                     'userId': user_id,
                     'source': 'naver_cafe',
-                    'serviceId': 'ixio',  # 서비스 ID 추가
+                    'serviceId': service_name,  # Dynamic service ID
                     'appId': f"cafe_{datetime.now().strftime('%Y%m%d')}",  # 앱 ID 추가
                     'rating': 4 if sentiment == '긍정' else (2 if sentiment == '부정' else 3),
                     'content': content[:500],  # Limit content length

@@ -13,18 +13,11 @@ import random
 import re
 
 def crawl_service_by_selection(service_name, selected_channels, start_date=None, end_date=None, review_count=100):
-    # Map service name to service ID
-    service_mapping = {
-        '익시오': 'ixio',
-        'SOHO우리가게패키지': 'soho-package', 
-        'AI비즈콜': 'ai-bizcall'
-    }
-    service_id = service_mapping.get(service_name, service_name.lower().replace(' ', '-'))
     """
     Crawl reviews from selected channels for a specific service with filtering
     
     Args:
-        service_name: ex) "익시오"
+        service_name: ex) "익시오" or "SOHO우리가게패키지"
         selected_channels: {
             "googlePlay": True,
             "appleStore": True,
@@ -38,10 +31,19 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
     Returns:
         Dictionary with results from each selected channel
     """
-    if service_name not in services:
-        raise ValueError("유효하지 않은 서비스명입니다.")
+    # Map service name to service ID
+    service_mapping = {
+        '익시오': 'ixio',
+        'SOHO우리가게패키지': 'soho-package', 
+        'AI비즈콜': 'ai-bizcall'
+    }
+    service_id = service_mapping.get(service_name, service_name.lower().replace(' ', '-'))
+    
+    # Check if the mapped service ID exists in the services dictionary
+    if service_id not in services:
+        raise ValueError(f"유효하지 않은 서비스명입니다: {service_name} -> {service_id}")
 
-    info = services[service_name]
+    info = services[service_id]
     result = {}
     
     # Get service keywords for filtering

@@ -7,7 +7,7 @@ Contains service information and keywords for multi-source scraping
 """
 
 services = {
-    "익시오": {
+    "ixio": {
         "google_play_id": "com.lguplus.aicallagent",
         "apple_store_id": "6503931858",
         "keywords": [
@@ -18,15 +18,15 @@ services = {
             "ixi-O", "IXIO"
         ]
     },
-    "AI비즈콜": {
+    "ai-bizcall": {
         "google_play_id": "com.uplus.ubizai",
         "apple_store_id": "6503284354",
         "keywords": ["ai비즈콜", "에이아이비즈콜", "LG비즈콜", "유플러스비즈콜", "U+비즈콜"]
     },
-    "SOHO우리가게패키지": {
+    "soho-package": {
         "google_play_id": "com.lguplus.sohoapp",
         "apple_store_id": "1571096278",
-        "keywords": ["우리가게패키지", "LG우리가게", "U+우리가게", "유플러스우리가게", "유플러스소호패키지"]
+        "keywords": ["우리가게", "LG 우리가게", "U+ 우리가게", "유플러스 우리가게", "LG U+ 우리가게", "우리가게패키지", "SOHO우리가게패키지", "유플러스소호패키지"]
     }
 }
 
