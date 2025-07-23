@@ -188,9 +188,14 @@ def crawl_apple_store(app_id, count=100, start_date=None, end_date=None):
                             else:
                                 end_dt = datetime.fromisoformat(end_date).date()
                             
+                            print(f"Apple Store date filter: {review_date.date()} vs {start_dt} ~ {end_dt}")
+                            
                             # 범위 밖이면 건너뛰기
                             if not (start_dt <= review_date.date() <= end_dt):
+                                print(f"  Skipping Apple review: {review_date.date()} outside range")
                                 continue
+                            else:
+                                print(f"  Including Apple review: {review_date.date()} within range")
                         except Exception as e:
                             # 날짜 파싱 실패시 리뷰 포함
                             print(f"Date parsing error for Apple review: {e}")

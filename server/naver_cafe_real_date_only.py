@@ -36,19 +36,30 @@ def extract_real_date_only(cafe_info):
             r'(\d{4})\.(\d{1,2})\.(\d{1,2})',         # 2025.07.22
             r'(\d{4})/(\d{1,2})/(\d{1,2})',           # 2025/07/22
             r'(\d{2})년\s*(\d{1,2})월\s*(\d{1,2})일', # 25년 7월 22일
+            r'\[(\d{1,2})월\s*(\d{1,2})일\]',         # [3월 24일]
+            r'(\d{1,2})월\s*(\d{1,2})일',             # 3월 24일
         ]
         
-        for pattern in date_patterns:
+        for i, pattern in enumerate(date_patterns):
             match = re.search(pattern, combined_text)
             if match:
                 try:
-                    year = int(match.group(1))
-                    month = int(match.group(2))
-                    day = int(match.group(3))
-                    
-                    # 2자리 연도 처리
-                    if year < 100:
-                        year = 2000 + year if year < 50 else 1900 + year
+                    if i < 5:  # 년도가 포함된 패턴들
+                        year = int(match.group(1))
+                        month = int(match.group(2))
+                        day = int(match.group(3))
+                        
+                        # 2자리 연도 처리
+                        if year < 100:
+                            year = 2000 + year if year < 50 else 1900 + year
+                    else:  # [3월 24일] 또는 3월 24일 패턴 (년도 없음)
+                        year = datetime.now().year  # 현재 년도 사용
+                        if i == 5:  # [3월 24일] 패턴
+                            month = int(match.group(1))
+                            day = int(match.group(2))
+                        else:  # 3월 24일 패턴
+                            month = int(match.group(1))
+                            day = int(match.group(2))
                     
                     # 유효성 검사
                     if 2020 <= year <= 2025 and 1 <= month <= 12 and 1 <= day <= 31:
