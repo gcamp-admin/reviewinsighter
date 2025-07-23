@@ -23,6 +23,7 @@ export async function analyzeHeartFrameworkExpert(reviews: any[]): Promise<any[]
 
   // 서비스ID 확인
   const serviceId = reviews[0]?.serviceId || 'unknown';
+  console.log(`🔍 HEART 분석 서비스ID 확인: ${serviceId}`);
 
   // 긍정과 부정 리뷰 분류
   const positiveReviews = reviewTexts.filter(r => r.sentiment === '긍정');
@@ -69,6 +70,8 @@ export async function analyzeHeartFrameworkExpert(reviews: any[]): Promise<any[]
   };
 
   const benchmarkInfo = getServiceSpecificBenchmarkInfo(serviceId);
+  console.log(`🏪 서비스별 벤치마킹 정보 생성:`);
+  console.log(benchmarkInfo);
 
   try {
     const response = await openai.chat.completions.create({

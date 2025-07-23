@@ -1299,6 +1299,34 @@ def scrape_reviews(app_id_google='com.lguplus.sohoapp', app_id_apple='1571096278
     
     return all_reviews
 
+def get_service_specific_benchmark_info(service_id):
+    """
+    서비스별 맞춤형 벤치마킹 앱 정보 생성
+    """
+    if service_id == '익시오' or service_id == 'ixio':
+        return """통화 기능: 후아유(Whoscall), 터치콜(T전화), 원폰(OneCall), SKT T전화
+스팸차단: 더콜러(Truecaller), 위즈콜(WhoCall), 콜 블로커(Call Blocker)
+AI 통화: 구글 어시스턴트, 시리, 빅스비
+안정성: 통신사 기본 전화 앱들, 삼성전화, LG전화"""
+    
+    elif service_id == 'SOHO우리가게패키지' or service_id == 'soho-package':
+        return """매장 관리: 배달의민족 사장님, 요기요 사장님, 쿠팡이츠 파트너
+POS/결제: 네이버페이 사장용, 카카오페이 사장용, 토스페이먼츠 사장님
+고객 관리: 카카오톡 비즈니스, 네이버 톡톡 비즈니스
+소상공인 지원: 소상공인 정책정보, 중소벤처기업부 앱, 세무도우미
+매출 분석: 사장님 앱(배민), 스마트 스토어 센터"""
+    
+    elif service_id == 'AI비즈콜' or service_id == 'ai-bizcall':
+        return """화상회의: 줌(Zoom), 마이크로소프트 팀즈, 구글 미트
+비즈니스 통화: 시스코 웹엑스, 고투미팅(GoToMeeting)
+협업 플랫폼: 슬랙, 카카오워크, 잔디, 네이버 웍스
+고객 서비스: 젠데스크, 인터콤, 카카오톡 상담톡"""
+    
+    else:
+        return """통화 기능: 후아유(Whoscall), 터치콜(T전화), 원폰(OneCall), SKT T전화
+스팸차단: 더콜러(Truecaller), 위즈콜(WhoCall), 콜 블로커(Call Blocker)
+안정성: 통신사 기본 전화 앱들, 삼성전화, LG전화"""
+
 def analyze_sentiments(reviews):
     """
     Enhanced HEART framework analysis with dynamic insights generation
@@ -1313,6 +1341,15 @@ def analyze_sentiments(reviews):
         return {'insights': [], 'wordCloud': {'positive': [], 'negative': []}}
     
     print(f"Starting enhanced HEART analysis on {len(reviews)} reviews...", file=sys.stderr)
+    
+    # Extract service ID from reviews
+    service_id = reviews[0].get('serviceId', 'unknown') if reviews else 'unknown'
+    print(f"🔍 Python HEART 분석 서비스ID 확인: {service_id}", file=sys.stderr)
+    
+    # Get service-specific benchmark info
+    benchmark_info = get_service_specific_benchmark_info(service_id)
+    print(f"🏪 Python 서비스별 벤치마킹 정보 생성:", file=sys.stderr)
+    print(benchmark_info, file=sys.stderr)
     
     # Re-analyze sentiment based on text content only (ignore star ratings)
     for review in reviews:
@@ -1577,6 +1614,13 @@ def analyze_sentiments(reviews):
             # Generate UX-focused improvement suggestions based on actual user review content
             ux_improvement_suggestions = generate_realistic_ux_suggestions(category, most_common_issue, data['issues'], predicted_problem, quotes_text)
             
+            # Extract actual user quotes for problem summary
+            problem_summary = f"사용자들이 '{most_common_issue}' 관련하여 불편함을 호소하고 있으며, 주요 표현으로는 {quotes_text[:100]}... 등이 나타나 {category} 영역의 개선이 필요한 상황"
+            
+            # Generate UX suggestions as array
+            ux_suggestions_array = ux_improvement_suggestions.split('\n- ') if '- ' in ux_improvement_suggestions else [ux_improvement_suggestions]
+            ux_suggestions_array = [s.strip().lstrip('- ') for s in ux_suggestions_array if s.strip()]
+            
             description = f"""**HEART 항목**: {category}
 **문제 요약**: {quotes_text}에서 드러나는 {predicted_problem}
 **UX 개선 제안**: {ux_improvement_suggestions}
@@ -1584,12 +1628,16 @@ def analyze_sentiments(reviews):
 
             insights.append({
                 'id': insight_id,
-                'title': f"{priority_emoji} {priority.title()} | HEART: {category} | {most_common_issue} ({count}건)",
+                'title': f"HEART: [{category}] | {most_common_issue} ({count}건)",
                 'description': description,
+                'problem_summary': problem_summary,
+                'competitor_benchmark': benchmark_info,
+                'ux_suggestions': ux_suggestions_array,
                 'priority': priority,
                 'mentionCount': count,
                 'trend': 'stable',
-                'category': category
+                'category': category,
+                'serviceId': service_id
             })
             insight_id += 1
     
