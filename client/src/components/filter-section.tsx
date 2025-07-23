@@ -377,7 +377,6 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Label className="text-sm font-medium">수집 기간 선택</Label>
-              <span className="text-xs text-amber-600">(최대 31일)</span>
             </div>
             <div className="date-picker-grid">
               <div style={{ width: '100%' }}>
