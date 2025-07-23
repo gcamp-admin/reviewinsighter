@@ -30,6 +30,7 @@ export async function analyzeHeartFrameworkExpert(reviews: any[]): Promise<any[]
   if (serviceId === 'soho-package' || serviceId === 'SOHO우리가게패키지') {
     validatedServiceId = 'soho-package';
     console.log(`✅ SOHO 서비스 확인됨 - 매장 관리 앱 벤치마킹 사용`);
+    console.log(`🚨 경고: 통화 관련 앱(SKT T전화, KT 전화) 사용 절대 금지!`);
   } else if (serviceId === 'ixio' || serviceId === '익시오') {
     validatedServiceId = 'ixio';
     console.log(`✅ 익시오 서비스 확인됨 - 통화 앱 벤치마킹 사용`);
@@ -166,28 +167,51 @@ ${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리
       temperature: 0.3
     });
 
-    const analysisResult = JSON.parse(response.choices[0].message.content);
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('Empty response content');
+    }
+    
+    const analysisResult = JSON.parse(content);
     
     // 배열 형태로 반환되지 않을 경우 처리
-    let insights = [];
+    let insights: any[] = [];
     if (Array.isArray(analysisResult)) {
       insights = analysisResult;
     } else if (analysisResult.insights && Array.isArray(analysisResult.insights)) {
       insights = analysisResult.insights;
     } else {
       // 객체 형태로 반환된 경우 배열로 변환
-      insights = Object.values(analysisResult).filter(item => 
+      insights = Object.values(analysisResult).filter((item: any) => 
         item && typeof item === 'object' && item.title && item.priority
       );
     }
 
+    // 🚨 CRITICAL: SOHO 서비스 벤치마킹 후처리 검증 및 강제 수정
+    if (validatedServiceId === 'soho-package') {
+      insights = insights.map((insight: any) => {
+        if (insight.competitor_benchmark) {
+          const forbiddenTerms = ['SKT T전화', 'KT 전화', '후아유', '터치콜', '원폰', '더콜러', '위즈콜', '콜 블로커'];
+          const containsForbidden = forbiddenTerms.some(term => 
+            insight.competitor_benchmark.includes(term)
+          );
+          
+          if (containsForbidden) {
+            console.log(`🚨 경고: SOHO 서비스에서 통화 앱 벤치마킹 발견! 강제 수정 실행`);
+            insight.competitor_benchmark = '배달의민족 사장님 앱은 매장 관리 과정에서 발생하는 접속 문제를 해결하기 위해 오프라인 모드 기능을 제공하며, 자동 캐시 정리 시스템으로 사용자가 수동으로 관리할 필요가 없습니다. 네이버페이 사장용 앱은 안정적인 서버 연결과 함께 연결 상태를 실시간으로 표시하여 사용자에게 현재 상황을 명확히 알려줍니다.';
+          }
+        }
+        return insight;
+      });
+    }
+
     // 우선순위 순서대로 정렬
-    const priorityOrder = { 'critical': 1, 'major': 2, 'minor': 3 };
-    insights = insights.sort((a, b) => 
+    const priorityOrder: {[key: string]: number} = { 'critical': 1, 'major': 2, 'minor': 3 };
+    insights = insights.sort((a: any, b: any) => 
       (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999)
     );
 
-    console.log(`Generated ${insights.length} HEART insights`);
+    console.log(`Generated ${insights.length} HEART insights (검증 완료)`);
     return insights.slice(0, 5); // 최대 5개 반환
 
   } catch (error) {
@@ -199,10 +223,11 @@ ${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리
 function generateFallbackInsights(): any[] {
   return [
     {
-      title: "HEART: Task Success | 통화 안정성 문제",
+      title: "HEART: Task Success | 앱 안정성 문제",
       priority: "critical",
-      problem_summary: "사용자들이 '전화 와서 받으면 끊어짐', '통화 시작 10초 지나면 끊어짐' 등의 표현으로 통화 연결 안정성 문제를 호소하고 있습니다. 기본적인 통화 기능에서 심각한 문제를 겪고 있어 서비스 신뢰도에 큰 영향을 미치고 있습니다.",
-      ux_suggestions: "• 통화 연결 실패 시 '연결 중 문제가 발생했습니다' 명확한 오류 메시지 표시\n• 자동 재연결 시도 기능과 진행 상태 표시\n• 통화 연결 상태를 실시간으로 보여주는 시각적 인디케이터 추가\n• 연결 실패 시 '다시 시도' 버튼을 크게 표시하여 쉽게 재시도 가능하도록 함",
+      problem_summary: "사용자들이 앱 사용 중 안정성 문제를 호소하고 있습니다. 기본적인 기능에서 문제를 겪고 있어 서비스 신뢰도에 영향을 미치고 있습니다.",
+      competitor_benchmark: "배달의민족 사장님 앱은 안정적인 서버 연결을 보장하기 위해 캐시 관리 기능을 자동화하고, 사용자에게 불필요한 작업을 요구하지 않습니다. 네이버페이 사장용 앱은 앱 사용 중 오류 발생 시 자동으로 재연결을 시도하여 사용자 경험을 개선합니다.",
+      ux_suggestions: ["연결 실패 시 명확한 오류 메시지 표시", "자동 재연결 시도 기능과 진행 상태 표시", "앱 상태를 실시간으로 보여주는 시각적 인디케이터 추가", "연결 실패 시 재시도 버튼을 크게 표시하여 쉽게 재시도 가능하도록 함"],
       heart_category: "Task Success"
     },
     {

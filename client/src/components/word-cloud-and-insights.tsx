@@ -150,11 +150,18 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       return horizontalOverlap && verticalOverlap;
     };
     
-    // 위치 계산 및 충돌 회피
+    // 격자 기반 위치 계산으로 겹침 완전 방지
     const calculatePositions = () => {
       const positions: any[] = [];
       const containerWidth = 100; // 퍼센트 기준
       const containerHeight = 100;
+      
+      // 격자 시스템 설정 (5x4 = 20칸)
+      const gridCols = 5;
+      const gridRows = 4;
+      const cellWidth = containerWidth / gridCols;
+      const cellHeight = containerHeight / gridRows;
+      const usedCells = new Set<string>();
       
       sortedWords.slice(0, 10).forEach((word, index) => {
         const fontSize = minFrequency === maxFrequency 
@@ -165,43 +172,54 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         
         let position: { top: number; left: number };
         let attempts = 0;
-        const maxAttempts = 50;
+        const maxAttempts = 100;
         
         do {
+          let targetRow, targetCol;
+          
           if (frequencyRatio > 0.7) {
-            // 높은 빈도: 중앙 근처
-            position = {
-              top: 45 + (Math.random() - 0.5) * 20,
-              left: 50 + (Math.random() - 0.5) * 20
-            };
+            // 높은 빈도: 중앙 2x2 격자
+            targetRow = 1 + Math.floor(Math.random() * 2);
+            targetCol = 1 + Math.floor(Math.random() * 3);
           } else if (frequencyRatio > 0.4) {
             // 중간 빈도: 중앙 주변
-            const angle = (index * 45 + Math.random() * 30) * Math.PI / 180;
-            const radius = 25 + Math.random() * 15;
-            position = {
-              top: 50 + radius * Math.sin(angle),
-              left: 50 + radius * Math.cos(angle)
-            };
+            const options = [
+              [0, 1], [0, 2], [0, 3],
+              [1, 0], [1, 4],
+              [2, 0], [2, 4],
+              [3, 1], [3, 2], [3, 3]
+            ];
+            const chosen = options[Math.floor(Math.random() * options.length)];
+            targetRow = chosen[0];
+            targetCol = chosen[1];
           } else {
-            // 낮은 빈도: 방사형으로 모서리 근처
-            const angle = (index * 40 + Math.random() * 30) * Math.PI / 180;
-            const radius = 35 + Math.random() * 20;
-            position = {
-              top: 50 + radius * Math.sin(angle),
-              left: 50 + radius * Math.cos(angle)
-            };
+            // 낮은 빈도: 모서리
+            const corners = [
+              [0, 0], [0, 4],
+              [3, 0], [3, 4]
+            ];
+            const chosen = corners[Math.floor(Math.random() * corners.length)];
+            targetRow = chosen[0];
+            targetCol = chosen[1];
           }
           
-          // 경계 체크
-          position.top = Math.max(15, Math.min(85, position.top));
-          position.left = Math.max(15, Math.min(85, position.left));
+          const cellKey = `${targetRow}-${targetCol}`;
           
-          // 충돌 체크
-          const hasCollision = positions.some(pos => 
-            checkCollision(position, pos.position, word.word, pos.word.word, fontSize, pos.fontSize)
-          );
-          
-          if (!hasCollision) {
+          if (!usedCells.has(cellKey)) {
+            // 셀 중앙에 위치 + 약간의 랜덤 오프셋
+            const centerTop = (targetRow * cellHeight) + (cellHeight / 2);
+            const centerLeft = (targetCol * cellWidth) + (cellWidth / 2);
+            
+            position = {
+              top: centerTop + (Math.random() - 0.5) * (cellHeight * 0.3),
+              left: centerLeft + (Math.random() - 0.5) * (cellWidth * 0.3)
+            };
+            
+            // 경계 체크
+            position.top = Math.max(10, Math.min(90, position.top));
+            position.left = Math.max(10, Math.min(90, position.left));
+            
+            usedCells.add(cellKey);
             positions.push({ word, position, fontSize, index });
             break;
           }
@@ -209,8 +227,25 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           attempts++;
         } while (attempts < maxAttempts);
         
-        // 최대 시도 후에도 충돌이 있으면 강제 배치
+        // 최대 시도 후 빈 셀 찾기
         if (attempts >= maxAttempts) {
+          for (let row = 0; row < gridRows; row++) {
+            for (let col = 0; col < gridCols; col++) {
+              const cellKey = `${row}-${col}`;
+              if (!usedCells.has(cellKey)) {
+                const centerTop = (row * cellHeight) + (cellHeight / 2);
+                const centerLeft = (col * cellWidth) + (cellWidth / 2);
+                
+                position = { top: centerTop, left: centerLeft };
+                usedCells.add(cellKey);
+                positions.push({ word, position, fontSize, index });
+                return;
+              }
+            }
+          }
+          
+          // 모든 셀이 차있으면 중앙에 강제 배치
+          position = { top: 50, left: 50 };
           positions.push({ word, position, fontSize, index });
         }
       });
