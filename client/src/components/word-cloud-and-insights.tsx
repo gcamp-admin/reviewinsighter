@@ -112,142 +112,37 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     // 빈도수 기준으로 정렬 (높은 순)
     const sortedWords = [...words].sort((a, b) => b.frequency - a.frequency);
     
-    // 강화된 충돌 감지 함수 (한글 특성 고려)
-    const checkCollision = (pos1: any, pos2: any, word1: string, word2: string, size1: number, size2: number) => {
-      const padding = 45; // 안전 간격을 더 크게
-      
-      // 한글과 영문을 구분하여 정확한 텍스트 너비 계산
-      const getAccurateTextWidth = (text: string, fontSize: number) => {
-        const koreanChars = (text.match(/[가-힣]/g) || []).length;
-        const otherChars = text.length - koreanChars;
-        // 한글은 정사각형에 가깝고, 영문/숫자는 더 좁음
-        return (koreanChars * fontSize * 0.9 + otherChars * fontSize * 0.6);
-      };
-      
-      const width1 = getAccurateTextWidth(word1, size1);
-      const width2 = getAccurateTextWidth(word2, size2);
-      const height1 = size1 * 1.4; // 높이 여유 증가
-      const height2 = size2 * 1.4;
-      
-      const box1 = {
-        left: pos1.left - width1 / 2,
-        right: pos1.left + width1 / 2,
-        top: pos1.top - height1 / 2,
-        bottom: pos1.top + height1 / 2
-      };
-      
-      const box2 = {
-        left: pos2.left - width2 / 2,
-        right: pos2.left + width2 / 2,
-        top: pos2.top - height2 / 2,
-        bottom: pos2.top + height2 / 2
-      };
-      
-      // 더 엄격한 충돌 검사 (패딩 포함)
-      const horizontalOverlap = (box1.right + padding) > box2.left && (box2.right + padding) > box1.left;
-      const verticalOverlap = (box1.bottom + padding) > box2.top && (box2.bottom + padding) > box1.top;
-      
-      return horizontalOverlap && verticalOverlap;
-    };
-    
-    // 격자 기반 위치 계산으로 겹침 완전 방지
+    // 완전 겹침 방지 시스템 - 절대 겹치지 않는 고정 위치 배치
     const calculatePositions = () => {
       const positions: any[] = [];
-      const containerWidth = 100; // 퍼센트 기준
-      const containerHeight = 100;
       
-      // 격자 시스템 설정 (5x4 = 20칸)
-      const gridCols = 5;
-      const gridRows = 4;
-      const cellWidth = containerWidth / gridCols;
-      const cellHeight = containerHeight / gridRows;
-      const usedCells = new Set<string>();
+      // 10개 단어에 대한 고정 위치 (퍼센트 기준, 절대 겹치지 않음)
+      const fixedPositions = [
+        { top: 20, left: 50 }, // 상단 중앙 (최고 빈도)
+        { top: 35, left: 25 }, // 좌상
+        { top: 35, left: 75 }, // 우상  
+        { top: 50, left: 15 }, // 좌중
+        { top: 50, left: 85 }, // 우중
+        { top: 65, left: 30 }, // 좌하
+        { top: 65, left: 70 }, // 우하
+        { top: 80, left: 50 }, // 하단 중앙
+        { top: 20, left: 20 }, // 좌상 모서리
+        { top: 20, left: 80 }  // 우상 모서리
+      ];
       
       sortedWords.slice(0, 10).forEach((word, index) => {
         const fontSize = minFrequency === maxFrequency 
           ? 24 
-          : 12 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 36;
+          : 16 + ((word.frequency - minFrequency) / (maxFrequency - minFrequency)) * 20;
         
-        const frequencyRatio = (word.frequency - minFrequency) / (maxFrequency - minFrequency);
+        const position = fixedPositions[index] || { top: 50, left: 50 };
         
-        let position: { top: number; left: number };
-        let attempts = 0;
-        const maxAttempts = 100;
-        
-        do {
-          let targetRow, targetCol;
-          
-          if (frequencyRatio > 0.7) {
-            // 높은 빈도: 중앙 2x2 격자
-            targetRow = 1 + Math.floor(Math.random() * 2);
-            targetCol = 1 + Math.floor(Math.random() * 3);
-          } else if (frequencyRatio > 0.4) {
-            // 중간 빈도: 중앙 주변
-            const options = [
-              [0, 1], [0, 2], [0, 3],
-              [1, 0], [1, 4],
-              [2, 0], [2, 4],
-              [3, 1], [3, 2], [3, 3]
-            ];
-            const chosen = options[Math.floor(Math.random() * options.length)];
-            targetRow = chosen[0];
-            targetCol = chosen[1];
-          } else {
-            // 낮은 빈도: 모서리
-            const corners = [
-              [0, 0], [0, 4],
-              [3, 0], [3, 4]
-            ];
-            const chosen = corners[Math.floor(Math.random() * corners.length)];
-            targetRow = chosen[0];
-            targetCol = chosen[1];
-          }
-          
-          const cellKey = `${targetRow}-${targetCol}`;
-          
-          if (!usedCells.has(cellKey)) {
-            // 셀 중앙에 위치 + 약간의 랜덤 오프셋
-            const centerTop = (targetRow * cellHeight) + (cellHeight / 2);
-            const centerLeft = (targetCol * cellWidth) + (cellWidth / 2);
-            
-            position = {
-              top: centerTop + (Math.random() - 0.5) * (cellHeight * 0.3),
-              left: centerLeft + (Math.random() - 0.5) * (cellWidth * 0.3)
-            };
-            
-            // 경계 체크
-            position.top = Math.max(10, Math.min(90, position.top));
-            position.left = Math.max(10, Math.min(90, position.left));
-            
-            usedCells.add(cellKey);
-            positions.push({ word, position, fontSize, index });
-            break;
-          }
-          
-          attempts++;
-        } while (attempts < maxAttempts);
-        
-        // 최대 시도 후 빈 셀 찾기
-        if (attempts >= maxAttempts) {
-          for (let row = 0; row < gridRows; row++) {
-            for (let col = 0; col < gridCols; col++) {
-              const cellKey = `${row}-${col}`;
-              if (!usedCells.has(cellKey)) {
-                const centerTop = (row * cellHeight) + (cellHeight / 2);
-                const centerLeft = (col * cellWidth) + (cellWidth / 2);
-                
-                position = { top: centerTop, left: centerLeft };
-                usedCells.add(cellKey);
-                positions.push({ word, position, fontSize, index });
-                return;
-              }
-            }
-          }
-          
-          // 모든 셀이 차있으면 중앙에 강제 배치
-          position = { top: 50, left: 50 };
-          positions.push({ word, position, fontSize, index });
-        }
+        positions.push({ 
+          word, 
+          position, 
+          fontSize, 
+          index 
+        });
       });
       
       return positions;
