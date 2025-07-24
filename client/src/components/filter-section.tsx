@@ -303,7 +303,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
 
         </div>
         <CardDescription className="text-gray-600">
-          스토어와 날짜를 선택하여 리뷰를 필터링하세요 (구글 플레이스토어, 애플 앱스토어, 네이버 블로그, 네이버 카페 지원)
+          스토어와 날짜를 선택하여 리뷰를 필터링하세요
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
