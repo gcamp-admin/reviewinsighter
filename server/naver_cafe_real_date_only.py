@@ -467,8 +467,9 @@ def filter_cafe_by_real_date_only(cafe_results, start_date, end_date, service_na
                     print(f"    ❌ 뉴스 기사로 제외: {title[:30]}...")
                     continue
                 
-                # SOHO우리가게패키지 특별 필터링
+                # 서비스별 특별 필터링
                 if service_name == "SOHO우리가게패키지":
+                    # SOHO: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
                     full_content = text_content
                     
                     # '우리가게' 키워드 체크
@@ -481,10 +482,27 @@ def filter_cafe_by_real_date_only(cafe_results, start_date, end_date, service_na
                     ])
                     
                     if not (has_우리가게 and has_lg_or_uplus):
-                        print(f"    ❌ 키워드 불일치로 제외: {title[:30]}...")
+                        print(f"    ❌ SOHO 키워드 불일치로 제외: {title[:30]}...")
                         continue
                     
-                    print(f"    ✅ 키워드 일치: {title[:30]}...")
+                    print(f"    ✅ SOHO 키워드 일치: {title[:30]}...")
+                
+                elif service_name == "익시오":
+                    # 익시오: 'LG', 'U+', '유플러스', '유+', 'uplus' 키워드가 함께 있는 글만
+                    full_content = text_content
+                    
+                    # 통신사 키워드 체크
+                    has_telecom_keywords = any(keyword in full_content for keyword in [
+                        'lg', 'l g', 'lgu', 'lg u+', 'lg유플러스',
+                        'u+', 'u +', 'u플러스', 'uplus', 'u plus',
+                        '유플러스', '유 플러스', '유플', '유+', '유 +'
+                    ])
+                    
+                    if not has_telecom_keywords:
+                        print(f"    ❌ 익시오 통신사 키워드 없음으로 제외: {title[:30]}...")
+                        continue
+                    
+                    print(f"    ✅ 익시오 통신사 키워드 발견: {title[:30]}...")
                 
                 # HTML 태그 제거 및 엔티티 디코딩
                 import re

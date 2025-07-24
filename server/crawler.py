@@ -197,8 +197,9 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                             clean_title = clean_html(title)
                             clean_description = clean_html(description)
                             
-                            # SOHO우리가게패키지 특별 필터링: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
+                            # 서비스별 특별 필터링
                             if service_name == "SOHO우리가게패키지":
+                                # SOHO: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
                                 full_content = (clean_title + " " + clean_description).lower()
                                 
                                 # '우리가게' 키워드 체크
@@ -211,10 +212,27 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 ])
                                 
                                 if not (has_우리가게 and has_lg_or_uplus):
-                                    print(f"  ❌ 블로그 제외 (키워드 불일치): {clean_title[:50]}...")
+                                    print(f"  ❌ SOHO 블로그 제외 (키워드 불일치): {clean_title[:50]}...")
                                     continue
                                 
-                                print(f"  ✅ 블로그 포함 (키워드 일치): {clean_title[:30]}...")
+                                print(f"  ✅ SOHO 블로그 포함 (키워드 일치): {clean_title[:30]}...")
+                            
+                            elif service_name == "익시오":
+                                # 익시오: 'LG', 'U+', '유플러스', '유+', 'uplus' 키워드가 함께 있는 글만
+                                full_content = (clean_title + " " + clean_description).lower()
+                                
+                                # 통신사 키워드 체크
+                                has_telecom_keywords = any(keyword in full_content for keyword in [
+                                    'lg', 'l g', 'lgu', 'lg u+', 'lg유플러스',
+                                    'u+', 'u +', 'u플러스', 'uplus', 'u plus',
+                                    '유플러스', '유 플러스', '유플', '유+', '유 +'
+                                ])
+                                
+                                if not has_telecom_keywords:
+                                    print(f"  ❌ 익시오 블로그 제외 (통신사 키워드 없음): {clean_title[:50]}...")
+                                    continue
+                                
+                                print(f"  ✅ 익시오 블로그 포함 (통신사 키워드 발견): {clean_title[:30]}...")
                             
                             # Extract user ID from URL
                             user_id = extract_user_id_from_url(
@@ -338,8 +356,9 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                 clean_description = clean_description.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
                                 clean_description = clean_description.replace('&quot;', '"').replace('&#39;', "'")
                                 
-                                # SOHO우리가게패키지 특별 필터링: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
+                                # 서비스별 특별 필터링
                                 if service_name == "SOHO우리가게패키지":
+                                    # SOHO: '우리가게'와 함께 'LG' 또는 '유플러스' 또는 'U+' 언급된 글만
                                     full_content = (clean_title + " " + clean_description).lower()
                                     
                                     # '우리가게' 키워드 체크
@@ -352,8 +371,27 @@ def crawl_service_by_selection(service_name, selected_channels, start_date=None,
                                     ])
                                     
                                     if not (has_우리가게 and has_lg_or_uplus):
-                                        print(f"  ❌ 카페 제외 (키워드 불일치): {clean_title[:50]}...")
+                                        print(f"  ❌ SOHO 카페 제외 (키워드 불일치): {clean_title[:50]}...")
                                         continue
+                                        
+                                    print(f"  ✅ SOHO 카페 포함 (키워드 일치): {clean_title[:30]}...")
+                                
+                                elif service_name == "익시오":
+                                    # 익시오: 'LG', 'U+', '유플러스', '유+', 'uplus' 키워드가 함께 있는 글만
+                                    full_content = (clean_title + " " + clean_description).lower()
+                                    
+                                    # 통신사 키워드 체크
+                                    has_telecom_keywords = any(keyword in full_content for keyword in [
+                                        'lg', 'l g', 'lgu', 'lg u+', 'lg유플러스',
+                                        'u+', 'u +', 'u플러스', 'uplus', 'u plus',
+                                        '유플러스', '유 플러스', '유플', '유+', '유 +'
+                                    ])
+                                    
+                                    if not has_telecom_keywords:
+                                        print(f"  ❌ 익시오 카페 제외 (통신사 키워드 없음): {clean_title[:50]}...")
+                                        continue
+                                    
+                                    print(f"  ✅ 익시오 카페 포함 (통신사 키워드 발견): {clean_title[:30]}...")
                                     
                                     print(f"  ✅ 카페 포함 (키워드 일치): {clean_title[:30]}...")
                                 
