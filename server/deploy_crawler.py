@@ -15,6 +15,12 @@ import time
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 
+# Deployment safety check and logging
+print("Starting deployment-safe crawler", file=sys.stderr)
+print(f"Python version: {sys.version}", file=sys.stderr)
+print(f"Working directory: {os.getcwd()}", file=sys.stderr)
+print(f"Script path: {__file__}", file=sys.stderr)
+
 def get_service_info(service_name):
     """Get service information for deployment"""
     services = {

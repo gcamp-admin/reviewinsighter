@@ -151,10 +151,19 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         }
       }).join(', ');
       
-      toast({
-        title: "수집 완료",
-        description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
-      });
+      // Check if this is a deployment environment message
+      if ((data as any).reviewCount === 0 && data.message && data.message.includes('배포 환경에서는')) {
+        toast({
+          title: "배포 환경 안내",
+          description: data.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "수집 완료",
+          description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
+        });
+      }
       
       // Reset progress
       setTimeout(() => {
@@ -231,10 +240,19 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "분석 완료",
-        description: `AI 감정 워드클라우드 및 UX 개선 분석이 완료되었습니다.`,
-      });
+      // Check if this is a deployment environment message
+      if (data.message && data.message.includes('배포 환경에서는')) {
+        toast({
+          title: "배포 환경 안내",
+          description: data.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "분석 완료",
+          description: `AI 감정 워드클라우드 및 UX 개선 분석이 완료되었습니다.`,
+        });
+      }
       // Invalidate analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
