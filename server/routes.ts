@@ -239,8 +239,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Run Python crawler with multiple sources and filtering
-      const crawlerPath = path.join(__dirname, 'run_crawler.py');
+      // Choose crawler based on environment
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.DEPLOYMENT === 'true';
+      const crawlerPath = isProduction 
+        ? path.join(__dirname, 'deploy_crawler.py')
+        : path.join(__dirname, 'run_crawler.py');
+      
+      console.log(`Using crawler: ${crawlerPath} (production: ${isProduction})`);
+      
+      // Verify Python script exists and is accessible
+      if (!fs.existsSync(crawlerPath)) {
+        console.error(`Crawler script not found at: ${crawlerPath}`);
+        return res.status(500).json({
+          error: "Crawler script not found",
+          message: `크롤러 스크립트를 찾을 수 없습니다: ${crawlerPath}`
+        });
+      }
       
       // Build command line arguments with new crawler structure
       const crawlerArgs = {
@@ -284,11 +298,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       pythonProcess.on('close', async (code) => {
+        console.log(`Python process exit code: ${code}`);
+        console.log(`Python stdout: ${stdout}`);
+        console.log(`Python stderr: ${stderr}`);
+        
         if (code !== 0) {
           console.error('Python scraper error:', stderr);
           return res.status(500).json({ 
             error: "Scraper execution failed",
-            message: "리뷰 수집 중 오류가 발생했습니다."
+            message: `리뷰 수집 중 오류가 발생했습니다. Exit code: ${code}, Error: ${stderr}`
           });
         }
         
@@ -426,9 +444,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
         
-        // Run analysis using Python script file with explicit paths
-        const pythonScriptPath = path.join(process.cwd(), "server", "analyze_reviews.py");
-        const pythonProcess = spawn("python3", [pythonScriptPath, tempFilePath, analysisType || 'full'], {
+        // Choose analysis script based on environment
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.DEPLOYMENT === 'true';
+        const analysisScriptPath = isProduction
+          ? path.join(process.cwd(), "server", "deploy_analysis.py")
+          : path.join(process.cwd(), "server", "analyze_reviews.py");
+        
+        console.log(`Using analysis script: ${analysisScriptPath} (production: ${isProduction})`);
+        
+        const pythonProcess = spawn("python3", [analysisScriptPath, tempFilePath, analysisType || 'full'], {
           cwd: process.cwd(),
           env: { 
             ...process.env, 

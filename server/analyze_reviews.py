@@ -12,11 +12,18 @@ import traceback
 # Set deployment mode environment for scraper modules
 os.environ['DEPLOYMENT'] = 'true'
 
+# Add current directory to Python path for module imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('server')
+
 try:
-    sys.path.append('server')
     from scraper import analyze_sentiments, extract_korean_words_advanced
+    print("Successfully imported scraper module for analysis", file=sys.stderr)
 except ImportError as e:
     print(f"Import error: {e}", file=sys.stderr)
+    print(f"Current directory: {os.getcwd()}", file=sys.stderr)
+    print(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}", file=sys.stderr)
+    print(f"Python path: {sys.path}", file=sys.stderr)
     sys.exit(1)
 
 def main():
