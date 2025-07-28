@@ -9,6 +9,9 @@ import os
 import tempfile
 import traceback
 
+# Set deployment mode environment for scraper modules
+os.environ['DEPLOYMENT'] = 'true'
+
 try:
     sys.path.append('server')
     from scraper import analyze_sentiments, extract_korean_words_advanced

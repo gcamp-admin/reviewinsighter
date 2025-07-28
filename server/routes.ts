@@ -262,7 +262,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       
       console.log(`Running Python crawler with filters: ${JSON.stringify(crawlerArgs)}`);
-      const pythonProcess = spawn('python3', args);
+      const pythonProcess = spawn('python3', args, {
+        cwd: process.cwd(),
+        env: { 
+          ...process.env, 
+          PYTHONPATH: process.cwd(),
+          DEPLOYMENT: 'true',
+          NODE_ENV: 'production'
+        }
+      });
       
       let stdout = '';
       let stderr = '';
@@ -418,8 +426,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
         
-        // Run analysis using Python script file
-        const pythonProcess = spawn("python3", ["server/analyze_reviews.py", tempFilePath, analysisType || 'full']);
+        // Run analysis using Python script file with explicit paths
+        const pythonScriptPath = path.join(process.cwd(), "server", "analyze_reviews.py");
+        const pythonProcess = spawn("python3", [pythonScriptPath, tempFilePath, analysisType || 'full'], {
+          cwd: process.cwd(),
+          env: { 
+            ...process.env, 
+            PYTHONPATH: process.cwd(),
+            DEPLOYMENT: 'true',
+            NODE_ENV: 'production'
+          }
+        });
       
         let output = "";
         let error = "";
@@ -777,7 +794,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ];
         
         console.log(`Running keyword network analysis for ${reviews.length} reviews`);
-        const pythonProcess = spawn('python3', args);
+        const pythonProcess = spawn('python3', args, {
+          cwd: process.cwd(),
+          env: { 
+            ...process.env, 
+            PYTHONPATH: process.cwd(),
+            DEPLOYMENT: 'true',
+            NODE_ENV: 'production'
+          }
+        });
       
       let stdout = '';
       let stderr = '';

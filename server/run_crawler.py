@@ -8,7 +8,12 @@ Crawler runner script for Node.js integration
 import sys
 import json
 import requests
+import os
 from datetime import datetime
+
+# Set deployment mode environment for all imported modules
+os.environ['DEPLOYMENT'] = 'true'
+
 from crawler import crawl_service_by_selection
 
 def main():

@@ -16,61 +16,91 @@ from service_data import get_service_keywords, get_service_info
 from naver_api import search_naver, extract_text_from_html
 import os
 
+# Force basic processing in production/deployment environment
+FORCE_BASIC_MODE = os.getenv('NODE_ENV') == 'production' or os.getenv('DEPLOYMENT') == 'true'
+
 # Enhanced Korean text processing
-try:
-    from konlpy.tag import Okt, Kkma
-    from wordcloud import WordCloud
-    import matplotlib.pyplot as plt
-    ADVANCED_PROCESSING = True
-except ImportError:
+if FORCE_BASIC_MODE:
     ADVANCED_PROCESSING = False
-    print("Advanced Korean processing libraries not available, using basic text processing", file=sys.stderr)
+    print("Running in deployment mode, using basic text processing only", file=sys.stderr)
+else:
+    try:
+        from konlpy.tag import Okt, Kkma
+        from wordcloud import WordCloud
+        import matplotlib.pyplot as plt
+        ADVANCED_PROCESSING = True
+    except ImportError as e:
+        ADVANCED_PROCESSING = False
+        print(f"Advanced Korean processing libraries not available: {e}, using basic text processing", file=sys.stderr)
+    except Exception as e:
+        ADVANCED_PROCESSING = False
+        print(f"Error loading Korean processing libraries: {e}, using basic text processing", file=sys.stderr)
 
 # NLTK for enhanced sentiment analysis
-try:
-    import nltk
-    from nltk.tokenize import word_tokenize, sent_tokenize
-    from nltk.corpus import stopwords
-    NLTK_AVAILABLE = True
-    
-    # Download required NLTK data
-    try:
-        nltk.data.find('tokenizers/punkt')
-    except LookupError:
-        nltk.download('punkt', quiet=True)
-    
-    try:
-        nltk.data.find('tokenizers/punkt_tab')
-    except LookupError:
-        nltk.download('punkt_tab', quiet=True)
-    
-    try:
-        nltk.data.find('corpora/stopwords')
-    except LookupError:
-        nltk.download('stopwords', quiet=True)
-        
-except ImportError:
+if FORCE_BASIC_MODE:
     NLTK_AVAILABLE = False
+    print("Deployment mode: NLTK libraries disabled", file=sys.stderr)
+else:
+    try:
+        import nltk
+        from nltk.tokenize import word_tokenize, sent_tokenize
+        from nltk.corpus import stopwords
+        NLTK_AVAILABLE = True
+        
+        # Download required NLTK data
+        try:
+            nltk.data.find('tokenizers/punkt')
+        except LookupError:
+            nltk.download('punkt', quiet=True)
+        
+        try:
+            nltk.data.find('tokenizers/punkt_tab')
+        except LookupError:
+            nltk.download('punkt_tab', quiet=True)
+        
+        try:
+            nltk.data.find('corpora/stopwords')
+        except LookupError:
+            nltk.download('stopwords', quiet=True)
+            
+    except ImportError as e:
+        NLTK_AVAILABLE = False
+        print(f"NLTK libraries not available: {e}, using basic text processing", file=sys.stderr)
+    except Exception as e:
+        NLTK_AVAILABLE = False
+        print(f"Error loading NLTK libraries: {e}, using basic text processing", file=sys.stderr)
 
 # Transformer-based sentiment analysis
-try:
-    from transformers import AutoTokenizer, AutoModelForSequenceClassification
-    from transformers import pipeline
-    import torch
-    TRANSFORMER_AVAILABLE = True
-    
-    # Initialize Korean sentiment analysis model
-    MODEL_NAME = "beomi/KcELECTRA-base"
-    SENTIMENT_LABELS = {0: "negative", 1: "positive"}
-    
-    # Global variables for model (loaded once)
-    _sentiment_pipeline = None
-    _model_loaded = False
-    
-except ImportError:
+if FORCE_BASIC_MODE:
     TRANSFORMER_AVAILABLE = False
     _sentiment_pipeline = None
     _model_loaded = False
+    print("Deployment mode: Transformer libraries disabled", file=sys.stderr)
+else:
+    try:
+        from transformers import AutoTokenizer, AutoModelForSequenceClassification
+        from transformers import pipeline
+        import torch
+        TRANSFORMER_AVAILABLE = True
+        
+        # Initialize Korean sentiment analysis model
+        MODEL_NAME = "beomi/KcELECTRA-base"
+        SENTIMENT_LABELS = {0: "negative", 1: "positive"}
+        
+        # Global variables for model (loaded once)
+        _sentiment_pipeline = None
+        _model_loaded = False
+        
+    except ImportError as e:
+        TRANSFORMER_AVAILABLE = False
+        _sentiment_pipeline = None
+        _model_loaded = False
+        print(f"Transformer libraries not available: {e}, using rule-based analysis", file=sys.stderr)
+    except Exception as e:
+        TRANSFORMER_AVAILABLE = False
+        _sentiment_pipeline = None
+        _model_loaded = False
+        print(f"Error loading transformer libraries: {e}, using rule-based analysis", file=sys.stderr)
 
 def generate_random_date_in_range(start_dt, end_dt):
     """
