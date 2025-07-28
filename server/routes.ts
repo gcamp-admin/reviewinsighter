@@ -452,8 +452,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let insightsStored = 0;
           let wordCloudStored = 0;
           
-          // Store insights (only for heart analysis or full analysis)
-          if (analysisType === 'heart') {
+          // Store insights (for heart, comprehensive, or full analysis)
+          if (analysisType === 'heart' || analysisType === 'comprehensive') {
             try {
               console.log("Starting HEART framework analysis for", reviewsForAnalysis.length, "reviews");
               
@@ -537,8 +537,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Store word cloud data (only for wordcloud analysis or full analysis)
-          if (analysisType === 'wordcloud' || !analysisType) {
+          // Store word cloud data (for wordcloud, comprehensive, or full analysis)
+          if (analysisType === 'wordcloud' || analysisType === 'comprehensive' || !analysisType) {
             // For wordcloud analysis, use GPT-based analysis
             if (analysisType === 'wordcloud') {
               try {
@@ -635,6 +635,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             responseMessage = `${wordCloudStored}개의 감정 워드를 생성했습니다.`;
           } else if (analysisType === 'heart') {
             responseMessage = `${insightsStored}개의 UX 개선 제안을 생성했습니다.`;
+          } else if (analysisType === 'comprehensive') {
+            responseMessage = `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`;
           } else {
             responseMessage = `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`;
           }
