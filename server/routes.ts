@@ -186,15 +186,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new review (for Python crawler)
+  // Create a new review (for Python crawler) - supports both single and batch creation
   app.post("/api/reviews/create", async (req, res) => {
     try {
-      const validatedData = insertReviewSchema.parse(req.body);
-      const review = await storage.createReview(validatedData);
-      res.json(review);
+      // Handle both single review and batch creation
+      if (req.body.reviews && Array.isArray(req.body.reviews)) {
+        // Batch creation
+        console.log(`Processing batch of ${req.body.reviews.length} reviews`);
+        const createdReviews = [];
+        
+        for (const reviewData of req.body.reviews) {
+          try {
+            const validatedData = insertReviewSchema.parse(reviewData);
+            const review = await storage.createReview(validatedData);
+            createdReviews.push(review);
+          } catch (reviewError) {
+            console.error('Error creating individual review:', reviewError);
+            // Continue with other reviews instead of failing the entire batch
+          }
+        }
+        
+        console.log(`Successfully created ${createdReviews.length} out of ${req.body.reviews.length} reviews`);
+        res.json({
+          success: true,
+          created: createdReviews.length,
+          total: req.body.reviews.length,
+          reviews: createdReviews
+        });
+      } else {
+        // Single review creation
+        const validatedData = insertReviewSchema.parse(req.body);
+        const review = await storage.createReview(validatedData);
+        res.json(review);
+      }
     } catch (error) {
       console.error('Review creation error:', error);
-      res.status(400).json({ error: "Invalid review data" });
+      res.status(400).json({ error: "Invalid review data", details: String(error) });
     }
   });
 
@@ -363,9 +390,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Check if crawler completed successfully
           if (stdout.includes('Crawler completed successfully')) {
-            // Get the number of reviews collected from the output
-            const reviewCountMatch = stdout.match(/Successfully processed (\d+) reviews/);
-            const reviewCount = reviewCountMatch ? parseInt(reviewCountMatch[1]) : 0;
+            // Get the number of reviews collected from the output - prioritize COLLECTION_RESULT pattern
+            let reviewCount = 0;
+            const collectionResultMatch = stdout.match(/COLLECTION_RESULT: (\d+) reviews collected/);
+            if (collectionResultMatch) {
+              reviewCount = parseInt(collectionResultMatch[1]);
+            } else {
+              // Fallback to old pattern
+              const reviewCountMatch = stdout.match(/Successfully processed (\d+) reviews/);
+              reviewCount = reviewCountMatch ? parseInt(reviewCountMatch[1]) : 0;
+            }
             
             // Get collected reviews from storage
             const { reviews: storedReviews } = await storage.getReviews(1, 1000);

@@ -189,24 +189,41 @@ def send_reviews_to_api(reviews):
             print("No reviews to send", file=sys.stderr)
             return True
             
+        print(f"Sending {len(reviews)} reviews to API in batches", file=sys.stderr)
+        
         # Send reviews in batches to avoid timeout
         batch_size = 10
+        total_sent = 0
+        
         for i in range(0, len(reviews), batch_size):
             batch = reviews[i:i + batch_size]
             
-            response = requests.post(
-                'http://localhost:5000/api/reviews/create',
-                json={'reviews': batch},
-                headers={'Content-Type': 'application/json'},
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                print(f"Successfully sent batch {i//batch_size + 1}: {len(batch)} reviews", file=sys.stderr)
-            else:
-                print(f"Failed to send batch {i//batch_size + 1}: {response.status_code}", file=sys.stderr)
+            try:
+                response = requests.post(
+                    'http://localhost:5000/api/reviews/create',
+                    json={'reviews': batch},
+                    headers={'Content-Type': 'application/json'},
+                    timeout=30
+                )
                 
-        return True
+                if response.status_code == 200:
+                    batch_result = response.json()
+                    if 'created' in batch_result:
+                        created_count = batch_result['created']
+                        total_sent += created_count
+                        print(f"Successfully sent batch {i//batch_size + 1}: {created_count}/{len(batch)} reviews created", file=sys.stderr)
+                    else:
+                        total_sent += len(batch)
+                        print(f"Successfully sent batch {i//batch_size + 1}: {len(batch)} reviews", file=sys.stderr)
+                else:
+                    print(f"Failed to send batch {i//batch_size + 1}: HTTP {response.status_code}", file=sys.stderr)
+                    print(f"Response: {response.text}", file=sys.stderr)
+                    
+            except Exception as batch_error:
+                print(f"Error sending batch {i//batch_size + 1}: {batch_error}", file=sys.stderr)
+                
+        print(f"API transmission completed: {total_sent} reviews successfully stored", file=sys.stderr)
+        return total_sent > 0
         
     except Exception as e:
         print(f"Error sending reviews to API: {e}", file=sys.stderr)
@@ -269,12 +286,13 @@ def main():
             success = send_reviews_to_api(all_reviews)
             if success:
                 print(f"Successfully processed {len(all_reviews)} reviews")
+                print(f"COLLECTION_RESULT: {len(all_reviews)} reviews collected and stored successfully")
                 print("Crawler completed successfully")
             else:
                 print("Failed to send reviews to API")
                 sys.exit(1)
         else:
-            print("No reviews collected")
+            print("COLLECTION_RESULT: 0 reviews collected - no reviews found in the specified date range")
             print("Crawler completed successfully")
             
     except Exception as e:
