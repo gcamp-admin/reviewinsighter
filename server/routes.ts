@@ -8,6 +8,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateClusterLabel } from "./openai_analysis";
 import { insertReviewSchema } from "../shared/schema";
+import { nativeCrawler } from "./naver_crawler_native";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -266,44 +267,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Choose crawler based on environment with absolute paths
+      // Choose crawler based on environment
       const isProduction = process.env.NODE_ENV === 'production' || process.env.DEPLOYMENT === 'true';
-      const crawlerPath = isProduction 
-        ? path.join(process.cwd(), 'server', 'deploy_crawler.py')
-        : path.join(process.cwd(), 'server', 'run_crawler.py');
       
-      console.log(`Using crawler: ${crawlerPath} (production: ${isProduction})`);
+      console.log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, DEPLOYMENT=${process.env.DEPLOYMENT}, isProduction=${isProduction}`);
+      console.log(`Sources: ${JSON.stringify(sources)}`);
+      console.log(`Naver sources check: blog=${sources.includes('naver_blog')}, cafe=${sources.includes('naver_cafe')}`);
+      
+      // Always use native TypeScript crawler for Naver sources (remove deployment check for now)
+      if (sources.includes('naver_blog') || sources.includes('naver_cafe')) {
+        console.log('Using native TypeScript crawler for Naver sources in production');
+        
+        try {
+          const selectedChannels = {
+            naverBlog: sources.includes('naver_blog'),
+            naverCafe: sources.includes('naver_cafe')
+          };
+          
+          const nativeReviews = await nativeCrawler(
+            selectedService || serviceName || '익시오', 
+            selectedChannels, 
+            startDate, 
+            endDate
+          );
+          
+          // Store collected reviews
+          for (const review of nativeReviews) {
+            try {
+              const validatedReview = insertReviewSchema.parse(review);
+              await storage.createReview(validatedReview);
+            } catch (validationError) {
+              console.error('Review validation error:', validationError);
+            }
+          }
+          
+          console.log(`Native crawler stored ${nativeReviews.length} reviews`);
+          
+          // Return success response immediately, then start background sentiment analysis
+          res.json({
+            success: true,
+            message: `${nativeReviews.length}개의 리뷰를 성공적으로 수집했습니다.`,
+            reviewsCount: nativeReviews.length,
+            insightsCount: 0,
+            selectedService: selectedService || { name: serviceName || '익시오' },
+            selectedChannels: selectedChannels || {},
+            sources: sources
+          });
+
+          // Start background sentiment analysis
+          if (nativeReviews.length > 0) {
+            setImmediate(async () => {
+              try {
+                console.log('🔄 Starting background sentiment analysis for native reviews...');
+                
+                // Get all reviews requiring sentiment analysis
+                const { reviews: storedReviews } = await storage.getReviews(1, 1000);
+                const reviewsToAnalyze = storedReviews.filter(review => review.sentiment === "분석중");
+                
+                if (reviewsToAnalyze.length > 0) {
+                  const reviewTexts = reviewsToAnalyze.map(review => review.content);
+                  const sentiments = await analyzeReviewSentimentBatch(reviewTexts);
+                  
+                  for (let i = 0; i < reviewsToAnalyze.length; i++) {
+                    const sentiment = sentiments[i];
+                    await storage.updateReview(reviewsToAnalyze[i].id, { sentiment });
+                    console.log(`Updated review ${reviewsToAnalyze[i].id} with sentiment: ${sentiment}`);
+                  }
+                  console.log(`✅ Background sentiment analysis completed for ${reviewsToAnalyze.length} reviews`);
+                }
+              } catch (error) {
+                console.error('❌ Background sentiment analysis failed:', error);
+              }
+            });
+          }
+          
+          return;
+          
+        } catch (nativeError) {
+          console.error('Native crawler error:', nativeError);
+          return res.status(500).json({
+            error: "Native crawler failed",
+            message: "네이티브 크롤러 실행 중 오류가 발생했습니다."
+          });
+        }
+      }
+      
+      // If production and no supported sources, return limitation message
+      if (isProduction) {
+        return res.json({
+          success: true,
+          message: "배포 환경에서는 Google Play와 App Store 수집이 제한됩니다. Naver 소스만 지원됩니다.",
+          reviewsCount: 0,
+          insightsCount: 0,
+          selectedService: selectedService || { name: serviceName || '익시오' },
+          selectedChannels: {},
+          sources: sources
+        });
+      }
+      
+      // Development environment - use Python crawler
+      const crawlerPath = path.join(process.cwd(), 'server', 'run_crawler.py');
+      
+      console.log(`Using Python crawler: ${crawlerPath}`);
       console.log(`Current working directory: ${process.cwd()}`);
       console.log(`__dirname: ${__dirname}`);
       
       // Verify Python script exists and is accessible
       if (!fs.existsSync(crawlerPath)) {
         console.error(`Crawler script not found at: ${crawlerPath}`);
-        
-        // Try alternative paths
-        const altPaths = [
-          path.join(process.cwd(), 'deploy_crawler.py'),
-          path.join(__dirname, 'deploy_crawler.py'),
-          './server/deploy_crawler.py',
-          './deploy_crawler.py'
-        ];
-        
-        let foundPath = null;
-        for (const altPath of altPaths) {
-          if (fs.existsSync(altPath)) {
-            foundPath = altPath;
-            console.log(`Found crawler at alternative path: ${altPath}`);
-            break;
-          }
-        }
-        
-        if (!foundPath) {
-          console.error(`Crawler script not found in any of these paths:`, [crawlerPath, ...altPaths]);
-          return res.status(500).json({
-            error: "Crawler script not accessible",
-            message: `크롤러 스크립트에 접근할 수 없습니다. 배포 환경에서 파일 경로를 확인하세요.`
-          });
-        }
+        return res.status(500).json({
+          error: "Crawler script not accessible",
+          message: `크롤러 스크립트에 접근할 수 없습니다.`
+        });
       }
       
       // Build command line arguments with new crawler structure
@@ -326,28 +401,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       
       console.log(`Running Python crawler with filters: ${JSON.stringify(crawlerArgs)}`);
+      console.log(`Python args: ${JSON.stringify(args)}`);
+      
       const pythonProcess = spawn('python3', args, {
         cwd: process.cwd(),
         env: { 
           ...process.env, 
-          PYTHONPATH: process.cwd(),
-          DEPLOYMENT: 'true',
-          NODE_ENV: 'production'
+          PYTHONPATH: process.cwd()
         }
       });
       
       let stdout = '';
       let stderr = '';
       
-      pythonProcess.stdout.on('data', (data) => {
+      pythonProcess.stdout.on('data', (data: Buffer) => {
         stdout += data.toString();
       });
       
-      pythonProcess.stderr.on('data', (data) => {
+      pythonProcess.stderr.on('data', (data: Buffer) => {
         stderr += data.toString();
       });
       
-      pythonProcess.on('close', async (code) => {
+      pythonProcess.on('close', async (code: number | null) => {
         console.log(`Python process exit code: ${code}`);
         console.log(`Python stdout: ${stdout}`);
         console.log(`Python stderr: ${stderr}`);
@@ -355,36 +430,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (code !== 0) {
           console.error('Python scraper error:', stderr);
           
-          // In production/deployment, use fallback approach
-          if (isProduction) {
-            console.log('Using deployment fallback approach for review collection');
-            
-            try {
-              // Create minimal review data structure for deployment testing
-              const fallbackMessage = {
-                success: true,
-                message: "배포 환경에서는 실제 데이터 수집이 제한됩니다. API 키를 확인하거나 개발 환경에서 테스트해주세요.",
-                reviewCount: 0,
-                channels: crawlerArgs.selectedChannels,
-                dateRange: `${startDate || '시작일 없음'} ~ ${endDate || '종료일 없음'}`
-              };
-              
-              return res.json(fallbackMessage);
-              
-            } catch (fallbackError) {
-              console.error('Fallback approach failed:', fallbackError);
-              return res.status(500).json({
-                error: "Review collection failed",
-                message: "배포 환경에서 리뷰 수집에 실패했습니다. 네이버 API 키가 올바르게 설정되었는지 확인해주세요."
-              });
-            }
-          } else {
-            // Development environment - return original error
-            return res.status(500).json({ 
-              error: "Scraper execution failed",
-              message: `리뷰 수집 중 오류가 발생했습니다. Exit code: ${code}, Error: ${stderr}`
-            });
-          }
+          // Return error for both production and development
+          return res.status(500).json({ 
+            error: "Scraper execution failed",
+            message: `리뷰 수집 중 오류가 발생했습니다. Exit code: ${code}, Error: ${stderr}`,
+            details: { stdout, stderr, code }
+          });
         }
         
         try {

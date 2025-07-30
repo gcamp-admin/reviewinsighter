@@ -94,27 +94,42 @@ def crawl_naver_blog(keywords, start_date=None, end_date=None, count=50):
             
             reviews = []
             for keyword in keywords[:3]:  # Limit keywords to avoid rate limiting
-                url = f"https://openapi.naver.com/v1/search/blog.json?query={quote_plus(keyword)}&display=10"
+                url = f"https://openapi.naver.com/v1/search/blog.json?query={quote_plus(keyword)}&display=20"
                 response = requests.get(url, headers=headers, timeout=10)
                 
                 if response.status_code == 200:
                     data = response.json()
+                    print(f"Naver Blog API: {len(data.get('items', []))} items for keyword '{keyword}'", file=sys.stderr)
+                    
                     for item in data.get('items', []):
+                        # Extract user ID from blog URL
+                        user_id = "unknown_blogger"
+                        if 'blog.naver.com/' in item.get('link', ''):
+                            try:
+                                user_id = item['link'].split('blog.naver.com/')[1].split('/')[0]
+                            except:
+                                pass
+                        
                         review = {
-                            'id': f"naver_blog_{hash(item['link'])}",
-                            'content': re.sub(r'<[^>]+>', '', item['description']),
-                            'rating': 4,  # Default neutral rating
-                            'author': 'blogger',
+                            'content': re.sub(r'<[^>]+>', '', item.get('description', '')).strip(),
+                            'rating': 4.0,  # Default neutral rating
+                            'userId': user_id,
                             'date': datetime.now().isoformat(),
                             'source': 'naver_blog',
                             'sentiment': '분석중',
                             'serviceId': 'ixio',
-                            'url': item['link']
+                            'link': item.get('link', ''),
+                            'title': re.sub(r'<[^>]+>', '', item.get('title', '')).strip()
                         }
-                        reviews.append(review)
+                        
+                        # Only add if content is meaningful
+                        if len(review['content']) > 10:
+                            reviews.append(review)
                         
                         if len(reviews) >= count:
                             break
+                else:
+                    print(f"Naver Blog API error for '{keyword}': {response.status_code} - {response.text}", file=sys.stderr)
                             
             print(f"Naver Blog crawling completed: {len(reviews)} reviews", file=sys.stderr)
             return reviews
@@ -149,27 +164,42 @@ def crawl_naver_cafe(keywords, start_date=None, end_date=None, count=50):
             
             reviews = []
             for keyword in keywords[:3]:  # Limit keywords to avoid rate limiting
-                url = f"https://openapi.naver.com/v1/search/cafearticle.json?query={quote_plus(keyword)}&display=10"
+                url = f"https://openapi.naver.com/v1/search/cafearticle.json?query={quote_plus(keyword)}&display=20"
                 response = requests.get(url, headers=headers, timeout=10)
                 
                 if response.status_code == 200:
                     data = response.json()
+                    print(f"Naver Cafe API: {len(data.get('items', []))} items for keyword '{keyword}'", file=sys.stderr)
+                    
                     for item in data.get('items', []):
+                        # Extract cafe name from URL
+                        cafe_name = "unknown_cafe"
+                        if 'cafe.naver.com/' in item.get('link', ''):
+                            try:
+                                cafe_name = item['link'].split('cafe.naver.com/')[1].split('/')[0]
+                            except:
+                                pass
+                        
                         review = {
-                            'id': f"naver_cafe_{hash(item['link'])}",
-                            'content': re.sub(r'<[^>]+>', '', item['description']),
-                            'rating': 3,  # Default neutral rating
-                            'author': 'cafeuser',
+                            'content': re.sub(r'<[^>]+>', '', item.get('description', '')).strip(),
+                            'rating': 3.0,  # Default neutral rating
+                            'userId': cafe_name,
                             'date': datetime.now().isoformat(),
                             'source': 'naver_cafe',
                             'sentiment': '분석중',
                             'serviceId': 'ixio',
-                            'url': item['link']
+                            'link': item.get('link', ''),
+                            'title': re.sub(r'<[^>]+>', '', item.get('title', '')).strip()
                         }
-                        reviews.append(review)
+                        
+                        # Only add if content is meaningful
+                        if len(review['content']) > 10:
+                            reviews.append(review)
                         
                         if len(reviews) >= count:
                             break
+                else:
+                    print(f"Naver Cafe API error for '{keyword}': {response.status_code} - {response.text}", file=sys.stderr)
                             
             print(f"Naver Cafe crawling completed: {len(reviews)} reviews", file=sys.stderr)
             return reviews
