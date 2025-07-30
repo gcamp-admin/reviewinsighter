@@ -48,6 +48,15 @@ function getServiceInfo(serviceName: string): ServiceInfo {
   return services[serviceName] || services['익시오'];
 }
 
+function getServiceId(serviceName: string): string {
+  const serviceMapping: Record<string, string> = {
+    '익시오': 'ixio',
+    'SOHO우리가게패키지': 'soho',
+    'AI비즈콜': 'ai-bizcall'
+  };
+  return serviceMapping[serviceName] || 'ixio';
+}
+
 export async function crawlNaverBlog(
   serviceName: string,
   startDate?: string,
@@ -103,7 +112,7 @@ export async function crawlNaverBlog(
             date: new Date().toISOString(),
             source: 'naver_blog',
             sentiment: '분석중',
-            serviceId: serviceName === '익시오' ? 'ixio' : 'soho',
+            serviceId: getServiceId(serviceName),
             link: item.link,
             title: item.title.replace(/<[^>]+>/g, '').trim()
           };
@@ -188,7 +197,7 @@ export async function crawlNaverCafe(
             date: new Date().toISOString(),
             source: 'naver_cafe',
             sentiment: '분석중',
-            serviceId: serviceName === '익시오' ? 'ixio' : 'soho',
+            serviceId: getServiceId(serviceName),
             link: item.link,
             title: item.title.replace(/<[^>]+>/g, '').trim()
           };
