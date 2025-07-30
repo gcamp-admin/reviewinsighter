@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import FilterSection from "@/components/filter-section";
 import SourceDistributionCard from "@/components/source-distribution-card";
@@ -9,6 +9,7 @@ import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
 
 import type { ReviewFilters } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
   // Set default service to 익시오 so users can see existing data immediately
@@ -56,6 +57,30 @@ export default function Dashboard() {
     console.log("handleAnalysisSuccess called with:", analysisType);
     setActiveAnalysisSection(analysisType);
   };
+
+  // Check if there are any reviews for the current service
+  const { data: statsData } = useQuery({
+    queryKey: ['/api/reviews/stats', filters.service?.id],
+    queryFn: async () => {
+      if (!filters?.service?.id) return null;
+      const params = new URLSearchParams();
+      params.append("serviceId", filters.service.id);
+      const response = await fetch(`/api/reviews/stats?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      return response.json();
+    },
+    enabled: !!filters?.service?.id,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: 2000,
+  });
+
+  // Auto-set hasCollectedReviews when data exists
+  useEffect(() => {
+    if (statsData && statsData.total > 0) {
+      setHasCollectedReviews(true);
+    }
+  }, [statsData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-korean">

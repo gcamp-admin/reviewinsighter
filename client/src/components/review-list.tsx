@@ -319,7 +319,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
     );
   }
 
-  if (!data || data.reviews.length === 0) {
+  if (!data || filteredReviews.length === 0) {
     return (
       <Card className="bg-white border border-gray-200/50 shadow-sm">
         <CardHeader>
