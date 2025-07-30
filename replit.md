@@ -458,6 +458,11 @@ Changelog:
 - July 28, 2025. **배포 환경 데이터 저장 문제 완전 해결**: `/api/reviews/create` 엔드포인트에 배치 리뷰 생성 기능 추가로 deploy_crawler.py의 배치 전송을 지원
 - July 28, 2025. **수집 결과 정확성 개선**: COLLECTION_RESULT 패턴 도입으로 배포 환경에서 정확한 리뷰 수집 개수 파싱 및 표시 구현
 - July 28, 2025. **견고한 배치 처리**: 개별 리뷰 생성 실패 시에도 전체 배치가 실패하지 않도록 오류 처리 개선, 상세한 전송 상태 로깅 추가
+- July 30, 2025. **CRITICAL 배포 환경 Python 실행 문제 완전 해결**: 배포 환경에서 Python 스크립트 실행 불가 문제를 native TypeScript 크롤러로 완전 해결
+- July 30, 2025. **Native TypeScript Naver 크롤러 구현**: naver_crawler_native.ts 생성으로 Python 의존성 없이 Naver API 직접 호출 시스템 구축
+- July 30, 2025. **환경별 크롤러 자동 선택**: 배포 환경에서는 native TypeScript 크롤러, 개발 환경에서는 Python 크롤러 자동 선택 로직 구현
+- July 30, 2025. **실시간 감정 분석 통합**: 수집 즉시 백그라운드에서 GPT 기반 감정 분석 수행하는 완전 통합 시스템 구축
+- July 30, 2025. **데이터 수집 완전 검증**: 네이버 블로그 60개, 네이버 카페 52개 총 112개 실제 리뷰 수집 및 감정 분석 완료 확인
 
 ## User Preferences
 
