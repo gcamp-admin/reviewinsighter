@@ -178,8 +178,9 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
       
-      // Call the callback to show reviews after successful collection
+      // ALWAYS call the callback to show reviews section - even for deployment environment
       if (onCollectionSuccess) {
+        console.log("Calling onCollectionSuccess callback");
         onCollectionSuccess();
       }
     },
