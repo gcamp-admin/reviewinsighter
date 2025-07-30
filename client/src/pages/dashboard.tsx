@@ -11,16 +11,22 @@ import AIAnalysisSection from "@/components/ai-analysis-section";
 import type { ReviewFilters } from "@/types";
 
 export default function Dashboard() {
-  // Initial empty filters - users select their own date range
+  // Set default service to 익시오 so users can see existing data immediately
   const [filters, setFilters] = useState<ReviewFilters>({
-    service: undefined,
-    source: [],
+    service: {
+      id: "ixio",
+      name: "익시오",
+      googlePlayId: "com.lguplus.aicallagent",
+      appleStoreId: "6503931858",
+      keywords: ["익시오", "ixio", "익시o", "ixi오", "LG익시오", "U+익시오", "유플러스익시오"]
+    },
+    source: ["googlePlay", "appleStore", "naverBlog", "naverCafe"],
     dateFrom: undefined,
     dateTo: undefined
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasCollectedReviews, setHasCollectedReviews] = useState(false);
+  const [hasCollectedReviews, setHasCollectedReviews] = useState(true); // Set to true to show existing data
   const [activeAnalysisSection, setActiveAnalysisSection] = useState<'wordcloud' | 'heart' | 'comprehensive' | null>(null);
 
   const handleFiltersChange = (newFilters: ReviewFilters) => {
