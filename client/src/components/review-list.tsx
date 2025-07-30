@@ -59,12 +59,21 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
         params.append("serviceId", filters.service.id);
       }
       
-      // 소스 필터 적용
+      // 소스 필터 적용 - 프론트엔드 이름을 백엔드 형식으로 변환
+      const sourceMapping: Record<string, string> = {
+        'googlePlay': 'google_play',
+        'appleStore': 'app_store',
+        'naverBlog': 'naver_blog',
+        'naverCafe': 'naver_cafe'
+      };
+      
       if (sourceFilter !== "all") {
-        params.append("source", sourceFilter);
+        const mappedSource = sourceMapping[sourceFilter] || sourceFilter;
+        params.append("source", mappedSource);
       } else if (filters.source && filters.source.length > 0) {
         filters.source.forEach(source => {
-          params.append("source", source);
+          const mappedSource = sourceMapping[source] || source;
+          params.append("source", mappedSource);
         });
       }
       
