@@ -73,7 +73,7 @@ export default function Header() {
                 
                 <div className="mt-6 pt-4 border-t bg-gray-50 p-4 rounded-lg">
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    코멘토 관련 문의사항이 있으실 경우, 아래 담당자에게 연락주시기 바랍니다.<br/>
+                    서비스 추가, 코멘토 관련 문의사항이 있으실 경우, 아래 담당자에게 연락주시기 바랍니다.<br/>
                     <strong className="text-gray-700">Innovation CoE 최아진</strong> | 
                     <a href="mailto:ahjinchoe@lguplus.co.kr" className="hover:underline ml-1" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                       ahjinchoe@lguplus.co.kr
