@@ -240,7 +240,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Run Python crawler with multiple sources and filtering
-      const crawlerPath = path.join(__dirname, 'run_crawler.py');
+      const isProduction = process.env.NODE_ENV === 'production';
+      const crawlerPath = isProduction 
+        ? path.join(process.cwd(), 'run_crawler.py')  // In production, scripts are in root
+        : path.join(process.cwd(), 'server/run_crawler.py'); // In development, scripts are in server/
       
       // Build command line arguments with new crawler structure
       const crawlerArgs = {
@@ -418,8 +421,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
         
+        // Determine the correct Python script path based on environment
+        const isProduction = process.env.NODE_ENV === 'production';
+        const scriptPath = isProduction 
+          ? path.join(process.cwd(), 'analyze_reviews.py')  // In production, scripts are in root
+          : path.join(process.cwd(), 'server/analyze_reviews.py'); // In development, scripts are in server/
+        
         // Run analysis using Python script file
-        const pythonProcess = spawn("python3", ["server/analyze_reviews.py", tempFilePath, analysisType || 'full']);
+        const pythonProcess = spawn("python3", [scriptPath, tempFilePath, analysisType || 'full']);
       
         let output = "";
         let error = "";
