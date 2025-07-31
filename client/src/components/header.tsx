@@ -69,9 +69,7 @@ export default function Header() {
                 <p>
                   💡 <strong>특징:</strong> HEART 프레임워크 기반 심층 분석 및 키워드 추출
                 </p>
-                <p className="text-center font-medium pt-4 border-t" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  "고객은 이미 말했습니다.<br/>이제는 당신이 들을 차례입니다."
-                </p>
+                
                 
                 <div className="mt-6 pt-4 border-t bg-gray-50 p-4 rounded-lg">
                   <p className="text-xs text-gray-500 leading-relaxed">
