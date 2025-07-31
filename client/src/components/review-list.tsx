@@ -88,6 +88,8 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       }
 
       const url = `/api/reviews?${params}`;
+      console.log("Review List API URL:", url);
+      console.log("Filters object:", filters);
       
       const response = await fetch(url, {
         headers: {
