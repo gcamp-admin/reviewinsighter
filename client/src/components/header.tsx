@@ -50,8 +50,12 @@ export default function Header() {
             {/* 팝업 내용 */}
             <div className="text-center">
               <div className="mb-6">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)' }}>
-                  <span className="text-white font-bold text-2xl">AI</span>
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bg-white shadow-lg">
+                  <img 
+                    src="/attached_assets/image_1753930022904.png" 
+                    alt="코멘토 로고" 
+                    className="w-16 h-16 object-contain"
+                  />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">코멘토는 누구?</h2>
               </div>
