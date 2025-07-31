@@ -12,22 +12,16 @@ import type { ReviewFilters } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
-  // Set default service to 익시오 so users can see existing data immediately
+  // Default state - no service selected initially
   const [filters, setFilters] = useState<ReviewFilters>({
-    service: {
-      id: "ixio",
-      name: "익시오",
-      googlePlayId: "com.lguplus.aicallagent",
-      appleStoreId: "6503931858",
-      keywords: ["익시오", "ixio", "익시o", "ixi오", "LG익시오", "U+익시오", "유플러스익시오"]
-    },
+    service: undefined, // No default service - user must select
     source: ["googlePlay", "appleStore", "naverBlog", "naverCafe"],
     dateFrom: undefined,
     dateTo: undefined
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasCollectedReviews, setHasCollectedReviews] = useState(true); // Set to true to show existing data
+  const [hasCollectedReviews, setHasCollectedReviews] = useState(false); // Hidden until user collects reviews
   const [activeAnalysisSection, setActiveAnalysisSection] = useState<'wordcloud' | 'heart' | 'comprehensive' | null>(null);
 
   const handleFiltersChange = (newFilters: ReviewFilters) => {
@@ -75,9 +69,10 @@ export default function Dashboard() {
     refetchInterval: 2000,
   });
 
-  // Auto-set hasCollectedReviews when data exists
+  // Auto-set hasCollectedReviews when data exists (only after user manually collects)
   useEffect(() => {
-    if (statsData && statsData.total > 0) {
+    // Don't auto-show data on page load - only show after user clicks collect
+    if (statsData && statsData.total > 0 && hasCollectedReviews) {
       setHasCollectedReviews(true);
     }
   }, [statsData]);

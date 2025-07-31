@@ -344,7 +344,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
               }}
             >
               <SelectTrigger className="w-full min-w-[300px]">
-                <SelectValue placeholder="서비스명을 선택하세요" />
+                <SelectValue placeholder="선택" />
               </SelectTrigger>
               <SelectContent>
                 {SERVICES.map((service) => (
