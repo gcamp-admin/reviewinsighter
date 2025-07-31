@@ -1,4 +1,5 @@
 import logoImg from "/assets/commento_logo_transparent.png";
+import popupLogoImg from "@assets/image_1753930022904.png";
 import { useState } from "react";
 import { X } from "lucide-react";
 
@@ -52,7 +53,7 @@ export default function Header() {
               <div className="mb-6">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bg-white shadow-lg">
                   <img 
-                    src="/attached_assets/image_1753930022904.png" 
+                    src={popupLogoImg} 
                     alt="코멘토 로고" 
                     className="w-16 h-16 object-contain"
                   />
