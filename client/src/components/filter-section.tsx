@@ -296,12 +296,6 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
   return (
     <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
       <CardHeader className="pb-6">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            리뷰 수집 필터
-          </CardTitle>
-
-        </div>
         <CardDescription className="text-gray-600">
           스토어와 날짜를 선택하여 리뷰를 필터링하세요
         </CardDescription>
