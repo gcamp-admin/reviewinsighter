@@ -19,9 +19,6 @@ from collections import defaultdict, Counter
 from itertools import combinations
 from typing import Dict, List, Tuple, Any
 
-# Set deployment mode environment
-os.environ['DEPLOYMENT'] = 'true'
-
 def extract_negative_keywords(reviews: List[Dict]) -> Dict[str, int]:
     """
     부정 리뷰에서만 키워드를 추출하고 상위 20개 선택

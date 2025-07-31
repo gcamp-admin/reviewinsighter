@@ -151,19 +151,10 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
         }
       }).join(', ');
       
-      // Check if this is a deployment environment message
-      if ((data as any).reviewCount === 0 && data.message && data.message.includes('배포 환경에서는')) {
-        toast({
-          title: "배포 환경 안내",
-          description: data.message,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "수집 완료",
-          description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
-        });
-      }
+      toast({
+        title: "수집 완료",
+        description: `${localFilters.service?.name} - ${sourcesText}에서 ${data.message}`,
+      });
       
       // Reset progress
       setTimeout(() => {
@@ -178,9 +169,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reviews/stats"] });
       
-      // ALWAYS call the callback to show reviews section - even for deployment environment
+      // Call the callback to show reviews after successful collection
       if (onCollectionSuccess) {
-        console.log("Calling onCollectionSuccess callback");
         onCollectionSuccess();
       }
     },
@@ -241,19 +231,10 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
       return response.json();
     },
     onSuccess: (data) => {
-      // Check if this is a deployment environment message
-      if (data.message && data.message.includes('배포 환경에서는')) {
-        toast({
-          title: "배포 환경 안내",
-          description: data.message,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "분석 완료",
-          description: `AI 감정 워드클라우드 및 UX 개선 분석이 완료되었습니다.`,
-        });
-      }
+      toast({
+        title: "분석 완료",
+        description: `AI 감정 워드클라우드 및 UX 개선 분석이 완료되었습니다.`,
+      });
       // Invalidate analysis data
       queryClient.invalidateQueries({ queryKey: ["/api/insights"] });
       queryClient.invalidateQueries({ queryKey: ["/api/wordcloud"] });
@@ -344,7 +325,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
               }}
             >
               <SelectTrigger className="w-full min-w-[300px]">
-                <SelectValue placeholder="선택" />
+                <SelectValue placeholder="서비스명을 선택하세요" />
               </SelectTrigger>
               <SelectContent>
                 {SERVICES.map((service) => (

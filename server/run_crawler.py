@@ -8,24 +8,8 @@ Crawler runner script for Node.js integration
 import sys
 import json
 import requests
-import os
 from datetime import datetime
-
-# Set deployment mode environment for all imported modules
-os.environ['DEPLOYMENT'] = 'true'
-
-# Add current directory to Python path for module imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-try:
-    from crawler import crawl_service_by_selection
-    print("Successfully imported crawler module", file=sys.stderr)
-except ImportError as e:
-    print(f"Failed to import crawler module: {e}", file=sys.stderr)
-    print(f"Current directory: {os.getcwd()}", file=sys.stderr)
-    print(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}", file=sys.stderr)
-    print(f"Python path: {sys.path}", file=sys.stderr)
-    sys.exit(1)
+from crawler import crawl_service_by_selection
 
 def main():
     try:

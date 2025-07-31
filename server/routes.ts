@@ -8,7 +8,6 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { analyzeReviewSentimentWithGPT, analyzeReviewSentimentBatch, analyzeHeartFrameworkWithGPT, generateClusterLabel } from "./openai_analysis";
 import { insertReviewSchema } from "../shared/schema";
-import { nativeCrawler } from "./naver_crawler_native";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -187,42 +186,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new review (for Python crawler) - supports both single and batch creation
+  // Create a new review (for Python crawler)
   app.post("/api/reviews/create", async (req, res) => {
     try {
-      // Handle both single review and batch creation
-      if (req.body.reviews && Array.isArray(req.body.reviews)) {
-        // Batch creation
-        console.log(`Processing batch of ${req.body.reviews.length} reviews`);
-        const createdReviews = [];
-        
-        for (const reviewData of req.body.reviews) {
-          try {
-            const validatedData = insertReviewSchema.parse(reviewData);
-            const review = await storage.createReview(validatedData);
-            createdReviews.push(review);
-          } catch (reviewError) {
-            console.error('Error creating individual review:', reviewError);
-            // Continue with other reviews instead of failing the entire batch
-          }
-        }
-        
-        console.log(`Successfully created ${createdReviews.length} out of ${req.body.reviews.length} reviews`);
-        res.json({
-          success: true,
-          created: createdReviews.length,
-          total: req.body.reviews.length,
-          reviews: createdReviews
-        });
-      } else {
-        // Single review creation
-        const validatedData = insertReviewSchema.parse(req.body);
-        const review = await storage.createReview(validatedData);
-        res.json(review);
-      }
+      const validatedData = insertReviewSchema.parse(req.body);
+      const review = await storage.createReview(validatedData);
+      res.json(review);
     } catch (error) {
       console.error('Review creation error:', error);
-      res.status(400).json({ error: "Invalid review data", details: String(error) });
+      res.status(400).json({ error: "Invalid review data" });
     }
   });
 
@@ -267,119 +239,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Choose crawler based on environment
-      const isProduction = process.env.NODE_ENV === 'production' || process.env.DEPLOYMENT === 'true';
-      
-      console.log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, DEPLOYMENT=${process.env.DEPLOYMENT}, isProduction=${isProduction}`);
-      console.log(`Sources: ${JSON.stringify(sources)}`);
-      console.log(`Naver sources check: blog=${sources.includes('naver_blog')}, cafe=${sources.includes('naver_cafe')}`);
-      
-      // Always use native TypeScript crawler for Naver sources (remove deployment check for now)
-      if (sources.includes('naver_blog') || sources.includes('naver_cafe')) {
-        console.log('Using native TypeScript crawler for Naver sources in production');
-        
-        try {
-          const selectedChannels = {
-            naverBlog: sources.includes('naver_blog'),
-            naverCafe: sources.includes('naver_cafe')
-          };
-          
-          const nativeReviews = await nativeCrawler(
-            selectedService || serviceName || '익시오', 
-            selectedChannels, 
-            startDate, 
-            endDate
-          );
-          
-          // Store collected reviews
-          for (const review of nativeReviews) {
-            try {
-              const validatedReview = insertReviewSchema.parse(review);
-              await storage.createReview(validatedReview);
-            } catch (validationError) {
-              console.error('Review validation error:', validationError);
-            }
-          }
-          
-          console.log(`Native crawler stored ${nativeReviews.length} reviews`);
-          
-          // Return success response immediately, then start background sentiment analysis
-          res.json({
-            success: true,
-            message: `${nativeReviews.length}개의 리뷰를 성공적으로 수집했습니다.`,
-            reviewsCount: nativeReviews.length,
-            insightsCount: 0,
-            selectedService: selectedService || { name: serviceName || '익시오' },
-            selectedChannels: selectedChannels || {},
-            sources: sources
-          });
-
-          // Start background sentiment analysis
-          if (nativeReviews.length > 0) {
-            setImmediate(async () => {
-              try {
-                console.log('🔄 Starting background sentiment analysis for native reviews...');
-                
-                // Get all reviews requiring sentiment analysis
-                const { reviews: storedReviews } = await storage.getReviews(1, 1000);
-                const reviewsToAnalyze = storedReviews.filter(review => review.sentiment === "분석중");
-                
-                if (reviewsToAnalyze.length > 0) {
-                  const reviewTexts = reviewsToAnalyze.map(review => review.content);
-                  const sentiments = await analyzeReviewSentimentBatch(reviewTexts);
-                  
-                  for (let i = 0; i < reviewsToAnalyze.length; i++) {
-                    const sentiment = sentiments[i];
-                    await storage.updateReview(reviewsToAnalyze[i].id, { sentiment });
-                    console.log(`Updated review ${reviewsToAnalyze[i].id} with sentiment: ${sentiment}`);
-                  }
-                  console.log(`✅ Background sentiment analysis completed for ${reviewsToAnalyze.length} reviews`);
-                }
-              } catch (error) {
-                console.error('❌ Background sentiment analysis failed:', error);
-              }
-            });
-          }
-          
-          return;
-          
-        } catch (nativeError) {
-          console.error('Native crawler error:', nativeError);
-          return res.status(500).json({
-            error: "Native crawler failed",
-            message: "네이티브 크롤러 실행 중 오류가 발생했습니다."
-          });
-        }
-      }
-      
-      // If production and no supported sources, return limitation message
-      if (isProduction) {
-        return res.json({
-          success: true,
-          message: "배포 환경에서는 Google Play와 App Store 수집이 제한됩니다. Naver 소스만 지원됩니다.",
-          reviewsCount: 0,
-          insightsCount: 0,
-          selectedService: selectedService || { name: serviceName || '익시오' },
-          selectedChannels: {},
-          sources: sources
-        });
-      }
-      
-      // Development environment - use Python crawler
-      const crawlerPath = path.join(process.cwd(), 'server', 'run_crawler.py');
-      
-      console.log(`Using Python crawler: ${crawlerPath}`);
-      console.log(`Current working directory: ${process.cwd()}`);
-      console.log(`__dirname: ${__dirname}`);
-      
-      // Verify Python script exists and is accessible
-      if (!fs.existsSync(crawlerPath)) {
-        console.error(`Crawler script not found at: ${crawlerPath}`);
-        return res.status(500).json({
-          error: "Crawler script not accessible",
-          message: `크롤러 스크립트에 접근할 수 없습니다.`
-        });
-      }
+      // Run Python crawler with multiple sources and filtering
+      const crawlerPath = path.join(__dirname, 'run_crawler.py');
       
       // Build command line arguments with new crawler structure
       const crawlerArgs = {
@@ -401,56 +262,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       
       console.log(`Running Python crawler with filters: ${JSON.stringify(crawlerArgs)}`);
-      console.log(`Python args: ${JSON.stringify(args)}`);
-      
-      const pythonProcess = spawn('python3', args, {
-        cwd: process.cwd(),
-        env: { 
-          ...process.env, 
-          PYTHONPATH: process.cwd()
-        }
-      });
+      const pythonProcess = spawn('python3', args);
       
       let stdout = '';
       let stderr = '';
       
-      pythonProcess.stdout.on('data', (data: Buffer) => {
+      pythonProcess.stdout.on('data', (data) => {
         stdout += data.toString();
       });
       
-      pythonProcess.stderr.on('data', (data: Buffer) => {
+      pythonProcess.stderr.on('data', (data) => {
         stderr += data.toString();
       });
       
-      pythonProcess.on('close', async (code: number | null) => {
-        console.log(`Python process exit code: ${code}`);
-        console.log(`Python stdout: ${stdout}`);
-        console.log(`Python stderr: ${stderr}`);
-        
+      pythonProcess.on('close', async (code) => {
         if (code !== 0) {
           console.error('Python scraper error:', stderr);
-          
-          // Return error for both production and development
           return res.status(500).json({ 
             error: "Scraper execution failed",
-            message: `리뷰 수집 중 오류가 발생했습니다. Exit code: ${code}, Error: ${stderr}`,
-            details: { stdout, stderr, code }
+            message: "리뷰 수집 중 오류가 발생했습니다."
           });
         }
         
         try {
           // Check if crawler completed successfully
           if (stdout.includes('Crawler completed successfully')) {
-            // Get the number of reviews collected from the output - prioritize COLLECTION_RESULT pattern
-            let reviewCount = 0;
-            const collectionResultMatch = stdout.match(/COLLECTION_RESULT: (\d+) reviews collected/);
-            if (collectionResultMatch) {
-              reviewCount = parseInt(collectionResultMatch[1]);
-            } else {
-              // Fallback to old pattern
-              const reviewCountMatch = stdout.match(/Successfully processed (\d+) reviews/);
-              reviewCount = reviewCountMatch ? parseInt(reviewCountMatch[1]) : 0;
-            }
+            // Get the number of reviews collected from the output
+            const reviewCountMatch = stdout.match(/Successfully processed (\d+) reviews/);
+            const reviewCount = reviewCountMatch ? parseInt(reviewCountMatch[1]) : 0;
             
             // Get collected reviews from storage
             const { reviews: storedReviews } = await storage.getReviews(1, 1000);
@@ -579,23 +418,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         fs.writeFileSync(tempFilePath, JSON.stringify(reviewsForAnalysis, null, 2));
         
-        // Choose analysis script based on environment
-        const isProduction = process.env.NODE_ENV === 'production' || process.env.DEPLOYMENT === 'true';
-        const analysisScriptPath = isProduction
-          ? path.join(process.cwd(), "server", "deploy_analysis.py")
-          : path.join(process.cwd(), "server", "analyze_reviews.py");
-        
-        console.log(`Using analysis script: ${analysisScriptPath} (production: ${isProduction})`);
-        
-        const pythonProcess = spawn("python3", [analysisScriptPath, tempFilePath, analysisType || 'full'], {
-          cwd: process.cwd(),
-          env: { 
-            ...process.env, 
-            PYTHONPATH: process.cwd(),
-            DEPLOYMENT: 'true',
-            NODE_ENV: 'production'
-          }
-        });
+        // Run analysis using Python script file
+        const pythonProcess = spawn("python3", ["server/analyze_reviews.py", tempFilePath, analysisType || 'full']);
       
         let output = "";
         let error = "";
@@ -619,36 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (code !== 0) {
             console.error("Python analysis error:", error);
             console.error("Python analysis stdout:", output);
-            
-            // In production/deployment, use fallback approach
-            if (isProduction) {
-              console.log('Using deployment fallback approach for analysis');
-              
-              try {
-                // Create basic analysis results for deployment
-                const fallbackResult = {
-                  success: true,
-                  message: "배포 환경에서는 고급 AI 분석이 제한됩니다. 개발 환경에서 전체 기능을 이용해주세요.",
-                  wordCloud: {
-                    positive: [],
-                    negative: []
-                  },
-                  insights: []
-                };
-                
-                return res.json(fallbackResult);
-                
-              } catch (fallbackError) {
-                console.error('Analysis fallback failed:', fallbackError);
-                return res.status(500).json({ 
-                  success: false, 
-                  message: "배포 환경에서 분석에 실패했습니다. OpenAI API 키가 올바르게 설정되었는지 확인해주세요." 
-                });
-              }
-            } else {
-              // Development environment - return original error
-              return res.status(500).json({ success: false, message: `AI 분석 중 오류가 발생했습니다: ${error}` });
-            }
+            return res.status(500).json({ success: false, message: `AI 분석 중 오류가 발생했습니다: ${error}` });
           }
         
         try {
@@ -657,8 +452,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let insightsStored = 0;
           let wordCloudStored = 0;
           
-          // Store insights (for heart, comprehensive, or full analysis)
-          if (analysisType === 'heart' || analysisType === 'comprehensive') {
+          // Store insights (only for heart analysis or full analysis)
+          if (analysisType === 'heart') {
             try {
               console.log("Starting HEART framework analysis for", reviewsForAnalysis.length, "reviews");
               
@@ -742,8 +537,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Store word cloud data (for wordcloud, comprehensive, or full analysis)
-          if (analysisType === 'wordcloud' || analysisType === 'comprehensive' || !analysisType) {
+          // Store word cloud data (only for wordcloud analysis or full analysis)
+          if (analysisType === 'wordcloud' || !analysisType) {
             // For wordcloud analysis, use GPT-based analysis
             if (analysisType === 'wordcloud') {
               try {
@@ -840,8 +635,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             responseMessage = `${wordCloudStored}개의 감정 워드를 생성했습니다.`;
           } else if (analysisType === 'heart') {
             responseMessage = `${insightsStored}개의 UX 개선 제안을 생성했습니다.`;
-          } else if (analysisType === 'comprehensive') {
-            responseMessage = `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`;
           } else {
             responseMessage = `${insightsStored}개의 UX 개선 제안과 ${wordCloudStored}개의 감정 워드를 생성했습니다.`;
           }
@@ -982,15 +775,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ];
         
         console.log(`Running keyword network analysis for ${reviews.length} reviews`);
-        const pythonProcess = spawn('python3', args, {
-          cwd: process.cwd(),
-          env: { 
-            ...process.env, 
-            PYTHONPATH: process.cwd(),
-            DEPLOYMENT: 'true',
-            NODE_ENV: 'production'
-          }
-        });
+        const pythonProcess = spawn('python3', args);
       
       let stdout = '';
       let stderr = '';

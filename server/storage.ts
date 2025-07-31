@@ -276,7 +276,6 @@ export class MemStorage implements IStorage {
     const insight: Insight = { 
       ...insertInsight, 
       id, 
-      serviceId: insertInsight.serviceId || null,
       trend: insertInsight.trend || null,
       problem_summary: insertInsight.problem_summary || null,
       competitor_benchmark: insertInsight.competitor_benchmark || null,
@@ -312,11 +311,7 @@ export class MemStorage implements IStorage {
 
   async createWordCloudData(insertData: InsertWordCloudData): Promise<WordCloudData> {
     const id = this.currentWordCloudId++;
-    const data: WordCloudData = { 
-      ...insertData, 
-      id,
-      serviceId: insertData.serviceId || null
-    };
+    const data: WordCloudData = { ...insertData, id };
     this.wordCloudData.set(id, data);
     return data;
   }

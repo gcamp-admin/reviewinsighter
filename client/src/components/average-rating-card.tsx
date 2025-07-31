@@ -21,10 +21,7 @@ interface Props {
     dateFrom?: Date;
     dateTo?: Date;
     source?: string[];
-    service?: {
-      id: string;
-      name: string;
-    };
+    serviceId?: string;
   };
 }
 
@@ -41,8 +38,8 @@ export default function AverageRatingCard({ filters }: Props) {
       if (filters?.dateTo) {
         params.append('dateTo', filters.dateTo.toISOString());
       }
-      if (filters?.service?.id) {
-        params.append('serviceId', filters.service.id);
+      if (filters?.serviceId) {
+        params.append('serviceId', filters.serviceId);
       }
       
       const response = await fetch(`/api/reviews/stats?${params}`);
