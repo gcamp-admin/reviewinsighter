@@ -296,7 +296,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
   return (
     <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
       <CardHeader className="pb-6">
-        <CardDescription className="text-gray-600">분석하고 싶은 서비스, 수집채널과 수집기간을 선택하세요</CardDescription>
+        <CardDescription className="text-gray-600">분석하고 싶은 서비스, 수집채널과 수집기간을 선택 후 '리뷰 수집' 버튼을 클릭하세요</CardDescription>
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
