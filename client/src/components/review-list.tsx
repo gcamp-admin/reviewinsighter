@@ -641,7 +641,11 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
           ))}
         </div>
         
-
+        {/* AI Analysis Disclaimer */}
+        <div className="mt-4 mb-3 px-4 py-3 text-caption text-gray-500 bg-gradient-to-r from-gray-50/80 to-blue-50/80 rounded-lg border border-gray-200/50">
+          ※ 본 리뷰의 감정 분석은 AI 모델로 자동 처리되며, 일부 결과에는 오차가 포함될 수 있습니다.<br/>
+          ※ 네이버 카페 API 제약으로 표시된 날짜와 실제 작성 날짜가 다를 수 있습니다. 정확한 날짜는 '원문 보기'를 통해 확인하세요.
+        </div>
 
         {/* Pagination */}
         {data && data.pages > 1 && (
