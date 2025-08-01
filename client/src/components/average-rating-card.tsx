@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ReviewFilters } from "@/types";
 
 const getEmoji = (score: number) => {
   if (score >= 4.5) return "😄"; // 매우 만족
@@ -17,12 +18,7 @@ const getLabel = (score: number) => {
 };
 
 interface Props {
-  filters?: {
-    dateFrom?: Date;
-    dateTo?: Date;
-    source?: string[];
-    serviceId?: string;
-  };
+  filters?: ReviewFilters;
 }
 
 export default function AverageRatingCard({ filters }: Props) {
@@ -38,8 +34,8 @@ export default function AverageRatingCard({ filters }: Props) {
       if (filters?.dateTo) {
         params.append('dateTo', filters.dateTo.toISOString());
       }
-      if (filters?.serviceId) {
-        params.append('serviceId', filters.serviceId);
+      if (filters?.service?.id) {
+        params.append('serviceId', filters.service.id);
       }
       
       const response = await fetch(`/api/reviews/stats?${params}`);

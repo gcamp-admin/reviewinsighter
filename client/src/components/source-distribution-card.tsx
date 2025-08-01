@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import ChannelBarChart from "./channel-bar-chart";
+import type { ReviewFilters } from "@/types";
 
 const CHANNEL_NAMES = {
   google_play: "구글 앱스토어",
@@ -16,12 +17,7 @@ const CHANNEL_COLORS = {
 };
 
 interface Props {
-  filters?: {
-    dateFrom?: Date;
-    dateTo?: Date;
-    source?: string[];
-    serviceId?: string;
-  };
+  filters?: ReviewFilters;
 }
 
 export default function SourceDistributionCard({ filters }: Props) {
@@ -37,8 +33,8 @@ export default function SourceDistributionCard({ filters }: Props) {
       if (filters?.dateTo) {
         params.append('dateTo', filters.dateTo.toISOString());
       }
-      if (filters?.serviceId) {
-        params.append('serviceId', filters.serviceId);
+      if (filters?.service?.id) {
+        params.append('serviceId', filters.service.id);
       }
       
       const response = await fetch(`/api/reviews/stats?${params}`);

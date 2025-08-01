@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
+import type { ReviewFilters } from "@/types";
 
 const SENTIMENT_COLORS = {
   긍정: "#10B981", // 브랜드 그린
@@ -15,12 +16,7 @@ const SENTIMENT_ICONS = {
 };
 
 interface Props {
-  filters?: {
-    dateFrom?: Date;
-    dateTo?: Date;
-    source?: string[];
-    serviceId?: string;
-  };
+  filters?: ReviewFilters;
 }
 
 export default function SentimentDonutCard({ filters }: Props) {
@@ -36,8 +32,8 @@ export default function SentimentDonutCard({ filters }: Props) {
       if (filters?.dateTo) {
         params.append('dateTo', filters.dateTo.toISOString());
       }
-      if (filters?.serviceId) {
-        params.append('serviceId', filters.serviceId);
+      if (filters?.service?.id) {
+        params.append('serviceId', filters.service.id);
       }
       
       const response = await fetch(`/api/reviews/stats?${params}`);
