@@ -332,7 +332,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
 
           {/* Row 2: Channel Selection (Modern Cards) */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">리뷰 수집 채널을 선택하세요 <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">리뷰 수집 채널 선택 <span className="text-red-500">*</span></Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { id: "google_play", name: "구글 앱스토어", icon: Play },
