@@ -46,7 +46,7 @@ export default function SourceDistributionCard({ filters }: Props) {
   if (!statsData || statsData.total === 0) {
     return (
       <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full">
-        <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">채널별 분포</h3>
         <div className="flex items-center justify-center h-64">
           <p className="text-body text-gray-500">데이터가 없습니다</p>
         </div>

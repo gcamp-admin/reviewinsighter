@@ -46,13 +46,15 @@ export default function AverageRatingCard({ filters }: Props) {
 
   if (!statsData || statsData.total === 0) {
     return (
-      <div className="bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/20 flex flex-col items-center justify-center text-center h-full">
-        <p className="text-sm text-gray-500">평균 평점</p>
-        <div className="flex items-center justify-center mt-1">
-          <p className="text-3xl font-bold text-gray-900 mr-2">-</p>
-          <span className="text-3xl">😐</span>
+      <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full flex flex-col">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">평균 평점</h3>
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <div className="flex items-center justify-center">
+            <p className="text-3xl font-bold text-gray-900 mr-2">-</p>
+            <span className="text-3xl">😐</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">데이터 없음</p>
         </div>
-        <p className="text-xs text-gray-500 mt-1">데이터 없음</p>
       </div>
     );
   }
@@ -61,13 +63,15 @@ export default function AverageRatingCard({ filters }: Props) {
   const averageRating = statsData.averageRating || 0;
 
   return (
-    <div className="bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/20 flex flex-col items-center justify-center text-center h-full">
-      <p className="text-sm text-gray-500">평균 평점</p>
-      <div className="flex items-center justify-center mt-1">
-        <p className="text-3xl font-bold text-gray-900 mr-2">{averageRating.toFixed(1)}</p>
-        <span className="text-3xl">{getEmoji(averageRating)}</span>
+    <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full flex flex-col">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">평균 평점</h3>
+      <div className="flex-1 flex flex-col items-center justify-center text-center">
+        <div className="flex items-center justify-center">
+          <p className="text-3xl font-bold text-gray-900 mr-2">{averageRating.toFixed(1)}</p>
+          <span className="text-3xl">{getEmoji(averageRating)}</span>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">{getLabel(averageRating)} / 5점 만점</p>
       </div>
-      <p className="text-xs text-gray-500 mt-1">{getLabel(averageRating)} / 5점 만점</p>
     </div>
   );
 }

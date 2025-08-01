@@ -84,7 +84,7 @@ export default function SentimentDonutCard({ filters }: Props) {
 
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full flex flex-col">
-      <h3 className="text-heading text-gray-900 mb-6">감정 분석</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">감정 분析</h3>
       
       <div className="relative h-48 flex-shrink-0">
         <ResponsiveContainer width="100%" height="100%">
