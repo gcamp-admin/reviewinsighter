@@ -22,15 +22,15 @@ const ChannelBarChart = ({ data }: Props) => {
 
     // Modern flat 컬러 생성 (그라데이션 제거)
     const flatColors = data.map((item) => {
-      // 브랜드 색상 기반 soft 단색
+      // 새로운 브랜드 색상
       if (item.label === '구글 앱스토어') {
-        return '#10B981'; // 브랜드 그린
+        return '#ccfe52'; // 연두색
       } else if (item.label === '애플 앱스토어') {
-        return '#4F46E5'; // 브랜드 인디고
+        return '#000000'; // 블랙
       } else if (item.label === '네이버 블로그') {
-        return '#7CF3C4'; // 브랜드 메인
+        return '#6d6875'; // 보라 그레이
       } else if (item.label === '네이버 카페') {
-        return '#6B7280'; // 중립 그레이
+        return '#d3d3d3'; // 라이트 그레이
       }
       return item.color;
     });
@@ -115,10 +115,10 @@ const ChannelBarChart = ({ data }: Props) => {
                 <div 
                   className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
                   style={{ 
-                    backgroundColor: item.label === '구글 앱스토어' ? '#10B981' :
-                                    item.label === '애플 앱스토어' ? '#4F46E5' :
-                                    item.label === '네이버 블로그' ? '#7CF3C4' :
-                                    item.label === '네이버 카페' ? '#6B7280' : 
+                    backgroundColor: item.label === '구글 앱스토어' ? '#ccfe52' :
+                                    item.label === '애플 앱스토어' ? '#000000' :
+                                    item.label === '네이버 블로그' ? '#6d6875' :
+                                    item.label === '네이버 카페' ? '#d3d3d3' : 
                                     item.color
                   }}
                 />
