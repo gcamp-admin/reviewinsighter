@@ -586,7 +586,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
               {/* 엑셀 다운로드 버튼 */}
               <Button
                 onClick={downloadExcel}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-[#000000] hover:bg-gray-800 text-white"
               >
                 <Download className="w-4 h-4 mr-2" />
                 엑셀 다운로드
