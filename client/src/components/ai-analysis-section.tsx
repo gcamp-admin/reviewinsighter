@@ -123,7 +123,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
     onSuccess: (data) => {
       console.log("Analysis mutation onSuccess called with data:", data);
       toast({
-        title: "코멘토 분석 완료",
+        title: "리뷰인사이터 분석 완료",
         description: "워드클라우드와 HEART 프레임워크 분석이 완료되었습니다.",
       });
       setHasAnalyzedComprehensive(true);
@@ -141,7 +141,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
     },
     onError: (error: any) => {
       toast({
-        title: "코멘토 분석 실패",
+        title: "리뷰인사이터 분석 실패",
         description: error?.message || "분석 중 오류가 발생했습니다.",
         variant: "destructive",
       });
@@ -183,11 +183,11 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
             {comprehensiveAnalysisMutation.isPending ? (
               <>
                 <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                <span className="animate-pulse">코멘토 분석 중... {analysisProgress}%</span>
+                <span className="animate-pulse">리뷰인사이터 분석 중... {analysisProgress}%</span>
               </>
             ) : (
               <>
-                코멘토에게 분석 요청하기
+                리뷰인사이터에게 분석 요청하기
               </>
             )}
           </Button>
@@ -220,7 +220,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
           
           {comprehensiveAnalysisMutation.isPending && (
             <div className="text-center">
-              <p className="text-sm text-black font-medium mb-2">코멘토가 리뷰를 분석하고 있습니다...</p>
+              <p className="text-sm text-black font-medium mb-2">리뷰인사이터가 리뷰를 분석하고 있습니다...</p>
               <div className="flex justify-center space-x-4 text-xs text-black">
                 <span>감정 분석</span>
                 <span>HEART 프레임워크</span>
@@ -231,7 +231,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
           
           {hasAnalyzedComprehensive && comprehensiveAnalysisMutation.isSuccess && (
             <p className="text-center text-sm text-green-600 font-medium">
-              ✅ 코멘토 분석이 완료되었습니다. 아래에서 결과를 확인하세요.
+              ✅ 리뷰인사이터 분석이 완료되었습니다. 아래에서 결과를 확인하세요.
             </p>
           )}
         </div>
