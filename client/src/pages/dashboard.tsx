@@ -7,7 +7,7 @@ import AverageRatingCard from "@/components/average-rating-card";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
-import backgroundImg from "@assets/main_1754031036088.png";
+import backgroundImg from "@assets/제목을 입력하세요 (1)_1754035445746.png";
 
 import type { ReviewFilters } from "@/types";
 
