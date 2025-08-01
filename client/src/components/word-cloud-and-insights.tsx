@@ -268,7 +268,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center">
           <TrendingUp className="w-6 h-6 mr-2 text-purple-600" />
-          <span className="gradient-text">HEART 프레임워크 분석</span>
+          <span className="gradient-text text-[20px] text-[#000000]">HEART 프레임워크 분석</span>
           <span 
             className="ml-4 text-sm text-gray-500 hover:text-[#7CF3C4] cursor-pointer transition-colors duration-300"
             onClick={() => setIsHeartPopupOpen(true)}
