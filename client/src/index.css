@@ -72,6 +72,40 @@
   }
 }
 
+/* 배경 이미지 반응형 스타일 */
+.responsive-bg {
+  background-size: 100% auto;
+  background-position: center 0px;
+}
+
+@media (min-width: 640px) {
+  .responsive-bg {
+    background-size: 90% auto;
+    background-position: center 10px;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-bg {
+    background-size: 85% auto;
+    background-position: center 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-bg {
+    background-size: 80% auto;
+    background-position: center 30px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-bg {
+    background-size: 75% auto;
+    background-position: center 40px;
+  }
+}
+
 /* 최신 트렌드 스타일 - Glow, Glassmorphism, 애니메이션 */
 @layer utilities {
   .glow-indigo {

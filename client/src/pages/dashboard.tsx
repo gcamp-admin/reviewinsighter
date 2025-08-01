@@ -54,17 +54,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div 
-      className="min-h-screen font-korean relative"
-      style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'contain',
-        backgroundPosition: 'center top',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <div className="min-h-screen font-korean relative">
+      {/* 배경 이미지를 별도 div로 분리하여 더 정밀한 제어 */}
+      <div 
+        className="absolute inset-0 z-0 responsive-bg"
+        style={{
+          backgroundImage: `url(${backgroundImg})`,
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      
       <div className="relative z-10">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-[240px] sm:pt-[280px] lg:pt-[300px]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-[280px] sm:pt-[320px] lg:pt-[360px]">
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           <FilterSection 
             filters={filters}
