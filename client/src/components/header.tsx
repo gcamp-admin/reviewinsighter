@@ -26,12 +26,11 @@ export default function Header() {
               className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-purple-500 transition-colors duration-300 cursor-pointer group"
               onClick={() => setIsPopupOpen(true)}
             >
-              <span className="group-hover:font-medium transition-all duration-300">리뷰인사이터는 누구?</span>
+              <span className="group-hover:font-medium transition-all duration-300">리뷰인사이터는?</span>
             </div>
           </div>
         </div>
       </div>
-      
       {/* 팝업 모달 */}
       {isPopupOpen && (
         <div className="popup-overlay" onClick={() => setIsPopupOpen(false)}>
