@@ -178,7 +178,7 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
           <Button 
             onClick={() => handleComprehensiveAnalysis()}
             disabled={comprehensiveAnalysisMutation.isPending || !filters.dateFrom || !filters.dateTo || hasDateRangeError}
-            className="w-full gradient-bg hover:shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+            className="w-full bg-[#000000] text-[#ccfe52] px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
             size="lg"
           >
             {comprehensiveAnalysisMutation.isPending ? (
