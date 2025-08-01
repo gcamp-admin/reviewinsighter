@@ -7,7 +7,7 @@ import AverageRatingCard from "@/components/average-rating-card";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
-import backgroundImg from "@assets/제목을 입력하세요 (3)_1754035567114.png";
+// import backgroundImg from "@assets/제목을 입력하세요 (3)_1754035567114.png";
 
 import type { ReviewFilters } from "@/types";
 
@@ -59,7 +59,7 @@ export default function Dashboard() {
       <div 
         className="absolute inset-0 z-0 responsive-bg"
         style={{
-          backgroundImage: `url(${backgroundImg})`,
+          backgroundImage: `url('/background.png')`,
           backgroundRepeat: 'no-repeat'
         }}
       />
