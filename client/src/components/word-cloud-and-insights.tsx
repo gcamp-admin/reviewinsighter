@@ -256,7 +256,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center">
           <Cloud className="w-6 h-6 mr-2 text-indigo-600" />
-          <span className="gradient-text">감정 워드클라우드</span>
+          <span className="gradient-text text-[20px] text-[#000000]">감정 워드클라우드</span>
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -264,7 +264,6 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           {renderWordCloud(negativeWords, "부정 키워드", false)}
         </div>
       </div>
-
       {/* UX Insights Section */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center">
@@ -348,7 +347,6 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
           ))}
         </div>
       </div>
-
       {/* HEART 분석 설명 팝업 */}
       {isHeartPopupOpen && (
         <div className="popup-overlay" onClick={() => setIsHeartPopupOpen(false)}>
