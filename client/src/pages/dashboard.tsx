@@ -58,15 +58,13 @@ export default function Dashboard() {
       className="min-h-screen font-korean relative"
       style={{
         backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'cover',
+        backgroundSize: '80%',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
       }}
     >
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/20"></div>
       <div className="relative z-10">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" style={{ paddingTop: '500px' }}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" style={{ paddingTop: '350px' }}>
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           <FilterSection 
             filters={filters}
