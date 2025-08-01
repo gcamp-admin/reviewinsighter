@@ -434,18 +434,18 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || hasDateRangeError}
-              className="w-full gradient-bg hover:shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+              className="w-full bg-black hover:bg-gray-800 px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {collectReviewsMutation.isPending ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                  <span className="animate-pulse">수집 중... {collectionProgress}%</span>
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin text-green-400" />
+                  <span className="animate-pulse text-green-400">수집 중... {collectionProgress}%</span>
                 </>
               ) : (
                 <>
-                  <Search className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
-                  리뷰 수집
+                  <Search className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300 text-green-400" />
+                  <span className="text-green-400">리뷰 수집</span>
                 </>
               )}
             </Button>
