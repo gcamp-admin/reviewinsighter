@@ -282,7 +282,13 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
         </div>
         
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {insights.map((insight: any, index: number) => (
+          {insights
+            .sort((a: any, b: any) => {
+              // 우선순위 순서: critical -> major -> minor
+              const priorityOrder = { critical: 0, major: 1, minor: 2 };
+              return priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder];
+            })
+            .map((insight: any, index: number) => (
             <Card key={index} className="glassmorphism-card glow-indigo-hover card-hover w-full overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

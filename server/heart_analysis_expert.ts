@@ -159,11 +159,22 @@ ${negativeReviews.slice(0, 15).map(r => `- ${r.content}`).join('\n')}
 🔥 경고: competitor_benchmark 필드에는 반드시 위에 명시된 서비스별 전용 앱만 언급하세요!
 ${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리, POS/결제, 고객 관리 앱만 사용하고 통화 관련 앱은 절대 언급하지 마세요!' : ''}
 
-각 HEART 카테고리별로 가장 중요한 문제를 우선순위가 높은 순서대로 인사이트를 제공하세요.`
+${reviews.length >= 50 ? `
+🎯 리뷰 수량 충분 (${reviews.length}개): 각 HEART 카테고리별로 최소 1개씩 인사이트를 제공하세요.
+- Happiness (만족도)
+- Engagement (참여도) 
+- Adoption (도입/적응)
+- Retention (재사용/유지)
+- Task Success (작업 완료율)
+
+각 카테고리에서 가장 중요한 문제를 우선순위가 높은 순서대로 분석하여 총 5개 인사이트를 제공하세요.` : `
+⚠️ 리뷰 수량 제한 (${reviews.length}개): 가장 중요한 문제들만 우선순위 순으로 2-3개 인사이트를 제공하세요.`}
+
+각 인사이트는 반드시 다른 HEART 카테고리에 속해야 하며, 우선순위가 높은 순서대로 제공하세요.`
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 3000,
+      max_tokens: 4000,
       temperature: 0.3
     });
 
