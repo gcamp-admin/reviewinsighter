@@ -4,8 +4,8 @@ import { ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 import type { ReviewFilters } from "@/types";
 
 const SENTIMENT_COLORS = {
-  긍정: "#10B981", // 브랜드 그린
-  부정: "#4F46E5", // 브랜드 인디고  
+  긍정: "#ccfe52", // 연두색
+  부정: "#000000", // 블랙
   중립: "#6B7280"  // 그레이
 };
 
