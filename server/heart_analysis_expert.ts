@@ -243,28 +243,35 @@ ${reviews.length >= 50 ? `
       return insight;
     });
 
-    // 🚨 50개 이상 리뷰에서 5개 카테고리 모두 있는지 검증
+    // 🚨 50개 이상 리뷰에서 5개 카테고리 모두 있는지 강제 검증
     if (reviews.length >= 50) {
       const requiredCategories = ['Happiness', 'Engagement', 'Adoption', 'Retention', 'Task Success'];
       const existingCategories = insights.map((insight: any) => insight.heart_category).filter(Boolean);
       const missingCategories = requiredCategories.filter(cat => !existingCategories.includes(cat));
       
-      console.log(`🔍 HEART 카테고리 검증: 존재=${existingCategories.length}, 누락=${missingCategories.length}`);
+      console.log(`🔍 HEART 카테고리 검증 (리뷰 ${reviews.length}개): 존재=${existingCategories.length}, 누락=${missingCategories.length}`);
       console.log(`존재 카테고리: ${existingCategories.join(', ')}`);
-      console.log(`누락 카테고리: ${missingCategories.join(', ')}`);
-      
       if (missingCategories.length > 0) {
-        console.log(`⚠️ 누락된 HEART 카테고리가 있음 - fallback 사용`);
+        console.log(`누락 카테고리: ${missingCategories.join(', ')}`);
+        console.log(`⚠️ 강제 보완 시작 - fallback 인사이트 추가`);
+        
         const fallbackInsights = generateFallbackInsights(validatedServiceId);
+        console.log(`💡 Fallback 인사이트 개수: ${fallbackInsights.length}`);
         
         // 누락된 카테고리만 fallback에서 가져와 보완
-        const supplementalInsights = fallbackInsights.filter((fallback: any) => 
-          missingCategories.includes(fallback.heart_category)
-        );
-        insights = [...insights, ...supplementalInsights];
+        const supplementalInsights = fallbackInsights.filter((fallback: any) => {
+          console.log(`  - Fallback 카테고리 체크: ${fallback.heart_category} (누락목록: ${missingCategories.includes(fallback.heart_category)})`);
+          return missingCategories.includes(fallback.heart_category);
+        });
         
-        console.log(`🔧 보완 완료: ${supplementalInsights.length}개 카테고리 추가`);
+        console.log(`🔧 보완할 인사이트 개수: ${supplementalInsights.length}`);
+        insights = [...insights, ...supplementalInsights];
+        console.log(`✅ 보완 완료 - 총 인사이트: ${insights.length}개`);
+      } else {
+        console.log(`✅ 모든 HEART 카테고리 완비됨`);
       }
+    } else {
+      console.log(`ℹ️ 리뷰 수 부족 (${reviews.length}개) - 전체 카테고리 검증 건너뜀`);
     }
 
     // 우선순위 순서대로 정렬
@@ -273,8 +280,27 @@ ${reviews.length >= 50 ? `
       (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999)
     );
 
-    console.log(`✅ Generated ${insights.length} HEART insights (검증 완료)`);
-    return insights.slice(0, 5); // 최대 5개 반환
+    // 🔧 중복 카테고리 제거 - 우선순위가 높은 것만 유지
+    if (reviews.length >= 50) {
+      const seenCategories = new Set<string>();
+      const finalInsights: any[] = [];
+      
+      for (const insight of insights) {
+        if (!seenCategories.has(insight.heart_category)) {
+          seenCategories.add(insight.heart_category);
+          finalInsights.push(insight);
+          console.log(`✅ 카테고리 추가: ${insight.heart_category} - ${insight.title}`);
+        } else {
+          console.log(`🚫 중복 제거: ${insight.heart_category} - ${insight.title}`);
+        }
+      }
+      
+      console.log(`✅ Generated ${finalInsights.length} HEART insights (중복 제거 완료)`);
+      return finalInsights.slice(0, 5);
+    } else {
+      console.log(`✅ Generated ${insights.length} HEART insights (리뷰 수 부족)`);
+      return insights.slice(0, 5); // 최대 5개 반환
+    }
 
   } catch (error) {
     console.error('HEART framework analysis failed:', error);

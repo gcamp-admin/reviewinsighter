@@ -479,6 +479,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const { analyzeHeartFrameworkWithGPT } = await import('./openai_analysis');
               const gptInsights = await analyzeHeartFrameworkWithGPT(classifiedReviews);
               
+              // 🚨 중복 제거: 동일한 serviceId의 기존 인사이트 삭제
+              console.log(`🗑️ 기존 인사이트 삭제 시작 (serviceId: ${serviceId})`);
+              try {
+                const existingInsights = await storage.getInsights(1, 1000, { serviceId });
+                for (const existing of existingInsights.insights) {
+                  await storage.deleteInsight(existing.id);
+                }
+                console.log(`✅ 기존 인사이트 ${existingInsights.insights.length}개 삭제 완료`);
+              } catch (deleteError) {
+                console.warn("기존 인사이트 삭제 실패:", deleteError);
+              }
+              
               for (const insight of gptInsights) {
                 try {
                   await storage.createInsight({
@@ -527,8 +539,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.error("All HEART analysis methods failed:", fallbackError);
               }
             }
-          } else if (result.insights && result.insights.length > 0) {
-            // For full analysis, use Python analysis
+          } else if (result.insights && result.insights.length > 0 && analysisType !== 'heart') {
+            // For full analysis (but not heart analysis), use Python analysis
+            console.log("Using Python analysis results (non-HEART)");
             for (const insight of result.insights) {
               try {
                 await storage.createInsight({
@@ -544,6 +557,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.error("Error storing insight:", err);
               }
             }
+          } else if (analysisType === 'heart') {
+            console.log("Skipping Python insights for HEART analysis - already handled above");
           }
           
           // Store word cloud data (only for wordcloud analysis or full analysis)
