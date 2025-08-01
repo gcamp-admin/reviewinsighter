@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Cloud, TrendingUp, AlertCircle, CheckCircle, Clock, X } from "lucide-react";
+import { Cloud, TrendingUp, AlertCircle, CheckCircle, Clock, X, ThumbsUp, ThumbsDown } from "lucide-react";
 import type { ReviewFilters } from "@/types";
 
 interface WordCloudAndInsightsProps {
@@ -154,7 +154,11 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       <Card className="glassmorphism-card glow-indigo-hover card-hover w-full overflow-hidden">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center break-words">
-            <Cloud className="w-5 h-5 mr-2 flex-shrink-0" />
+            {isPositive ? (
+              <ThumbsUp className="w-5 h-5 mr-2 flex-shrink-0 text-green-600" />
+            ) : (
+              <ThumbsDown className="w-5 h-5 mr-2 flex-shrink-0 text-red-600" />
+            )}
             <span className="break-words">{title}</span>
           </CardTitle>
         </CardHeader>
