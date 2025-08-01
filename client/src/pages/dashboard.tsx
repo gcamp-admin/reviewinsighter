@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Header from "@/components/header";
+
 import FilterSection from "@/components/filter-section";
 import SourceDistributionCard from "@/components/source-distribution-card";
 import SentimentDonutCard from "@/components/sentiment-donut-card";
@@ -66,9 +66,7 @@ export default function Dashboard() {
       {/* Dark overlay for better readability */}
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="relative z-10">
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" style={{ paddingTop: '500px' }}>
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           <FilterSection 
             filters={filters}
