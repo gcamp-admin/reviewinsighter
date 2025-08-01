@@ -115,7 +115,7 @@ ${benchmarkInfo}
 {
   "insights": [
     {
-      "title": "HEART: [카테고리] | 구체적인 문제 제목",
+      "title": "HEART: 카테고리 | 구체적인 문제 제목",
       "priority": "critical" | "major" | "minor",
       "problem_summary": "실제 사용자 인용구를 포함한 문제 요약",
       "competitor_benchmark": "벤치마킹 앱의 구체적인 해결 방식 설명",
