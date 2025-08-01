@@ -297,7 +297,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
     <Card className="mb-8 hover:shadow-lg transition-all duration-300 border-0 shadow-lg bg-white/95 backdrop-blur-md">
       <CardHeader className="pb-6">
         
-        <CardDescription className="text-gray-600 font-bold text-lg">고객의 리뷰를 분석해서 UX 인사이트를 발굴해주는 리뷰인사이터!</CardDescription>
+        
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
