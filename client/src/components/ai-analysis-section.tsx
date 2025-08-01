@@ -188,7 +188,6 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
               </>
             ) : (
               <>
-                <Brain className="w-5 h-5 mr-3 group-hover:scale-110 transform transition-transform duration-300" />
                 코멘토에게 분석 요청하기
               </>
             )}
@@ -222,11 +221,11 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
           
           {comprehensiveAnalysisMutation.isPending && (
             <div className="text-center">
-              <p className="text-sm text-purple-600 font-medium mb-2">코멘토가 리뷰를 분석하고 있습니다...</p>
-              <div className="flex justify-center space-x-4 text-xs text-gray-500">
-                <span>📊 감정 분석</span>
-                <span>🎯 HEART 프레임워크</span>
-                <span>☁️ 워드클라우드 생성</span>
+              <p className="text-sm text-black font-medium mb-2">코멘토가 리뷰를 분석하고 있습니다...</p>
+              <div className="flex justify-center space-x-4 text-xs text-black">
+                <span>감정 분석</span>
+                <span>HEART 프레임워크</span>
+                <span>워드클라우드 생성</span>
               </div>
             </div>
           )}
