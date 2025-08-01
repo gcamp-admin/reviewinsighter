@@ -254,9 +254,8 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     <div className="space-y-6">
       {/* Word Cloud Section */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-          <Cloud className="w-6 h-6 mr-2 text-indigo-600" />
-          <span className="gradient-text text-[20px] text-[#000000]">감정 워드클라우드</span>
+        <h2 className="text-[20px] font-bold text-[#000000]">
+          감정 워드클라우드
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -266,9 +265,8 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       </div>
       {/* UX Insights Section */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-          <TrendingUp className="w-6 h-6 mr-2 text-purple-600" />
-          <span className="gradient-text text-[20px] text-[#000000]">HEART 프레임워크 분석</span>
+        <h2 className="text-[20px] font-bold text-[#000000] flex items-center">
+          HEART 프레임워크 분석
           <span 
             className="ml-4 text-sm text-gray-500 hover:text-[#7CF3C4] cursor-pointer transition-colors duration-300"
             onClick={() => setIsHeartPopupOpen(true)}
