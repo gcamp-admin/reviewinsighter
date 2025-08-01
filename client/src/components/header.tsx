@@ -19,11 +19,7 @@ export default function Header() {
                 />
               </div>
             </div>
-            <div>
-              <p className="text-caption text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                고객의 리뷰를 분석해서 UX 인사이트를 발굴해주는 당신의 UX멘토 리뷰인사이터!
-              </p>
-            </div>
+            
           </div>
           <div className="flex items-center space-x-6">
             <div 
