@@ -347,8 +347,11 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     key={channel.id}
                     onClick={() => handleSourceChange(channel.id, !isActive)}
                     className={`relative w-full p-4 rounded-xl border text-center cursor-pointer transition 
-                      ${isActive ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white"} 
+                      ${isActive ? "bg-gray-50" : "border-gray-200 bg-white"} 
                       hover:shadow-md`}
+                    style={{
+                      borderColor: isActive ? '#cdff55' : undefined
+                    }}
                   >
                     <div className="text-gray-700 flex flex-col items-center justify-center space-y-2">
                       <IconComponent className="w-6 h-6" />
@@ -356,8 +359,8 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
                     </div>
 
                     {isActive && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-indigo-500 rounded-full z-10 flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full z-10 flex items-center justify-center" style={{ backgroundColor: '#cdff55' }}>
+                        <Check className="w-3 h-3 text-black" />
                       </div>
                     )}
                   </div>
