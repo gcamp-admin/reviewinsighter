@@ -14,14 +14,14 @@ export default function Header() {
               <div className="relative inline-block">
                 <img 
                   src={logoImg} 
-                  alt="commento.ai Logo" 
+                  alt="Reviewinsighter Logo" 
                   className="h-16 w-auto object-contain group-hover:scale-105 transform transition-all duration-300"
                 />
               </div>
             </div>
             <div>
               <p className="text-caption text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                고객의 코맨트를 분석해서 UX 인사이트를 발굴해주는 당신의 UX멘토 코멘토!
+                고객의 리뷰를 분석해서 UX 인사이트를 발굴해주는 당신의 UX멘토 리뷰인사이터!
               </p>
             </div>
           </div>
@@ -30,7 +30,7 @@ export default function Header() {
               className="hidden md:flex items-center space-x-2 text-sm text-gray-500 hover:text-purple-500 transition-colors duration-300 cursor-pointer group"
               onClick={() => setIsPopupOpen(true)}
             >
-              <span className="group-hover:font-medium transition-all duration-300">코멘토는 누구?</span>
+              <span className="group-hover:font-medium transition-all duration-300">리뷰인사이터는 누구?</span>
             </div>
           </div>
         </div>
@@ -54,16 +54,16 @@ export default function Header() {
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bg-white shadow-lg">
                   <img 
                     src={popupLogoImg} 
-                    alt="코멘토 로고" 
+                    alt="리뷰인사이터 로고" 
                     className="w-16 h-16 object-contain"
                   />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">코멘토는 누구?</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">리뷰인사이터는 누구?</h2>
               </div>
               
               <div className="text-left space-y-4 text-sm text-gray-600">
                 <p>
-                  <strong style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>코멘토(commento.ai)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
+                  <strong style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>리뷰인사이터(Reviewinsighter)</strong>는 AI 기반의 리뷰 분석 전문가입니다.
                 </p>
                 <p>
                   📊 <strong>전문 분야:</strong> 앱 리뷰, 고객 피드백, 감정 분석
@@ -78,7 +78,7 @@ export default function Header() {
                 
                 <div className="mt-6 pt-4 border-t bg-gray-50 p-4 rounded-lg">
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    서비스 추가, 코멘토 관련 문의사항이 있으실 경우, 아래 담당자에게 연락주시기 바랍니다.<br/>
+                    서비스 추가, 리뷰인사이터 관련 문의사항이 있으실 경우, 아래 담당자에게 연락주시기 바랍니다.<br/>
                     <strong className="text-gray-700">Innovation CoE 최아진</strong> | 
                     <a href="mailto:ahjinchoe@lguplus.co.kr" className="hover:underline ml-1" style={{ background: 'linear-gradient(135deg, #c97cff, #f9a4bc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                       ahjinchoe@lguplus.co.kr
