@@ -7,6 +7,7 @@ import AverageRatingCard from "@/components/average-rating-card";
 import ReviewList from "@/components/review-list";
 import WordCloudAndInsights from "@/components/word-cloud-and-insights";
 import AIAnalysisSection from "@/components/ai-analysis-section";
+import backgroundImg from "@assets/main_1754031036088.png";
 
 import type { ReviewFilters } from "@/types";
 
@@ -53,7 +54,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-korean">
+    <div 
+      className="min-h-screen font-korean relative"
+      style={{
+        backgroundImage: `url(${backgroundImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative z-10">
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -98,6 +110,7 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 }

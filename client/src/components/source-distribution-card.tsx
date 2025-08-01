@@ -45,7 +45,7 @@ export default function SourceDistributionCard({ filters }: Props) {
 
   if (!statsData || statsData.total === 0) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full">
+      <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full">
         <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
         <div className="flex items-center justify-center h-64">
           <p className="text-body text-gray-500">데이터가 없습니다</p>
@@ -74,7 +74,7 @@ export default function SourceDistributionCard({ filters }: Props) {
   }));
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full flex flex-col">
+    <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full flex flex-col">
       <h3 className="text-heading text-gray-900 mb-6">채널별 분포</h3>
       <div className="flex-1 flex flex-col">
         <ChannelBarChart data={chartData} />

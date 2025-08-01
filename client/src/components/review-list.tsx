@@ -464,7 +464,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const endItem = Math.min(currentPage * limit, data.total);
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/90 backdrop-blur-sm">
+    <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-lg bg-white/95 backdrop-blur-md">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

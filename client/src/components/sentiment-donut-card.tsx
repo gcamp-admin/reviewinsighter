@@ -44,7 +44,7 @@ export default function SentimentDonutCard({ filters }: Props) {
 
   if (!statsData || statsData.total === 0) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm h-full">
+      <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">감정 분석</h3>
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-500">데이터가 없습니다</p>
@@ -83,7 +83,7 @@ export default function SentimentDonutCard({ filters }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 h-full flex flex-col">
+    <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 h-full flex flex-col">
       <h3 className="text-heading text-gray-900 mb-6">감정 분석</h3>
       
       <div className="relative h-48 flex-shrink-0">
