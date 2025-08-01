@@ -165,9 +165,8 @@ export default function AIAnalysisSection({ filters, onAnalysisSuccess }: AIAnal
   return (
     <Card className="mb-6 glassmorphism-card glow-purple-hover card-hover">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
-          <Brain className="w-5 h-5 mr-2 text-purple-600 group-hover:scale-110 transform transition-transform duration-300" />
-          <span className="text-[20px]">AI 분석</span>
+        <CardTitle className="text-lg font-semibold text-gray-900">
+          AI 분석
         </CardTitle>
         <CardDescription className="text-gray-600">
           수집된 {stats.total}개의 리뷰를 바탕으로 감정 워드클라우드 및 HEART 프레임워크 UX 개선 분석을 실행합니다
