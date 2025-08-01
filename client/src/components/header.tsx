@@ -1,4 +1,4 @@
-import logoImg from "/assets/commento_logo_transparent.png";
+import logoImg from "@assets/Reviewinsighter_1754029675269.png";
 import popupLogoImg from "@assets/image_1753930022904.png";
 import { useState } from "react";
 import { X } from "lucide-react";
