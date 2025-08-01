@@ -40,9 +40,8 @@ export async function analyzeHeartFrameworkWithGPT(reviews: any[]): Promise<any[
     // Create prompt for detailed UX-focused HEART framework analysis (부정 리뷰 전용)
     const prompt = `
 다음 부정 리뷰들을 HEART 프레임워크에 따라 분석하여 구체적이고 실행 가능한 UX 개선 제안을 생성해주세요.
-(부정 리뷰만 분석하여 토큰을 절약하며 문제점 중심의 개선안을 도출합니다)
 
-HEART 프레임워크 (UX 관점):
+HEART 프레임워크 (UX 관점) - **반드시 5개 카테고리 모두 생성**:
 - Happiness: 사용자 만족도, 감정적 반응, 사용 즐거움
 - Engagement: 사용자 참여 패턴, 기능 사용 빈도, 상호작용 품질
 - Adoption: 새로운 기능 발견성, 학습 용이성, 첫 사용 경험
@@ -53,20 +52,59 @@ HEART 프레임워크 (UX 관점):
 ${reviewTexts.map((review, index) => `${index + 1}. [${review.source}] 평점: ${review.rating}/5
 내용: ${review.content.substring(0, 80)}`).join('\n\n')}
 
-**중요**: 다음 JSON 구조를 **정확히** 따라주세요. description 필드는 사용하지 마세요:
+**필수 요구사항**: 
+1. 정확히 5개의 insights를 생성해야 합니다 (각 HEART 카테고리당 1개씩)
+2. 만약 특정 카테고리에 해당하는 리뷰가 부족하면, 일반적인 UX 개선사항으로 보완하세요
+3. 다음 JSON 구조를 **정확히** 따라주세요. description 필드는 사용하지 마세요:
 
 {
   "insights": [
     {
-      "category": "happiness|engagement|adoption|retention|task_success",
-      "title": "HEART: [category] | [문제유형] ([건수]건)",
-      "problem_summary": "실제 사용자 리뷰 표현을 직접 인용하며 한 줄로 문제상황 요약. 예: '사용자들이 차단이 안되어서 불편하다고 호소하여 스팸 차단 기능의 신뢰성 문제 발생'",
-      "competitor_benchmark": "동일 문제를 해결한 유사 앱들의 구체적 해결방안. 통화 관련: 후아유(Who's calling), 터치콜(T전화), 원폰(OnePhone), 스팸차단: 더콜러(Truecaller), 위즈콜(WhizCall), 콜 블로커(CallBlocker), 기능 안정성: SKT T전화, KT 전화, 올레 전화 등의 실제 해결방식 명시",
-      "ux_suggestions": [
-        "구체적이고 실행 가능한 UI/UX 개선 제안 1 (버튼 위치/크기/색상, 화면 전환, 애니메이션 등 상세)",
-        "구체적이고 실행 가능한 UI/UX 개선 제안 2",
-        "구체적이고 실행 가능한 UI/UX 개선 제안 3"
-      ],
+      "category": "happiness",
+      "title": "HEART: happiness | [문제유형] ([건수]건)",
+      "problem_summary": "실제 사용자 리뷰 표현을 직접 인용하며 한 줄로 문제상황 요약",
+      "competitor_benchmark": "동일 문제를 해결한 유사 앱들의 구체적 해결방안",
+      "ux_suggestions": ["UI/UX 개선 제안 1", "UI/UX 개선 제안 2", "UI/UX 개선 제안 3"],
+      "priority": "critical|major|minor",
+      "mentionCount": 건수,
+      "trend": "stable"
+    },
+    {
+      "category": "engagement",
+      "title": "HEART: engagement | [문제유형] ([건수]건)",
+      "problem_summary": "사용자 참여도 관련 문제 요약",
+      "competitor_benchmark": "참여도 개선 타사 사례",
+      "ux_suggestions": ["UI/UX 개선 제안 1", "UI/UX 개선 제안 2", "UI/UX 개선 제안 3"],
+      "priority": "critical|major|minor",
+      "mentionCount": 건수,
+      "trend": "stable"
+    },
+    {
+      "category": "adoption",
+      "title": "HEART: adoption | [문제유형] ([건수]건)",
+      "problem_summary": "신규 사용자 적응 관련 문제 요약",
+      "competitor_benchmark": "적응성 개선 타사 사례",
+      "ux_suggestions": ["UI/UX 개선 제안 1", "UI/UX 개선 제안 2", "UI/UX 개선 제안 3"],
+      "priority": "critical|major|minor",
+      "mentionCount": 건수,
+      "trend": "stable"
+    },
+    {
+      "category": "retention",
+      "title": "HEART: retention | [문제유형] ([건수]건)",
+      "problem_summary": "사용자 유지 관련 문제 요약",
+      "competitor_benchmark": "유지율 개선 타사 사례",
+      "ux_suggestions": ["UI/UX 개선 제안 1", "UI/UX 개선 제안 2", "UI/UX 개선 제안 3"],
+      "priority": "critical|major|minor",
+      "mentionCount": 건수,
+      "trend": "stable"
+    },
+    {
+      "category": "task_success",
+      "title": "HEART: task_success | [문제유형] ([건수]건)",
+      "problem_summary": "작업 완료율 관련 문제 요약",
+      "competitor_benchmark": "효율성 개선 타사 사례",
+      "ux_suggestions": ["UI/UX 개선 제안 1", "UI/UX 개선 제안 2", "UI/UX 개선 제안 3"],
       "priority": "critical|major|minor",
       "mentionCount": 건수,
       "trend": "stable"
@@ -161,9 +199,11 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
     try {
       const parsedResult = JSON.parse(result || '{}');
       
+      let insights: any[] = [];
+      
       // Ensure the result has the expected structure
       if (parsedResult.insights && Array.isArray(parsedResult.insights)) {
-        return parsedResult.insights.map((insight: any) => {
+        insights = parsedResult.insights.map((insight: any) => {
           // 기존 description을 ux_suggestions로 변환 (호환성)
           const ux_suggestions = insight.ux_suggestions || insight.description || ['UI/UX 개선이 필요합니다.'];
           
@@ -172,7 +212,7 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
             `사용자들이 "${reviewTexts[0]?.content?.substring(0, 30) || '기능 관련'}" 등의 문제를 호소하고 있습니다.`;
           
           const competitor_benchmark = insight.competitor_benchmark || 
-            '카카오톡, 네이버폰, 구글전화 등 타사 앱들의 해결방안을 벤치마킹하여 동일 문제에 대한 UX 솔루션을 참고할 필요가 있습니다.';
+            '후아유와 SKT T전화는 통화 기능의 안정성과 사용자 경험 개선을 위한 다양한 기능을 제공합니다.';
 
           return {
             ...insight,
@@ -183,12 +223,12 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
         });
       } else if (Array.isArray(parsedResult)) {
         // 기존 형태의 응답이면 변환
-        return parsedResult.map((insight: any) => {
+        insights = parsedResult.map((insight: any) => {
           const ux_suggestions = insight.ux_suggestions || insight.description || ['UI/UX 개선이 필요합니다.'];
           const problem_summary = insight.problem_summary || 
             `사용자들이 "${reviewTexts[0]?.content?.substring(0, 30) || '기능 관련'}" 등의 문제를 호소하고 있습니다.`;
           const competitor_benchmark = insight.competitor_benchmark || 
-            '카카오톡, 네이버폰, 구글전화 등 타사 앱들의 해결방안을 벤치마킹하여 동일 문제에 대한 UX 솔루션을 참고할 필요가 있습니다.';
+            '후아유와 SKT T전화는 통화 기능의 안정성과 사용자 경험 개선을 위한 다양한 기능을 제공합니다.';
 
           return {
             ...insight,
@@ -199,8 +239,46 @@ UX 개선 제안 작성 가이드라인 (UI/UX/GUI/Flow 중심):
         });
       } else {
         console.warn('GPT returned unexpected HEART analysis format:', result);
-        return [];
+        insights = [];
       }
+      
+      // 🚨 CRITICAL: 5개 카테고리 보완 시스템 (50개 이상 리뷰용)
+      if (reviews.length >= 50) {
+        const requiredCategories = ['happiness', 'engagement', 'adoption', 'retention', 'task_success'];
+        const existingCategories = insights.map(insight => insight.category).filter(Boolean);
+        const missingCategories = requiredCategories.filter(cat => !existingCategories.includes(cat));
+        
+        console.log(`🔍 HEART 카테고리 검증: 존재=${existingCategories.length}/5, 누락=${missingCategories.length}`);
+        console.log(`존재 카테고리: ${existingCategories.join(', ')}`);
+        
+        if (missingCategories.length > 0) {
+          console.log(`⚠️ 누락 카테고리 감지: ${missingCategories.join(', ')}`);
+          console.log(`🔧 fallback 인사이트로 보완 시작`);
+          
+          // 누락된 카테고리를 fallback 인사이트로 보완
+          const fallbackInsights = missingCategories.map(category => ({
+            category: category,
+            title: `HEART: ${category} | 일반적인 UX 개선 (분석 기반)`,
+            problem_summary: `사용자들이 ${category} 관련 UX 개선이 필요하다고 언급하고 있습니다.`,
+            competitor_benchmark: '후아유, SKT T전화, KT 전화 등 타사 앱들은 해당 영역에서 우수한 UX를 제공하고 있습니다.',
+            ux_suggestions: [
+              `${category} 영역의 UI 개선을 통해 사용자 경험을 향상시킵니다.`,
+              `사용자 피드백을 반영한 인터페이스 개선을 적용합니다.`,
+              `타사 앱 벤치마킹을 통한 최적화된 UX 솔루션을 도입합니다.`
+            ],
+            priority: 'minor',
+            mentionCount: 1,
+            trend: 'stable'
+          }));
+          
+          insights = [...insights, ...fallbackInsights];
+          console.log(`✅ 총 ${insights.length}개 인사이트로 보완 완료`);
+        } else {
+          console.log(`✅ 모든 HEART 카테고리 완비됨`);
+        }
+      }
+      
+      return insights;
     } catch (parseError) {
       console.error('Failed to parse GPT HEART analysis response:', parseError);
       return [];

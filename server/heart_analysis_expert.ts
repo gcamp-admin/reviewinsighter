@@ -280,23 +280,31 @@ ${reviews.length >= 50 ? `
       (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999)
     );
 
-    // 🔧 중복 카테고리 제거 - 우선순위가 높은 것만 유지
+    // 🔧 중복 카테고리 제거 - 우선순위 기반 스마트 중복 제거
     if (reviews.length >= 50) {
-      const seenCategories = new Set<string>();
+      const categoryCount = new Map<string, number>();
       const finalInsights: any[] = [];
       
       for (const insight of insights) {
-        if (!seenCategories.has(insight.heart_category)) {
-          seenCategories.add(insight.heart_category);
+        const category = insight.heart_category;
+        const currentCount = categoryCount.get(category) || 0;
+        const priority = insight.priority;
+        
+        // 각 카테고리별 최대 2개까지 허용 (critical/major 우선순위)
+        // minor는 카테고리당 1개만 허용
+        const maxAllowed = (priority === 'critical' || priority === 'major') ? 2 : 1;
+        
+        if (currentCount < maxAllowed) {
+          categoryCount.set(category, currentCount + 1);
           finalInsights.push(insight);
-          console.log(`✅ 카테고리 추가: ${insight.heart_category} - ${insight.title}`);
+          console.log(`✅ 카테고리 추가 (${currentCount + 1}/${maxAllowed}): ${category} - ${priority} - ${insight.title}`);
         } else {
-          console.log(`🚫 중복 제거: ${insight.heart_category} - ${insight.title}`);
+          console.log(`🚫 카테고리 초과 제거: ${category} (${priority}) - ${insight.title}`);
         }
       }
       
-      console.log(`✅ Generated ${finalInsights.length} HEART insights (중복 제거 완료)`);
-      return finalInsights.slice(0, 5);
+      console.log(`✅ Generated ${finalInsights.length} HEART insights (우선순위 기반 중복 제거 완료)`);
+      return finalInsights.slice(0, 8); // 최대 8개까지 허용 (각 카테고리당 최대 2개)
     } else {
       console.log(`✅ Generated ${insights.length} HEART insights (리뷰 수 부족)`);
       return insights.slice(0, 5); // 최대 5개 반환
