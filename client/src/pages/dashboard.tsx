@@ -58,8 +58,8 @@ export default function Dashboard() {
       className="min-h-screen font-korean relative"
       style={{
         backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: '80%',
-        backgroundPosition: 'center',
+        backgroundSize: 'contain',
+        backgroundPosition: 'center top',
         backgroundRepeat: 'no-repeat'
       }}
     >
