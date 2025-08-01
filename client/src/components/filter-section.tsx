@@ -434,7 +434,7 @@ export default function FilterSection({ filters, onFiltersChange, onCollectionSu
             <Button 
               onClick={() => collectReviewsMutation.mutate()}
               disabled={collectReviewsMutation.isPending || !localFilters.service || localFilters.source.length === 0 || !localFilters.dateFrom || !localFilters.dateTo || hasDateRangeError}
-              className="w-full bg-black hover:bg-black px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
+              className="w-full bg-black hover:bg-black disabled:bg-black px-6 py-3 text-lg font-semibold disabled:opacity-50 hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100"
               size="lg"
             >
               {collectReviewsMutation.isPending ? (
