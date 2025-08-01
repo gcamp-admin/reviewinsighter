@@ -95,7 +95,16 @@ export async function analyzeHeartFrameworkExpert(reviews: any[]): Promise<any[]
 ${benchmarkInfo}
 
 [작성 기준]
-각 HEART 항목(Happiness, Engagement, Adoption, Retention, Task Success)에 대해 다음과 같은 구조로 작성해주세요:
+리뷰 수가 50개 이상인 경우 반드시 모든 HEART 항목(Happiness, Engagement, Adoption, Retention, Task Success)에 대해 각각 하나씩 총 5개의 인사이트를 생성해야 합니다.
+
+각 HEART 항목별 정의:
+- Happiness (행복도): 사용자 만족도, 즐거움, 감정적 반응 관련 문제
+- Engagement (참여도): 사용 빈도, 앱 내 활동 깊이, 지속 사용 관련 문제  
+- Adoption (도입/적응): 첫 사용 경험, 학습 곡선, 초기 적응 관련 문제
+- Retention (유지/재사용): 재방문 의도, 장기 사용 동기, 이탈 방지 관련 문제
+- Task Success (작업 완료): 목표 달성, 기능 완료율, 효율성 관련 문제
+
+각 항목에 대해 다음과 같은 구조로 작성해주세요:
 
 1. 문제 요약: 리뷰에서 반복적으로 나타난 UX 이슈를 요약합니다.
 
@@ -160,17 +169,19 @@ ${negativeReviews.slice(0, 15).map(r => `- ${r.content}`).join('\n')}
 ${validatedServiceId === 'soho-package' ? 'SOHO 서비스이므로 매장 관리, POS/결제, 고객 관리 앱만 사용하고 통화 관련 앱은 절대 언급하지 마세요!' : ''}
 
 ${reviews.length >= 50 ? `
-🎯 리뷰 수량 충분 (${reviews.length}개): 각 HEART 카테고리별로 최소 1개씩 인사이트를 제공하세요.
-- Happiness (만족도)
-- Engagement (참여도) 
-- Adoption (도입/적응)
-- Retention (재사용/유지)
-- Task Success (작업 완료율)
+🎯 필수 요구사항 (리뷰 ${reviews.length}개): 반드시 모든 HEART 카테고리별로 정확히 1개씩, 총 5개 인사이트를 생성하세요.
 
-각 카테고리에서 가장 중요한 문제를 우선순위가 높은 순서대로 분석하여 총 5개 인사이트를 제공하세요.` : `
+필수 생성 항목:
+1. "HEART: happiness | [문제제목]" - 사용자 만족도/감정 관련
+2. "HEART: engagement | [문제제목]" - 사용 빈도/참여도 관련  
+3. "HEART: adoption | [문제제목]" - 첫 사용/적응 관련
+4. "HEART: retention | [문제제목]" - 재사용/유지 관련
+5. "HEART: task_success | [문제제목]" - 작업 완료/효율성 관련
+
+⚠️ 중요: 5개 카테고리 모두에서 인사이트를 찾아야 합니다. 리뷰 내용을 다각도로 분석하여 각 카테고리에 해당하는 문제를 반드시 발견하고 분석하세요.` : `
 ⚠️ 리뷰 수량 제한 (${reviews.length}개): 가장 중요한 문제들만 우선순위 순으로 2-3개 인사이트를 제공하세요.`}
 
-각 인사이트는 반드시 다른 HEART 카테고리에 속해야 하며, 우선순위가 높은 순서대로 제공하세요.`
+각 인사이트의 heart_category 필드는 정확히 "Happiness", "Engagement", "Adoption", "Retention", "Task Success" 중 하나여야 하며, 중복되지 않아야 합니다.`
         }
       ],
       response_format: { type: "json_object" },
@@ -232,13 +243,37 @@ ${reviews.length >= 50 ? `
       return insight;
     });
 
+    // 🚨 50개 이상 리뷰에서 5개 카테고리 모두 있는지 검증
+    if (reviews.length >= 50) {
+      const requiredCategories = ['Happiness', 'Engagement', 'Adoption', 'Retention', 'Task Success'];
+      const existingCategories = insights.map((insight: any) => insight.heart_category).filter(Boolean);
+      const missingCategories = requiredCategories.filter(cat => !existingCategories.includes(cat));
+      
+      console.log(`🔍 HEART 카테고리 검증: 존재=${existingCategories.length}, 누락=${missingCategories.length}`);
+      console.log(`존재 카테고리: ${existingCategories.join(', ')}`);
+      console.log(`누락 카테고리: ${missingCategories.join(', ')}`);
+      
+      if (missingCategories.length > 0) {
+        console.log(`⚠️ 누락된 HEART 카테고리가 있음 - fallback 사용`);
+        const fallbackInsights = generateFallbackInsights(validatedServiceId);
+        
+        // 누락된 카테고리만 fallback에서 가져와 보완
+        const supplementalInsights = fallbackInsights.filter((fallback: any) => 
+          missingCategories.includes(fallback.heart_category)
+        );
+        insights = [...insights, ...supplementalInsights];
+        
+        console.log(`🔧 보완 완료: ${supplementalInsights.length}개 카테고리 추가`);
+      }
+    }
+
     // 우선순위 순서대로 정렬
     const priorityOrder: {[key: string]: number} = { 'critical': 1, 'major': 2, 'minor': 3 };
     insights = insights.sort((a: any, b: any) => 
       (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999)
     );
 
-    console.log(`Generated ${insights.length} HEART insights (검증 완료)`);
+    console.log(`✅ Generated ${insights.length} HEART insights (검증 완료)`);
     return insights.slice(0, 5); // 최대 5개 반환
 
   } catch (error) {
@@ -274,28 +309,32 @@ function generateFallbackInsights(serviceId: string = 'unknown'): any[] {
       title: "HEART: Happiness | 사용자 인터페이스 복잡성",
       priority: "major",
       problem_summary: "사용자들이 '복잡하다', '사용하기 어렵다'는 표현으로 인터페이스의 복잡성에 대한 불만을 표현하고 있습니다. 직관적이지 않은 UI로 인해 사용자 만족도가 저하되고 있습니다.",
-      ux_suggestions: "• 메인 화면 레이아웃 단순화 및 핵심 기능 강조\n• 자주 사용하는 기능을 상단에 배치하여 접근성 향상\n• 아이콘과 텍스트를 함께 사용하여 직관성 개선\n• 첫 사용자를 위한 간단한 가이드 투어 제공",
+      competitor_benchmark: benchmarkText,
+      ux_suggestions: ["메인 화면 레이아웃 단순화 및 핵심 기능 강조", "자주 사용하는 기능을 상단에 배치하여 접근성 향상", "아이콘과 텍스트를 함께 사용하여 직관성 개선", "첫 사용자를 위한 간단한 가이드 투어 제공"],
       heart_category: "Happiness"
     },
     {
       title: "HEART: Adoption | 초기 설정 과정의 복잡성",
       priority: "major",
       problem_summary: "새로운 사용자들이 앱 설치 후 초기 설정 과정에서 어려움을 겪고 있습니다. 권한 요청과 설정 과정이 복잡하여 사용 시작 단계에서 이탈이 발생하고 있습니다.",
-      ux_suggestions: "• 필수 권한과 선택적 권한을 명확히 구분하여 안내\n• 설정 과정을 단계별로 나누어 진행률 표시\n• 각 설정 항목에 대한 간단한 설명 추가\n• 건너뛰기 옵션을 제공하여 필수 설정만으로도 시작 가능",
+      competitor_benchmark: benchmarkText,
+      ux_suggestions: ["필수 권한과 선택적 권한을 명확히 구분하여 안내", "설정 과정을 단계별로 나누어 진행률 표시", "각 설정 항목에 대한 간단한 설명 추가", "건너뛰기 옵션을 제공하여 필수 설정만으로도 시작 가능"],
       heart_category: "Adoption"
     },
     {
       title: "HEART: Engagement | 알림 설정의 불편함",
       priority: "minor",
       problem_summary: "사용자들이 알림 설정 과정에서 불편함을 표현하고 있습니다. 적절한 알림 설정을 통해 지속적인 참여를 유도해야 하지만 현재 설정 과정이 복잡합니다.",
-      ux_suggestions: "• 알림 유형별 ON/OFF 스위치를 한 화면에 정리\n• 알림 미리보기 기능으로 설정 전 확인 가능\n• 추천 알림 설정 프리셋 제공\n• 알림 설정 변경 시 즉시 적용 및 확인 메시지 표시",
+      competitor_benchmark: benchmarkText,
+      ux_suggestions: ["알림 유형별 ON/OFF 스위치를 한 화면에 정리", "알림 미리보기 기능으로 설정 전 확인 가능", "추천 알림 설정 프리셋 제공", "알림 설정 변경 시 즉시 적용 및 확인 메시지 표시"],
       heart_category: "Engagement"
     },
     {
       title: "HEART: Retention | 지속 사용 동기 부족",
       priority: "minor",
       problem_summary: "사용자들이 초기 사용 후 지속적인 사용 동기를 찾지 못하고 있습니다. 반복적인 사용을 유도할 수 있는 요소가 부족한 상황입니다.",
-      ux_suggestions: "• 사용 통계 및 성과 요약 대시보드 제공\n• 정기적인 기능 활용 팁 알림 발송\n• 사용자 맞춤형 콘텐츠 추천 기능 강화\n• 위젯을 통한 홈 화면 접근성 향상",
+      competitor_benchmark: benchmarkText,
+      ux_suggestions: ["사용 통계 및 성과 요약 대시보드 제공", "정기적인 기능 활용 팁 알림 발송", "사용자 맞춤형 콘텐츠 추천 기능 강화", "위젯을 통한 홈 화면 접근성 향상"],
       heart_category: "Retention"
     }
   ];
