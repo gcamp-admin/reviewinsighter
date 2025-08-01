@@ -468,7 +468,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">리뷰 목록</span>
+            <span className="text-lg font-semibold text-gray-900">리뷰 목록</span>
             <span className="text-sm text-muted-foreground">
               {data?.total ? `총 ${data.total}개` : ""}
             </span>
