@@ -65,7 +65,7 @@ export default function Dashboard() {
       />
       
       <div className="relative z-10">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-[280px] sm:pt-[320px] lg:pt-[360px]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-[160px] sm:pt-[180px] lg:pt-[200px]">
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           <FilterSection 
             filters={filters}
