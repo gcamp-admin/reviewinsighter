@@ -151,15 +151,15 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
     const wordPositions = calculatePositions();
     
     return (
-      <Card className="glassmorphism-card glow-indigo-hover card-hover">
+      <Card className="glassmorphism-card glow-indigo-hover card-hover w-full overflow-hidden">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center">
-            <Cloud className="w-5 h-5 mr-2" />
-            {title}
+          <CardTitle className="text-lg flex items-center break-words">
+            <Cloud className="w-5 h-5 mr-2 flex-shrink-0" />
+            <span className="break-words">{title}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="relative min-h-[400px] overflow-hidden px-4 py-6">
+          <div className="relative min-h-[300px] sm:min-h-[400px] overflow-hidden px-2 sm:px-4 py-4 sm:py-6">
             {wordPositions.map(({ word, position, fontSize, index }) => {
               const color = isPositive 
                 ? ['#2ECC71', '#27AE60', '#58D68D', '#48C9B0'][index % 4] // 초록색 계열
@@ -178,7 +178,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
                   <span
                     className="font-medium"
                     style={{ 
-                      fontSize: `${fontSize}px`,
+                      fontSize: `${Math.max(fontSize * 0.7, 12)}px`,
                       color: color,
                       textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       fontWeight: word.frequency > maxFrequency * 0.7 ? 'bold' : 'normal',
@@ -251,7 +251,7 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Word Cloud Section */}
       <div className="space-y-4">
         <h2 className="text-[20px] font-bold text-[#000000]">
@@ -265,26 +265,28 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
       </div>
       {/* UX Insights Section */}
       <div className="space-y-4">
-        <h2 className="text-[20px] font-bold text-[#000000] flex items-center">
-          HEART 프레임워크 분석
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <h2 className="text-[20px] font-bold text-[#000000]">
+            HEART 프레임워크 분석
+          </h2>
           <span 
-            className="ml-4 text-sm text-gray-500 hover:text-[#7CF3C4] cursor-pointer transition-colors duration-300"
+            className="text-sm text-gray-500 hover:text-[#7CF3C4] cursor-pointer transition-colors duration-300 flex-shrink-0"
             onClick={() => setIsHeartPopupOpen(true)}
           >
             💡 왜 HEART 분석을 하나요?
           </span>
-        </h2>
+        </div>
         
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           {insights.map((insight: any, index: number) => (
-            <Card key={index} className="glassmorphism-card glow-indigo-hover card-hover">
+            <Card key={index} className="glassmorphism-card glow-indigo-hover card-hover w-full overflow-hidden">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <CardTitle className="text-lg flex items-center flex-1 min-w-0">
                     {getPriorityIcon(insight.priority)}
-                    <span className="ml-2">{insight.title}</span>
+                    <span className="ml-2 break-words">{insight.title}</span>
                   </CardTitle>
-                  <Badge className={`${getPriorityColor(insight.priority)} border`}>
+                  <Badge className={`${getPriorityColor(insight.priority)} border flex-shrink-0`}>
                     {insight.priority.toUpperCase()}
                   </Badge>
                 </div>
@@ -292,12 +294,12 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
               <CardContent className="space-y-4">
                 {/* 문제 상황 요약 */}
                 {insight.problem_summary && (
-                  <div className="space-y-2 bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
-                    <h4 className="font-semibold text-red-800 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
+                  <div className="space-y-2 bg-red-50 p-3 sm:p-4 rounded-lg border-l-4 border-red-400">
+                    <h4 className="font-semibold text-red-800 flex items-center text-sm sm:text-base">
+                      <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                       문제 상황 요약
                     </h4>
-                    <div className="text-red-700 text-sm leading-relaxed">
+                    <div className="text-red-700 text-sm leading-relaxed break-words">
                       <p>{insight.problem_summary}</p>
                     </div>
                   </div>
@@ -305,38 +307,38 @@ export default function WordCloudAndInsights({ filters, activeSection }: WordClo
 
                 {/* 타사 UX 벤치마킹 */}
                 {insight.competitor_benchmark && (
-                  <div className="space-y-2 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
-                    <h4 className="font-semibold text-blue-800 flex items-center">
-                      <TrendingUp className="w-4 h-4 mr-2" />
+                  <div className="space-y-2 bg-blue-50 p-3 sm:p-4 rounded-lg border-l-4 border-blue-400">
+                    <h4 className="font-semibold text-blue-800 flex items-center text-sm sm:text-base">
+                      <TrendingUp className="w-4 h-4 mr-2 flex-shrink-0" />
                       타사 UX 벤치마킹
                     </h4>
-                    <div className="text-blue-700 text-sm leading-relaxed">
+                    <div className="text-blue-700 text-sm leading-relaxed break-words">
                       <p>{insight.competitor_benchmark}</p>
                     </div>
                   </div>
                 )}
 
                 {/* UX 개선 제안 */}
-                <div className="space-y-2 p-4 rounded-lg border-l-4 border-gray-400">
-                  <h4 className="font-semibold text-gray-800 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                <div className="space-y-2 p-3 sm:p-4 rounded-lg border-l-4 border-gray-400">
+                  <h4 className="font-semibold text-gray-800 flex items-center text-sm sm:text-base">
+                    <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                     UX 개선 제안
                   </h4>
                   <div className="text-gray-700 leading-relaxed">
                     {Array.isArray(insight.ux_suggestions) ? (
                       <ul className="space-y-2">
                         {insight.ux_suggestions.map((item: string, idx: number) => (
-                          <li key={idx} className="text-sm">{item}</li>
+                          <li key={idx} className="text-sm break-words">{item}</li>
                         ))}
                       </ul>
                     ) : Array.isArray(insight.description) ? (
                       <ul className="space-y-2">
                         {insight.description.map((item: string, idx: number) => (
-                          <li key={idx} className="text-sm">{item}</li>
+                          <li key={idx} className="text-sm break-words">{item}</li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="whitespace-pre-line text-sm">{insight.description}</p>
+                      <p className="whitespace-pre-line text-sm break-words">{insight.description}</p>
                     )}
                   </div>
                 </div>
