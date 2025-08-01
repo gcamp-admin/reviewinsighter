@@ -45,13 +45,26 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
   const [sentimentFilter, setSentimentFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
 
+  // Reset page to 1 when filters change
+  const handleSentimentFilterChange = (value: string) => {
+    setSentimentFilter(value);
+    onPageChange(1);
+  };
+
+  const handleSourceFilterChange = (value: string) => {
+    setSourceFilter(value);
+    onPageChange(1);
+  };
+
   const limit = 5;
 
   const { data, isLoading, error } = useQuery<PaginatedReviews>({
     queryKey: ["/api/reviews", currentPage, limit, filters?.service?.id, filters.source, filters.dateFrom, filters.dateTo, sentimentFilter, sourceFilter],
     queryFn: async () => {
+      // Force reset to page 1 if current page is invalid
+      const actualPage = Math.max(1, currentPage);
       const params = new URLSearchParams({
-        page: currentPage.toString(),
+        page: actualPage.toString(),
         pageSize: limit.toString(),
       });
       
@@ -339,8 +352,8 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                     )}
                     <button
                       onClick={() => {
-                        setSentimentFilter("all");
-                        setSourceFilter("all");
+                        handleSentimentFilterChange("all");
+                        handleSourceFilterChange("all");
                       }}
                       className="text-xs text-blue-600 hover:text-blue-800 underline"
                     >
@@ -354,7 +367,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 {/* 감정 필터 */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">감정</span>
-                  <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
+                  <Select value={sentimentFilter} onValueChange={handleSentimentFilterChange}>
                     <SelectTrigger className="w-28">
                       <SelectValue placeholder="전체" />
                     </SelectTrigger>
@@ -390,7 +403,7 @@ export default function ReviewList({ filters, currentPage, onPageChange }: Revie
                 {/* 채널 필터 */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">채널</span>
-                  <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <Select value={sourceFilter} onValueChange={handleSourceFilterChange}>
                     <SelectTrigger className="w-36">
                       <SelectValue placeholder="전체" />
                     </SelectTrigger>

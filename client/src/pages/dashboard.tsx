@@ -36,9 +36,10 @@ export default function Dashboard() {
       console.log("Filter change detected - resetting all data");
       setHasCollectedReviews(false);
       setActiveAnalysisSection(null);
-      setCurrentPage(1);
     }
 
+    // Always reset page to 1 when filters change
+    setCurrentPage(1);
     setFilters(newFilters);
   };
 
